@@ -19,4 +19,4 @@ When the submodule is updated, you can use:
 
 >git submodule update
 
-to update the submodule
+to update the submodule.
