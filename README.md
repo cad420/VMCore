@@ -6,7 +6,7 @@ This module includes two parts: **VMFoundation** and **VMGraphics**.
 * ### VMFoundation
 This part provides some general components. e.g, memory management ,plugin framework and custome smart pointer.
 
-* ### VMGraphics (Partly unfinished)
+* ### VMGraphics (Partly finish)
 This part includes graphics-related classes for ray tracing based rendering.
 
 * ### Build
