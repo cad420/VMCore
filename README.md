@@ -3,11 +3,25 @@
 
 This module include two parts: **VMFoundation** and **VMGraphics**.
 
-## VMFoundation
----
-This part provides some basic class such as memroy manager and plugin loader
+* ### VMFoundation
+This part provides some general components. e.g, memory management ,plugin framework and referenced base smart pointer.
 
-## VMGraphics
+* ### VMGraphics
 ---
-This part includes basic classes for ray tracing
+This part includes graphics-related classes for ray tracing based rendering.
+
+
+* ### Build
+
+C++14 and CMake 3.12 or higher is required.
+
+>git clone --recursive https://github.com/cad420/VMCore.git
+
+when the submodule is updated, you can use:
+
+>git submodule update
+
+to update the submodule
+
+
 
