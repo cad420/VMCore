@@ -5,12 +5,9 @@ project(vmcore)
 option(VMCORE_SHARED_LIBRARY "Set to ON to build using dynamic linking" ON)
 if(VMCORE_SHARED_LIBRARY)
 add_definitions(-DVMCORE_SHARED_LIBRARY)
-add_definitions(-Dvmgraphics_EXPORTS)
-add_definitions(-Dvmfoundation_EXPORTS)
-
-set(VMFOUNDATION_SHARED "SHARED")
+set(VMCORE_SHARED "SHARED")
 else()
-set(VMFOUNDATION_SHARED "STATIC")
+set(VMCORE_SHARED "STATIC")
 endif()
 
 
@@ -20,7 +17,7 @@ aux_source_directory(src/VMGraphics GRAPHICS_SRC)
 add_subdirectory(external/VMUtils)
 
 
-add_library(vmfoundation ${VMFOUNDATION_SHARED} ${FOUNDATION_SRC})
+add_library(vmfoundation ${VMCORE_SHARED} ${FOUNDATION_SRC})
 add_dependencies(vmfoundation vmutils)
 target_link_libraries(vmfoundation vmutils)
 target_include_directories(vmfoundation PUBLIC "external/VMat/include" "external/VMUtils/include" "include" "external")
@@ -30,7 +27,7 @@ install(TARGETS vmfoundation LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin"
 install(DIRECTORY "include" DESTINATION "include/VMutils")
 
 
-add_library(vmgraphics ${VMFOUNDATION_SHARED} ${GRAPHICS_SRC})
+add_library(vmgraphics ${VMCORE_SHARED} ${GRAPHICS_SRC})
 add_dependencies(vmgraphics vmutils)
 target_link_libraries(vmgraphics vmutils)
 target_include_directories(vmgraphics PUBLIC "external/VMat/include" "external/VMUtils/include" "include" "external")

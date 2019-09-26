@@ -34,7 +34,5 @@ namespace ysl
 	};
 	
 	DECLARE_PLUGIN_METADATA(IFileMappingPluginInterface,"visualman.io")
-	
-	
 }
 #endif
