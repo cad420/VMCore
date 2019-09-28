@@ -1,6 +1,6 @@
 
 #include <VMFoundation/largevolumecache.h>
-#include <VMUtils/log.h>
+#include <VMUtils/log.hpp>
 #include <VMFoundation/cachepolicy.h>
 #include <VMFoundation/pluginloader.h>
 
@@ -16,8 +16,7 @@
 			if (it->hashIter != m_blockIdInCache.end())																		\
 			std::cout << "[BlockID:" << it->hashIter->first << " -> CacheID:" << it->blockCacheIndex << "]--->";			\
 		}																													\
-		std::cout << std::endl;																								\
-
+		std::cout << std::endl;
 
 namespace ysl
 {
@@ -42,7 +41,9 @@ namespace ysl
 		case 8:m_volumeCache = std::make_unique<Int8Block256Cache>(cacheSize.x, cacheSize.y, cacheSize.z, nullptr); break;
 		case 9:m_volumeCache = std::make_unique<Int8Block512Cache>(cacheSize.x, cacheSize.y, cacheSize.z, nullptr); break;
 		case 10:m_volumeCache = std::make_unique<Int8Block1024Cache>(cacheSize.x, cacheSize.y, cacheSize.z, nullptr); break;
-		default:Warning("Unsupported Cache block Size\n"); break;
+		default:
+			vm::Warning( "Unsupported Cache block Size\n" );
+			break;
 		}
 		if (!m_volumeCache)
 		{

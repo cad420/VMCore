@@ -1,7 +1,7 @@
 
 #include <cassert>
 #include <iostream>
-#include <VMUtils/log.h>
+#include <VMUtils/log.hpp>
 #include <VMFoundation/library.h>
 
 #ifdef _WIN32
@@ -48,7 +48,7 @@ namespace ysl
 #endif	/*defined(__MACOSX__) || defined(__APPLE__)*/
 		if (!lib)
 		{
-			Debug("%s can bot be found.", name.c_str());
+			vm::Debug("%s can bot be found.", name.c_str());
 			throw std::runtime_error(errorMsg);
 		}
 	}

@@ -1,11 +1,11 @@
 
 #include <ostream>
+#include <VMFoundation/dataarena.h>
 //#include <cmalloc>
 
 //#include <malloc.h>
 
-
-void* AllocAligned(size_t size, int align)
+void *AllocAligned( size_t size, int align )
 {
 //#if defined (_WIN32)
 	//return _aligned_malloc(size, align);
@@ -15,7 +15,7 @@ void* AllocAligned(size_t size, int align)
 //#endif
 }
 
-void FreeAligned(void * ptr)
+__declspec( dllexport )  void FreeAligned( void *ptr )
 {
 //#if defined(_WIN32)
 	//_aligned_free(ptr);

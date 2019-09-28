@@ -10,10 +10,10 @@
 
 constexpr std::size_t CashLine = 64;
 
+__declspec(dllexport) void *AllocAligned( std::size_t size, int align );
 
-VMFOUNDATION_EXPORTS void *AllocAligned(std::size_t size, int align);
+__declspec( dllexport ) void FreeAligned( void *ptr );
 
-VMFOUNDATION_EXPORTS void FreeAligned( void *ptr );
 
 template<typename T>
 T * AllocAligned(std::size_t n)

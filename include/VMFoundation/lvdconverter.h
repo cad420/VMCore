@@ -9,7 +9,7 @@
 #include <VMFoundation/filemappingplugininterface.h>
 #include <VMFoundation/libraryloader.h>
 #include <VMUtils/timer.hpp>
-#include <VMUtils/log.h>
+#include <VMUtils/log.hpp>
 #include <VMUtils/threadpool.hpp>
 
 #include <cstring>

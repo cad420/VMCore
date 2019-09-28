@@ -3,7 +3,7 @@
 
 #include <string>
 #include <VMGraphics/objreader.h>
-#include <VMUtils/log.h>
+#include <VMUtils/log.hpp>
 
 
 namespace ysl
@@ -34,7 +34,7 @@ namespace ysl
 		if (!err.empty())
 			std::cerr << err << std::endl;
 
-		ysl::Log("Number of Shader contained in .Obj: %d\n",shapes.size());
+		vm::Log("Number of Shader contained in .Obj: %d\n",shapes.size());
 
 		// reserve
 
