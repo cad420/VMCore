@@ -6,6 +6,7 @@
 
 #include <VMFoundation/object.h>
 #include <../interface/VMCore/plugindef.h>
+#include <VMUtils/ieverything.hpp>
 
 namespace ysl
 {
@@ -14,6 +15,7 @@ namespace ysl
 	public:
 		virtual std::vector<std::string> Keys()const = 0;
 		virtual std::unique_ptr<Object> Create(const std::string& key) = 0;
+		virtual ::vm::IEverything* CreateEx(const std::string& key) = 0;
 		virtual std::string GetIID()const = 0;
 		virtual ~IPluginFactory() = default;
 	};

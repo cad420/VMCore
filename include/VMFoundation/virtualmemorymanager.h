@@ -7,6 +7,8 @@
 #include <memory>
 
 #include <VMFoundation/pagefileinterface.h>
+#include <VMUtils/ieverything.hpp>
+#include <VMUtils/ref.hpp>
 
 namespace ysl
 {
@@ -77,22 +79,30 @@ namespace ysl
 	 */
 	class AbstrMemoryCache;
 
-	class VMFOUNDATION_EXPORTS AbstrMemoryCache:public IPageFile
+	class VMFOUNDATION_EXPORTS AbstrMemoryCache:public ::vm::EverythingBase<IPageFile>
 	{
-		std::shared_ptr<IPageFile> nextLevel;
-		std::unique_ptr<AbstrCachePolicy> cachePolicy;
-		std::shared_ptr<IPageFaultEventCallback> callback;
+		::vm::Ref<IPageFile> nextLevel;
+		::vm::Ref<AbstrCachePolicy> cachePolicy;
+		//::vm::Ref<IPageFaultEventCallback> callback;
+		//std::shared_ptr<IPageFile> nextLevel;
+		//std::unique_ptr<AbstrCachePolicy> cachePolicy;
+		//std::shared_ptr<IPageFaultEventCallback> callback;
+		//
 	public:
-		void SetNextLevelCache(std::shared_ptr<IPageFile> cache);
+		AbstrMemoryCache( ::vm::IRefCnt *cnt ):
+		  ::vm::EverythingBase<ysl::IPageFile>( cnt ) {}
+		
+		void SetNextLevelCache(IPageFile* cache);
 		/**
 		 * \brief Sets a cache policy 
 		 * \param policy 
 		 */
-		void SetCachePolicy(std::unique_ptr<AbstrCachePolicy> policy);
-		std::unique_ptr<AbstrCachePolicy> TakeCachePolicy();
-		std::shared_ptr<IPageFile> GetNextLevelCache() { return nextLevel; }
-		void SetPageFaultEventCallback(std::shared_ptr<IPageFaultEventCallback> callback) { this->callback = std::move(callback); }
-		std::shared_ptr<const IPageFile> GetNextLevelCache() const { return nextLevel; }
+		void SetCachePolicy(AbstrCachePolicy* policy);
+		AbstrCachePolicy* TakeCachePolicy();
+		
+		IPageFile* GetNextLevelCache() { return nextLevel; }
+		//void SetPageFaultEventCallback(std::shared_ptr<IPageFaultEventCallback> callback) { this->callback = std::move(callback); }
+		const IPageFile* GetNextLevelCache() const { return nextLevel; }
 
 		/**
 		 * \brief Get the page give by \a pageID. If the page does not exist in the cache, it will be swapped in.
@@ -115,6 +125,8 @@ namespace ysl
 	class VMFOUNDATION_EXPORTS AbstrCachePolicy:public AbstrMemoryCache
 	{
 	public:
+		AbstrCachePolicy(::vm::IRefCnt * cnt) :
+		  AbstrMemoryCache( cnt) {}
 		/**
 		 * \brief Queries the page given by \a pageID if it exists in storage cache. Returns \a true if it exists or \a false if not
 		 */

@@ -23,7 +23,8 @@ namespace ysl
 		LRUList m_lruList;
 		LRUHash	m_blockIdInCache;		// blockId---> (blockIndex,the position of blockIndex in list)
 	public:
-		LRUCachePolicy() = default;
+		LRUCachePolicy( ::vm::IRefCnt *cnt ) :
+		  AbstrCachePolicy( cnt ) {}
 		bool QueryPage(size_t pageID) override;
 		void UpdatePage(size_t pageID) override;
 		size_t QueryAndUpdate(size_t pageID) override;

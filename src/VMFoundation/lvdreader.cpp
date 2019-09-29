@@ -4,6 +4,7 @@
 
 #include <VMFoundation/libraryloader.h>
 #include <VMFoundation/lvdreader.h>
+#include <VMFoundation/pluginloader.h>
 
 namespace ysl
 {
@@ -88,7 +89,12 @@ namespace ysl
 		assert(repo);
 		repo->AddLibrary("ioplugin");
 
-		lvdIO = Object::CreateObject<ysl::IFileMappingPluginInterface>("common.filemapio");
+		//lvdIO = Object::CreateObject<ysl::IFileMappingPluginInterface>("common.filemapio");
+#ifdef _WIN32
+		lvdIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "windows" );
+#else defined( __linux__ ) || defined(__APPLE__)
+		lvdIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "linux" );
+#endif
 		if (lvdIO == nullptr)
 			throw std::runtime_error("can not load ioplugin");
 		lvdIO->Open(fileName, bytes, FileAccess::Read, MapAccess::ReadOnly);

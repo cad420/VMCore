@@ -3,6 +3,7 @@
 #include <VMUtils/log.hpp>
 #include <VMFoundation/cachepolicy.h>
 #include <VMFoundation/pluginloader.h>
+#include <VMUtils/vmnew.hpp>
 
 #include <3rdparty/rapidjson/document.h>
 #include <iostream>
@@ -30,7 +31,7 @@ namespace ysl
 
 	void MemoryPageAdapter::Create()
 	{
-		const auto p = std::dynamic_pointer_cast<I3DBlockFilePluginInterface>(GetNextLevelCache());
+		const auto p = dynamic_cast<I3DBlockFilePluginInterface*>(GetNextLevelCache());
 		const int log = p->Get3DPageSizeInLog();
 		const auto cacheSize = cacheDim * Size3(1 << log, 1 << log, 1 << log);
 		assert(p);
@@ -55,7 +56,8 @@ namespace ysl
 
 	int MemoryPageAdapter::GetLog() const
 	{
-		const auto p = std::dynamic_pointer_cast<const I3DBlockFilePluginInterface>(GetNextLevelCache());
+		const auto p = dynamic_cast<const I3DBlockFilePluginInterface*>(GetNextLevelCache());
+		assert( p );
 		const int log = p->Get3DPageSizeInLog();
 		return log;
 	}
@@ -66,23 +68,24 @@ namespace ysl
 		return m_volumeCache->GetBlockData(pageID);
 	}
 
-	MemoryPageAdapter::MemoryPageAdapter(const std::string& fileName) :
+	MemoryPageAdapter::MemoryPageAdapter(const std::string& fileName) :AbstrMemoryCache( nullptr ),
 		//lvdReader(fileName),
 		cacheDim(20, 20, 20)
 	{
 		const auto cap = fileName.substr(fileName.find_last_of('.'));
-		auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>(cap);
+		//auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>(cap);
+		auto p = PluginLoader::CreatePluginEx<I3DBlockFilePluginInterface>( cap );
 
 		if(p == nullptr)
 		{
 			throw std::runtime_error("Failed to load the plugin that is able to read " + cap + "file");
 		}
 		p->Open(fileName);
-		SetDiskFileCache(std::move(p));
-		SetCachePolicy(std::make_unique<LRUCachePolicy>());
+		SetDiskFileCache(p);
+		SetCachePolicy(VM_NEW<LRUCachePolicy>());
 	}
 
-	void MemoryPageAdapter::SetDiskFileCache(std::shared_ptr<I3DBlockFilePluginInterface> diskCache)
+	void MemoryPageAdapter::SetDiskFileCache(I3DBlockFilePluginInterface* diskCache)
 	{
 		SetNextLevelCache(diskCache);
 		adapter = diskCache;

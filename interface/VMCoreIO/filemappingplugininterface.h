@@ -2,6 +2,7 @@
 #define _FILEMAPPINGPLUGININTERFACE_H_
 #include <string>
 #include <VMFoundation/plugin.h>
+#include <VMUtils/ieverything.hpp>
 
 namespace ysl
 {
@@ -17,7 +18,7 @@ namespace ysl
 		ReadWrite //= PAGE_READWRITE
 	};
 
-	class IFileMapping
+	class IFileMapping:public ::vm::IEverything
 	{
 	public:
 		virtual bool Open(const std::string& fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags) = 0;
@@ -28,11 +29,7 @@ namespace ysl
 		virtual ~IFileMapping() = default;
 	};
 
-	class VMFOUNDATION_EXPORTS IFileMappingPluginInterface:public Object,public IFileMapping
-	{
-		DECLARE_RTTI
-	};
 	
-	DECLARE_PLUGIN_METADATA(IFileMappingPluginInterface,"visualman.io")
+	DECLARE_PLUGIN_METADATA(IFileMapping,"visualman.io")
 }
 #endif

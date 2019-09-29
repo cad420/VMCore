@@ -4,10 +4,12 @@
 
 
 #include <memory>
-#include <VMFoundation/filemappingplugininterface.h>
 #include <VMFoundation/blockarray.h>
 #include <VMFoundation/lvdheader.h>
 #include <VMFoundation/foundation_config.h>
+#include <vector>
+#include <VMUtils/ref.hpp>
+#include <VMCoreIO/filemappingplugininterface.h>
 
 
 namespace ysl
@@ -46,7 +48,8 @@ namespace ysl
 		const LVDHeader& GetHeader()const { return header; }
 		~LVDReader();
 	private:
-		std::shared_ptr<IFileMappingPluginInterface> lvdIO;		// the declaration must be behind the declaration of ~LVDReader()
+		//std::shared_ptr<IFileMappingPluginInterface> lvdIO;		// the declaration must be behind the declaration of ~LVDReader()
+		::vm::Ref<IFileMapping> lvdIO;
 	};
 
 	template <typename T, int nLogBlockSize>

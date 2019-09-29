@@ -15,7 +15,7 @@ namespace ysl
 	{
 		LVDReader lvdReader;
 	public:
-		Disk3DPageAdapter(const std::string & fileName):lvdReader(fileName){}
+		Disk3DPageAdapter(const std::string & fileName):AbstrMemoryCache( nullptr ),lvdReader(fileName){}
 		const void * GetPage(size_t pageID) override { return lvdReader.ReadBlock(pageID); }
 		size_t GetPageSize()const override { return lvdReader.BlockSize(); }
 		size_t GetPhysicalPageCount()const override { return lvdReader.BlockCount(); }
@@ -41,14 +41,14 @@ namespace ysl
 
 		Size3 cacheDim;
 		std::unique_ptr<IBlock3DArrayAdapter> m_volumeCache;
-		std::shared_ptr<I3DBlockFilePluginInterface> adapter;
+		::vm::Ref<I3DBlockFilePluginInterface> adapter;
 
 		[[deprecated]] int blockCoordinateToBlockId(int xBlock, int yBlock, int zBlock) const;
 		void Create();
 	public:
 		explicit MemoryPageAdapter(const std::string& fileName);
 
-		void SetDiskFileCache(std::shared_ptr<I3DBlockFilePluginInterface> diskCache);
+		void SetDiskFileCache(I3DBlockFilePluginInterface* diskCache);
 
 		Size3 CPUCacheBlockSize() const;
 

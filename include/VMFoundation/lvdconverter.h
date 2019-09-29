@@ -6,8 +6,9 @@
 #include <VMat/geometry.h>
 #include <VMat/numeric.h>
 #include <VMFoundation/lvdheader.h>
-#include <VMFoundation/filemappingplugininterface.h>
+#include <VMCoreIO/ifilemapping.h>
 #include <VMFoundation/libraryloader.h>
+#include <VMFoundation/pluginloader.h>
 #include <VMUtils/timer.hpp>
 #include <VMUtils/log.hpp>
 #include <VMUtils/threadpool.hpp>
@@ -80,11 +81,12 @@ namespace ysl
 		ysl::Vector3i m_blockDimension;
 
 		//std::unique_ptr<RawType[]> m_rawBuf;
-		std::shared_ptr<ysl::IFileMappingPluginInterface> rawIO;
+		//std::shared_ptr<ysl::IFileMappingPluginInterface> rawIO;
+		::vm::Ref<IFileMapping> rawIO;
 		unsigned char * rawPtr;
 
-		//std::unique_ptr<RawType[]> m_lvdBuf;
-		std::shared_ptr<ysl::IFileMappingPluginInterface> lvdIO;
+		//std::shared_ptr<ysl::IFileMappingPluginInterface> lvdIO;
+		::vm::Ref<IFileMapping> lvdIO;
 		unsigned char * lvdPtr;
 
 		const int m_padding;
@@ -225,8 +227,11 @@ namespace ysl
 		auto repo = ysl::LibraryReposity::GetLibraryRepo();
 		assert(repo);
 		repo->AddLibrary("ioplugin");
-
-		rawIO = ysl::Object::CreateObject<IFileMappingPluginInterface>("common.filemapio");
+#ifdef _WIN32
+		rawIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "windows" );
+#else defined(__linux__)
+		rawIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "linux" );
+#endif
 		if (rawIO == nullptr)
 			throw std::runtime_error("can not load ioplugin");
 
@@ -244,7 +249,11 @@ namespace ysl
 		}
 		const auto lvdBytes = size_t(m_dataSize.x) * size_t(m_dataSize.y) * size_t(m_dataSize.z) * sizeof(RawType);
 
-		lvdIO = ysl::Object::CreateObject<IFileMappingPluginInterface>("common.filemapio");
+#ifdef _WIN32
+		lvdIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "windows" );
+#else defined( __linux__ )
+		lvdIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "linux" );
+#endif
 		if (lvdIO == nullptr)
 			throw std::runtime_error("can not load ioplugin");
 
@@ -429,7 +438,7 @@ namespace ysl
 		ysl::Vector3i m_blockDimension;
 
 		std::unique_ptr<RawType[]> m_rawBuf;
-		std::shared_ptr<ysl::IFileMappingPluginInterface> lvdIO;
+		::vm::Ref<IFileMapping> lvdIO;
 		unsigned char * lvdPtr;
 		const int m_padding;
 		static constexpr auto blockSize = 1 << nLogBlockSize;
