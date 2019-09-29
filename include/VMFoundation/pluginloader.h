@@ -17,6 +17,8 @@ namespace ysl
 		template<typename T> static 
 		std::shared_ptr<T> CreatePlugin(const std::string & key)
 		{
+//			static_assert( std::is_base_of<IEverything, T>::value);
+			
 			const auto& f = PluginLoader::GetPluginLoader()->factories;
 			auto iter = f.find(_iid_trait<T>::GetIID());
 			if(iter == f.end())
@@ -29,7 +31,8 @@ namespace ysl
 				{
 					if(key == k)
 					{
-						return Shared_Object_Dynamic_Cast<T>(fptr()->Create(key));
+						//return Ref<T>(dynamic_cast<T>(fptr()->Create(key)));
+						return Shared_Object_Dynamic_Cast<T>( fptr()->Create( key ) );
 					}
 				}
 			}
@@ -37,11 +40,9 @@ namespace ysl
 		}
 		
 		static PluginLoader* GetPluginLoader();
-
 		static void LoadPlugins(const std::string& directory);
 	private:
 		PluginLoader() = default;
-		
 	};
 
 }

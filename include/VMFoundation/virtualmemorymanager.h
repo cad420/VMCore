@@ -3,9 +3,10 @@
 #define _VIRTUALMEMORYMANAGER_H_
 
 #include <VMat/geometry.h>
-#include <VMFoundation/pagefileinterface.h>
-
+#include <VMFoundation/foundation_config.h>
 #include <memory>
+
+#include <VMFoundation/pagefileinterface.h>
 
 namespace ysl
 {

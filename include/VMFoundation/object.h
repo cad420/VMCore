@@ -63,14 +63,8 @@ namespace ysl
 		return std::make_unique<classTypeName>();														\
 	}
 
-	/**
-		 * \brief The class is all classes that need to be managed.
-		 *
-		 * If you should get rtti for some class, it should derived from the Object.
-		 *
-		 */
 
-	class VMFOUNDATION_EXPORTS Object : public std::enable_shared_from_this<Object>
+    class VMFOUNDATION_EXPORTS Object : public std::enable_shared_from_this<Object>
 	{
 
 	protected:

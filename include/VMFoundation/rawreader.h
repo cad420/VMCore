@@ -15,6 +15,7 @@ namespace ysl
 		size_t voxelSize;
 		uint64_t offset;
 		std::shared_ptr<IFileMappingPluginInterface> io;
+		//Ref<IFileMappingPluginInterface> io;
 		unsigned char * ptr;
 		uint64_t seekAmt;
 	public:
