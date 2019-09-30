@@ -7,7 +7,7 @@ public:                               \
 	std::string GetIID() const override { return iid; }
 
 #define EXPORT_PLUGIN_FACTORY( pluginFactoryTypeName ) \
-	extern "C" VMFOUNDATION_EXPORTS ysl::IPluginFactory *GetPluginFactoryInstance();
+	extern "C" __declspec(dllexport) ysl::IPluginFactory *GetPluginFactoryInstance();
 
 #define EXPORT_PLUGIN_FACTORY_IMPLEMENT( pluginFactoryTypeName ) \
 	ysl::IPluginFactory *GetPluginFactoryInstance()              \
