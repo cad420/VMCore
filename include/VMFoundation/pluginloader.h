@@ -4,7 +4,7 @@
 
 #include <unordered_map>
 #include <functional>
-#include <VMFoundation/plugin.h>
+#include <VMCoreExtension/plugin.h>
 #include <VMFoundation/foundation_config.h>
 #include <VMUtils/ref.hpp>
 #include <VMUtils/ieverything.hpp>

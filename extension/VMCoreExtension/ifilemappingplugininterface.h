@@ -1,7 +1,6 @@
 #ifndef _FILEMAPPINGPLUGININTERFACE_H_
 #define _FILEMAPPINGPLUGININTERFACE_H_
 #include <string>
-#include <VMFoundation/plugin.h>
 #include <VMUtils/ieverything.hpp>
 #include <VMCoreExtension/plugindef.h>
 
