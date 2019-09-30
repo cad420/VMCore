@@ -4,3 +4,6 @@
 [submodule "external/VMUtils"]
 	path = external/VMUtils
 	url = https://github.com/cad420/VMUtils
+[submodule "scripts"]
+	path = scripts
+	url = https://github.com/cad420/external.cmake
