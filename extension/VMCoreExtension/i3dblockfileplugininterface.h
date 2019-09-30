@@ -29,7 +29,7 @@ public:
 };
 
 
-DECLARE_PLUGIN_METADATA( I3DBlockFilePluginInterface, "visualman.blockdata.io" )
+DECLARE_PLUGIN_METADATA( ysl::I3DBlockFilePluginInterface, "visualman.blockdata.io" )
 
 
 }  // namespace ysl

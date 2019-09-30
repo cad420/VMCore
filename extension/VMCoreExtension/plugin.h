@@ -3,7 +3,6 @@
 #define _PLUGIN_H_
 #include <vector>
 #include <string>
-#include <VMFoundation/object.h>
 #include <VMUtils/ieverything.hpp>
 
 namespace ysl

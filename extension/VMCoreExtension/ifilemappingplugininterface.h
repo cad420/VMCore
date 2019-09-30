@@ -29,6 +29,6 @@ namespace ysl
 		virtual ~IFileMapping() = default;
 	};
 
-	DECLARE_PLUGIN_METADATA(IFileMapping,"visualman.io")
+	DECLARE_PLUGIN_METADATA(ysl::IFileMapping,"visualman.io")
 }
 #endif
