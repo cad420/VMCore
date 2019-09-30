@@ -6,7 +6,7 @@
 #include <VMFoundation/foundation_config.h>
 #include <memory>
 
-#include <VMFoundation/pagefileinterface.h>
+#include <VMCoreExtension/i3dblockfileplugininterface.h>
 #include <VMUtils/ieverything.hpp>
 #include <VMUtils/ref.hpp>
 

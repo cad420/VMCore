@@ -3,6 +3,7 @@
 #include <string>
 #include <VMFoundation/plugin.h>
 #include <VMUtils/ieverything.hpp>
+#include <VMCoreExtension/plugindef.h>
 
 namespace ysl
 {
@@ -29,7 +30,6 @@ namespace ysl
 		virtual ~IFileMapping() = default;
 	};
 
-	
 	DECLARE_PLUGIN_METADATA(IFileMapping,"visualman.io")
 }
 #endif

@@ -9,7 +9,7 @@
 #include <VMFoundation/foundation_config.h>
 #include <vector>
 #include <VMUtils/ref.hpp>
-#include <VMCoreIO/filemappingplugininterface.h>
+#include <VMCoreExtension/ifilemappingplugininterface.h>
 
 
 namespace ysl

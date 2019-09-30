@@ -6,7 +6,7 @@
 #include <VMat/geometry.h>
 #include <VMat/numeric.h>
 #include <VMFoundation/lvdheader.h>
-#include <VMCoreIO/ifilemapping.h>
+#include <VMCoreExtension/ifilemappingplugininterface.h>
 #include <VMFoundation/libraryloader.h>
 #include <VMFoundation/pluginloader.h>
 #include <VMUtils/timer.hpp>
@@ -228,9 +228,9 @@ namespace ysl
 		assert(repo);
 		repo->AddLibrary("ioplugin");
 #ifdef _WIN32
-		rawIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "windows" );
+		rawIO = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "windows" );
 #else defined(__linux__)
-		rawIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "linux" );
+		rawIO = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "linux" );
 #endif
 		if (rawIO == nullptr)
 			throw std::runtime_error("can not load ioplugin");
@@ -250,9 +250,9 @@ namespace ysl
 		const auto lvdBytes = size_t(m_dataSize.x) * size_t(m_dataSize.y) * size_t(m_dataSize.z) * sizeof(RawType);
 
 #ifdef _WIN32
-		lvdIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "windows" );
+		lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "windows" );
 #else defined( __linux__ )
-		lvdIO = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "linux" );
+		lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "linux" );
 #endif
 		if (lvdIO == nullptr)
 			throw std::runtime_error("can not load ioplugin");

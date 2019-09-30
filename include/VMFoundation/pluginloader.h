@@ -15,33 +15,9 @@ namespace ysl
 	{
 		std::unordered_map<std::string, std::vector<std::function<IPluginFactory*()>>> factories;
 	public:
-
-		template<typename T> static 
-		std::shared_ptr<T> CreatePlugin(const std::string & key)
-		{
-			
-			const auto& f = PluginLoader::GetPluginLoader()->factories;
-			auto iter = f.find(_iid_trait<T>::GetIID());
-			if(iter == f.end())
-			{
-				return nullptr;
-			}
-			for(const auto & fptr:iter->second)
-			{
-				for(const auto & k:fptr()->Keys())
-				{
-					if(key == k)
-					{
-						//return Ref<T>(dynamic_cast<T>(fptr()->Create(key)));
-						return Shared_Object_Dynamic_Cast<T>( fptr()->Create( key ) );
-					}
-				}
-			}
-			return nullptr;
-		}
-
+		
 		template <typename T>
-		static T * CreatePluginEx( const std::string &key )
+		static T * CreatePlugin( const std::string &key )
 		{
 			const auto &f = PluginLoader::GetPluginLoader()->factories;
 			auto iter = f.find( _iid_trait<T>::GetIID() );
@@ -51,13 +27,12 @@ namespace ysl
 			for ( const auto &fptr : iter->second ) {
 				for ( const auto &k : fptr()->Keys() ) {
 					if ( key == k ) {
-						return (dynamic_cast<T*>(fptr()->CreateEx(key)));
+						return (dynamic_cast<T*>(fptr()->Create(key)));
 					}
 				}
 			}
 			return nullptr;
 		}
-
 		
 		static PluginLoader* GetPluginLoader();
 		static void LoadPlugins(const std::string& directory);

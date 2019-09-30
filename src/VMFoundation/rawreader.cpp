@@ -1,6 +1,6 @@
 
 #include <VMFoundation/rawreader.h>
-#include <VMCoreIO/filemappingplugininterface.h>
+#include <VMCoreExtension/ifilemappingplugininterface.h>
 #include <VMFoundation/libraryloader.h>
 #include <VMFoundation/pluginloader.h>
 
@@ -22,9 +22,9 @@ namespace ysl
 		repo->AddLibrary("ioplugin");
 
 #ifdef _WIN32
-		io = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "windows" );
+		io = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "windows" );
 #elif defined(__linux__)
-		io = PluginLoader::GetPluginLoader()->CreatePluginEx<IFileMapping>( "linux" );
+		io = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "linux" );
 #endif
 		if (io == nullptr)
 			throw std::runtime_error("can not load ioplugin");

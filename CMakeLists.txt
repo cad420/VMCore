@@ -43,7 +43,7 @@ endif()
 #add_dependencies(vmcore vmutils)
 target_sources(vmcore PRIVATE ${GRAPHICS_SRC} ${FOUNDATION_SRC})
 target_link_libraries(vmcore PUBLIC)
-target_include_directories(vmcore PUBLIC "external/VMat/include" "external/VMUtils/include" "include" "external" "interface")
+target_include_directories(vmcore PUBLIC "external/VMat/include" "external/VMUtils/include" "include" "external" "extension")
 
 
 install(TARGETS vmcore LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")

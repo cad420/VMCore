@@ -2,10 +2,8 @@
 #ifndef _PAGEFILEPLUGININTERFACE_H_
 #define _PAGEFILEPLUGININTERFACE_H_
 #include <VMat/geometry.h>
-#include <../interface/VMCore/plugindef.h>
-#include <VMFoundation/object.h>
-#include <VMUtils/ieverything.hpp>
-#include <../interface/VMCoreIO/ipagefile.h>
+#include <../extension/VMCoreExtension/plugindef.h>
+#include <../extension/VMCoreExtension/ipagefile.h>
 
 namespace ysl
 {
@@ -33,9 +31,6 @@ public:
 
 DECLARE_PLUGIN_METADATA( I3DBlockFilePluginInterface, "visualman.blockdata.io" )
 
-//class IPageFaultEventCallbackPluginInterface:public IPageFaultEventCallback
-//{
-//};
 
 }  // namespace ysl
 

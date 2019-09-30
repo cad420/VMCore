@@ -2,7 +2,7 @@
 #ifndef _RAWREADER_H_
 #define _RAWREADER_H_
 #include <VMat/geometry.h>
-#include <VMCoreIO/filemappingplugininterface.h>
+#include <VMCoreExtension/ifilemappingplugininterface.h>
 #include <VMFoundation/foundation_config.h>
 #include <VMUtils/ref.hpp>
 #include <fstream>

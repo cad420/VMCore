@@ -74,7 +74,7 @@ namespace ysl
 	{
 		const auto cap = fileName.substr(fileName.find_last_of('.'));
 		//auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>(cap);
-		auto p = PluginLoader::CreatePluginEx<I3DBlockFilePluginInterface>( cap );
+		auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>( cap );
 
 		if(p == nullptr)
 		{
