@@ -4,31 +4,28 @@
 #include <VMUtils/ieverything.hpp>
 #include <VMCoreExtension/plugindef.h>
 
-namespace ysl
+enum class FileAccess
 {
-	enum class FileAccess
-	{
-		Read,// = GENERIC_READ,
-		Write,//= GENERIC_WRITE,
-		ReadWrite
-	};
-	enum class MapAccess
-	{
-		ReadOnly,// = PAGE_READONLY,
-		ReadWrite //= PAGE_READWRITE
-	};
+	Read,   // = GENERIC_READ,
+	Write,  //= GENERIC_WRITE,
+	ReadWrite
+};
+enum class MapAccess
+{
+	ReadOnly,  // = PAGE_READONLY,
+	ReadWrite  //= PAGE_READWRITE
+};
 
-	class IFileMapping:public ::vm::IEverything
-	{
-	public:
-		virtual bool Open(const std::string& fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags) = 0;
-		virtual unsigned char* FileMemPointer(unsigned long long offset, std::size_t size) = 0;
-		virtual void DestroyFileMemPointer(unsigned char* addr) = 0;
-		virtual bool WriteCommit() = 0;
-		virtual bool Close() = 0;
-		virtual ~IFileMapping() = default;
-	};
+class IFileMapping : public ::vm::IEverything
+{
+public:
+	virtual bool Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags ) = 0;
+	virtual unsigned char *FileMemPointer( unsigned long long offset, std::size_t size ) = 0;
+	virtual void DestroyFileMemPointer( unsigned char *addr ) = 0;
+	virtual bool WriteCommit() = 0;
+	virtual bool Close() = 0;
+	virtual ~IFileMapping() = default;
+};
 
-	DECLARE_PLUGIN_METADATA(ysl::IFileMapping,"visualman.io")
-}
+DECLARE_PLUGIN_METADATA(IFileMapping, "visualman.io" )
 #endif
