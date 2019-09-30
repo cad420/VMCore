@@ -8,7 +8,8 @@ aux_source_directory(src/VMGraphics GRAPHICS_SRC)
 
 
 option(VMUTILS_SHARED_LIBRARY OFF)	 # static linking
-add_subdirectory(external/VMUtils)
+
+#add_subdirectory(external/VMUtils)
 
 option(VMCORE_SHARED_LIBRARY "Set to ON to build using dynamic linking" ON)
 if(VMCORE_SHARED_LIBRARY)
@@ -39,11 +40,27 @@ endif()
 #install(TARGETS vmgraphics LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
 #install(DIRECTORY "include" DESTINATION "include/VMutils")
 
+include(scripts/external.cmake)
+
+
 
 #add_dependencies(vmcore vmutils)
+vm_external_module(
+	GIT_REPOSITORY https://github.com/cad420/VMat.git
+	GIT_TAG master
+)
+
+vm_external_module(
+	GIT_REPOSITORY https://github.com/cad420/VMUtils.git
+	GIT_TAG master
+)
+
+vm_target_dependecy(vmcore VMat PRIVATE)
+vm_target_dependecy(vmcore VMUtils PRIVATE)
+
 target_sources(vmcore PRIVATE ${GRAPHICS_SRC} ${FOUNDATION_SRC})
 target_link_libraries(vmcore PUBLIC)
-target_include_directories(vmcore PUBLIC "external/VMat/include" "external/VMUtils/include" "include" "external" "extension")
+target_include_directories(vmcore PUBLIC "external" "include" "extension")
 
 
 install(TARGETS vmcore LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")

@@ -1,9 +1,3 @@
-[submodule "external/VMat"]
-	path = external/VMat
-	url = https://github.com/cad420/VMat.git
-[submodule "external/VMUtils"]
-	path = external/VMUtils
-	url = https://github.com/cad420/VMUtils
 [submodule "scripts"]
 	path = scripts
 	url = https://github.com/cad420/external.cmake
