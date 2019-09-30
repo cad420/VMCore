@@ -55,8 +55,8 @@ vm_external_module(
 	GIT_TAG master
 )
 
-vm_target_dependecy(vmcore VMat PRIVATE)
-vm_target_dependecy(vmcore VMUtils PRIVATE)
+vm_target_dependency(vmcore VMat PRIVATE)
+vm_target_dependency(vmcore VMUtils PRIVATE)
 
 target_sources(vmcore PRIVATE ${GRAPHICS_SRC} ${FOUNDATION_SRC})
 target_link_libraries(vmcore PUBLIC)
