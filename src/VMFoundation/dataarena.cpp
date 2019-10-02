@@ -15,7 +15,7 @@ void *AllocAligned( size_t size, int align )
 //#endif
 }
 
-__declspec( dllexport )  void FreeAligned( void *ptr )
+VMFOUNDATION_EXPORTS void FreeAligned( void *ptr )
 {
 //#if defined(_WIN32)
 	//_aligned_free(ptr);
