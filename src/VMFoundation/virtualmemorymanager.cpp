@@ -37,7 +37,7 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 		const auto storageID = cachePolicy->QueryAndUpdate( pageID );
 		// Read block from next level to the storage cache
 		const auto storage = GetPageStorage_Implement( storageID );
-		
+
 		memcpy( storage, nextLevel->GetPage( pageID ), GetPageSize() );
 		return storage;
 	} else {
