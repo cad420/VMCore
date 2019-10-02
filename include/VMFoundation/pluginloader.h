@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <functional>
 #include <VMCoreExtension/plugin.h>
+#include <VMCoreExtension/plugindef.h>
 #include <VMFoundation/foundation_config.h>
 #include <VMUtils/ref.hpp>
 #include <VMUtils/ieverything.hpp>

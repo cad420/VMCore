@@ -7,7 +7,7 @@ public:                               \
 	std::string GetIID() const override { return iid; }
 
 #define EXPORT_PLUGIN_FACTORY( pluginFactoryTypeName ) \
-	extern "C" __declspec(dllexport) ysl::IPluginFactory *GetPluginFactoryInstance();
+	extern "C" ysl::IPluginFactory *GetPluginFactoryInstance();
 
 #define EXPORT_PLUGIN_FACTORY_IMPLEMENT( pluginFactoryTypeName ) \
 	ysl::IPluginFactory *GetPluginFactoryInstance()              \
@@ -16,7 +16,7 @@ public:                               \
 		return &factory;                                         \
 	}
 
-#define DECLARE_PLUGIN_METADATA(pluginInterfaceTypeName, iid ) \
+#define DECLARE_PLUGIN_METADATA( pluginInterfaceTypeName, iid ) \
 	template <>                                                 \
 	struct _iid_trait<pluginInterfaceTypeName>                  \
 	{                                                           \

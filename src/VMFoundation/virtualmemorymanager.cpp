@@ -1,4 +1,5 @@
 
+#include <cstring>
 #include <VMFoundation/virtualmemorymanager.h>
 
 namespace ysl
