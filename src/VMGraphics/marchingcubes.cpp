@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <cassert>
 
+constexpr int MeshGenerator::m_edgeToVertex[12][6];
+constexpr int MeshGenerator::m_triangleTable[256][16];
 
 MeshGenerator::MeshGenerator(const unsigned char * d, ysl::Size3 size) :
 	data(d),
