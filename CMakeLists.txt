@@ -59,7 +59,7 @@ vm_target_dependency(vmcore VMat PUBLIC)
 vm_target_dependency(vmcore VMUtils PUBLIC)
 
 target_sources(vmcore PUBLIC ${GRAPHICS_SRC} ${FOUNDATION_SRC})
-target_link_libraries(vmcore PUBLIC)
+target_link_libraries(vmcore PRIVATE)
 target_include_directories(vmcore PUBLIC "external" "include" "extension")
 
 
