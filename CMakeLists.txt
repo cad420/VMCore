@@ -13,11 +13,14 @@ option(VMUTILS_SHARED_LIBRARY OFF)	 # static linking
 
 option(VMCORE_SHARED_LIBRARY "Set to ON to build using dynamic linking" ON)
 if(VMCORE_SHARED_LIBRARY)
-#add_definitions(-DVMCORE_SHARED_LIBRARY)
-add_library(vmcore SHARED)
-target_compile_definitions(vmcore PUBLIC -DVMCORE_SHARED_LIBRARY)
+  #add_definitions(-DVMCORE_SHARED_LIBRARY)
+  add_library(vmcore SHARED)
+  target_compile_definitions(vmcore PUBLIC -DVMCORE_SHARED_LIBRARY)
 else()
-add_library(vmcore STATIC)
+  add_library(vmcore STATIC)
+endif()
+if(NOT MSVC)
+  target_link_libraries(vmcore stdc++fs)
 endif()
 
 #add_library(vmfoundation ${VMCORE_SHARED}) 
@@ -42,14 +45,11 @@ endif()
 
 include(scripts/external.cmake)
 
-
-
 #add_dependencies(vmcore vmutils)
 vm_external_module(
 	GIT_REPOSITORY https://github.com/cad420/VMat.git
 	GIT_TAG master
 )
-
 vm_external_module(
 	GIT_REPOSITORY https://github.com/cad420/VMUtils.git
 	GIT_TAG master

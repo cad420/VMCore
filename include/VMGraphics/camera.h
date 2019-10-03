@@ -5,7 +5,6 @@
 #include <VMat/transformation.h>
 #include <VMGraphics/graphics_config.h>
 
-
 class VMGRAPHICS_EXPORTS FocusCamera
 {
 	static constexpr float YAW = -90.0f;
@@ -28,40 +27,36 @@ class VMGRAPHICS_EXPORTS FocusCamera
 	float m_zoom;
 
 public:
-
 	// Constructor with vectors
-	FocusCamera(const ysl::Point3f& position = {0.0f, 0.0f, 0.0f}, ysl::Vector3f up = {0.0f, 1.0f, 0.0f},
-	            const ysl::Point3f& center = {0, 0, 0});
+	FocusCamera( const ysl::Point3f &position = { 0.0f, 0.0f, 0.0f }, ysl::Vector3f up = { 0.0f, 1.0f, 0.0f },
+				 const ysl::Point3f &center = { 0, 0, 0 } );
 
-	ysl::Vector3f front()const { return m_front; }
-	ysl::Vector3f right()const { return m_right; }
-	ysl::Vector3f up()const { return m_up; }
+	ysl::Vector3f front() const { return m_front; }
+	ysl::Vector3f right() const { return m_right; }
+	ysl::Vector3f up() const { return m_up; }
 
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-	ysl::Transform view()const
+	ysl::Transform view() const
 	{
 		ysl::Transform vi;
-		vi.SetLookAt(m_position, m_position + m_front, m_up);
+		vi.SetLookAt( m_position, m_position + m_front, m_up );
 		return vi;
 	}
 
-	ysl::Point3f position()const { return m_position; }
+	ysl::Point3f position() const { return m_position; }
 
-	ysl::Point3f center()const { return m_center; }
+	ysl::Point3f center() const { return m_center; }
 
-	void setCenter(const ysl::Point3f& center);
+	void setCenter( const ysl::Point3f &center );
 
-	void movement(const ysl::Vector3f& direction, float deltaTime);
+	void movement( const ysl::Vector3f &direction, float deltaTime );
 
-	void rotation(float xoffset, float yoffset);
+	void rotation( float xoffset, float yoffset );
 
-	void processMouseScroll(float yoffset);
+	void processMouseScroll( float yoffset );
 
 private:
-
-	void updateCameraVectors(const ysl::Vector3f& axis, double theta);
+	void updateCameraVectors( const ysl::Vector3f &axis, double theta );
 };
 
-
-
-#endif // CAMERA_H
+#endif	// CAMERA_H

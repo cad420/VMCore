@@ -6,8 +6,8 @@
 
 enum class FileAccess
 {
-	Read,   // = GENERIC_READ,
-	Write,  //= GENERIC_WRITE,
+	Read,	// = GENERIC_READ,
+	Write,	//= GENERIC_WRITE,
 	ReadWrite
 };
 enum class MapAccess
@@ -27,5 +27,5 @@ public:
 	virtual ~IFileMapping() = default;
 };
 
-DECLARE_PLUGIN_METADATA(IFileMapping, "visualman.io" )
+DECLARE_PLUGIN_METADATA( IFileMapping, "visualman.io" )
 #endif

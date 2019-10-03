@@ -22,7 +22,7 @@ public:                               \
 		return &factory;                                         \
 	}
 
-#define DECLARE_PLUGIN_METADATA(pluginInterfaceTypeName, iid ) \
+#define DECLARE_PLUGIN_METADATA( pluginInterfaceTypeName, iid ) \
 	template <>                                                 \
 	struct _iid_trait<pluginInterfaceTypeName>                  \
 	{                                                           \

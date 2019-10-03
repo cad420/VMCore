@@ -17,7 +17,7 @@ class VMFOUNDATION_EXPORTS RawReader
 	uint64_t offset;
 	//std::shared_ptr<IFileMappingPluginInterface> io;
 	::vm::Ref<IFileMapping> io;
-	 unsigned char *ptr;
+	unsigned char *ptr;
 	uint64_t seekAmt;
 
 public:

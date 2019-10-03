@@ -7,26 +7,28 @@
 
 namespace ysl
 {
-	class MaterialReader
-	{
-	public:
-		typedef std::unordered_map<std::string, RGBASpectrum> PropertyMap;
-		typedef std::unordered_map<std::string, PropertyMap> MaterialLib;
-	private:
-		bool m_loaded;
-		MaterialLib m_mLib;
-		int test;
-	public:
-		explicit MaterialReader(const std::string& fileName);
+class MaterialReader
+{
+public:
+	typedef std::unordered_map<std::string, RGBASpectrum> PropertyMap;
+	typedef std::unordered_map<std::string, PropertyMap> MaterialLib;
 
-		MaterialReader();
+private:
+	bool m_loaded;
+	MaterialLib m_mLib;
+	int test;
 
-		bool loadFromFile(const std::string& fileName);
+public:
+	explicit MaterialReader( const std::string &fileName );
 
-		PropertyMap& operator[](const std::string& name);
+	MaterialReader();
 
-		bool isLoaded() const;
-	};
-}
+	bool loadFromFile( const std::string &fileName );
 
-#endif/*_MATERIAL_H_*/
+	PropertyMap &operator[]( const std::string &name );
+
+	bool isLoaded() const;
+};
+}  // namespace ysl
+
+#endif /*_MATERIAL_H_*/
