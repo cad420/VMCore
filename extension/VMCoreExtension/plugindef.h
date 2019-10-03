@@ -2,12 +2,18 @@
 #ifndef _PLUGINDEF_H_
 #define _PLUGINDEF_H_
 
+#ifdef _WIN32
+#define DLL_EXPORT __declspec(dllexport)
+#else
+#define DLL_EXPORT
+#endif
+
 #define DECLARE_PLUGIN_FACTORY( iid ) \
 public:                               \
 	std::string GetIID() const override { return iid; }
 
 #define EXPORT_PLUGIN_FACTORY( pluginFactoryTypeName ) \
-	extern "C" __declspec(dllexport) ysl::IPluginFactory *GetPluginFactoryInstance();
+	extern "C" DLL_EXPORT ysl::IPluginFactory *GetPluginFactoryInstance();
 
 #define EXPORT_PLUGIN_FACTORY_IMPLEMENT( pluginFactoryTypeName ) \
 	ysl::IPluginFactory *GetPluginFactoryInstance()              \
