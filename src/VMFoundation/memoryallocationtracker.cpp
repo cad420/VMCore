@@ -5,6 +5,15 @@
 
 namespace ysl
 {
+
+
+template <typename T>
+T Align( T val, T alignment )
+{
+	assert( IsPowerOfTwo( alignment ) );
+	return ( val + ( alignment - 1 ) ) & ~( alignment - 1 );
+}
+
 MemoryAllocationTracker::MemoryAllocationTracker( OffsetType MaxSize ) :
   m_MaxSize( MaxSize ),
   m_FreeSize( MaxSize )

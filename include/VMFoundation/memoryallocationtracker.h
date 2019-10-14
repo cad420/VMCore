@@ -1,10 +1,11 @@
 
 #pragma once
 #include <map>
+#include "foundation_config.h"
 
 namespace ysl
 {
-class MemoryAllocationTracker
+class VMFOUNDATION_EXPORTS MemoryAllocationTracker
 {
 public:
 	using OffsetType = size_t;
@@ -39,12 +40,7 @@ private:
 		  Size( _Size ) {}
 	};
 
-	template <typename T>
-	T Align( T val, T alignment )
-	{
-		assert( ysl::IsPowerOfTwo( alignment ) );
-		return ( val + ( alignment - 1 ) ) & ~( alignment - 1 );
-	}
+
 
 public:
 	MemoryAllocationTracker( OffsetType MaxSize );
