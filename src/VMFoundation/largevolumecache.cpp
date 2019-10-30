@@ -62,8 +62,8 @@ void *MemoryPageAdapter::GetPageStorage_Implement( size_t pageID )
 	return m_volumeCache->GetBlockData( pageID );
 }
 
-MemoryPageAdapter::MemoryPageAdapter( const std::string &fileName ) :
-  AbstrMemoryCache( nullptr ),
+MemoryPageAdapter::MemoryPageAdapter(::vm::IRefCnt *cnt, const std::string &fileName ) :
+  AbstrMemoryCache( cnt ),
   //lvdReader(fileName),
   cacheDim( 20, 20, 20 )
 {

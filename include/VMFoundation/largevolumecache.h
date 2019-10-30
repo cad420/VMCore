@@ -5,6 +5,7 @@
 #include <VMat/geometry.h>
 #include <VMFoundation/virtualmemorymanager.h>
 #include <VMFoundation/genericcache.h>
+#include <VMutils/ieverything.hpp>
 
 namespace ysl
 {
@@ -16,8 +17,9 @@ class VMFOUNDATION_EXPORTS Disk3DPageAdapter : public AbstrMemoryCache
 	LVDReader lvdReader;
 
 public:
-	Disk3DPageAdapter( const std::string &fileName ) :
-	  AbstrMemoryCache( nullptr ), lvdReader( fileName ) {}
+	Disk3DPageAdapter(::vm::IRefCnt *cnt, const std::string &fileName ) :
+	  AbstrMemoryCache( cnt ),
+	  lvdReader( fileName ) {}
 	const void *GetPage( size_t pageID ) override { return lvdReader.ReadBlock( pageID ); }
 	size_t GetPageSize() const override { return lvdReader.BlockSize(); }
 	size_t GetPhysicalPageCount() const override { return lvdReader.BlockCount(); }
@@ -47,7 +49,7 @@ class VMFOUNDATION_EXPORTS MemoryPageAdapter : public AbstrMemoryCache
 	void Create();
 
 public:
-	explicit MemoryPageAdapter( const std::string &fileName );
+	explicit MemoryPageAdapter(::vm::IRefCnt *cnt, const std::string &fileName );
 
 	void SetDiskFileCache( I3DBlockFilePluginInterface *diskCache );
 
