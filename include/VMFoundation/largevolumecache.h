@@ -5,7 +5,7 @@
 #include <VMat/geometry.h>
 #include <VMFoundation/virtualmemorymanager.h>
 #include <VMFoundation/genericcache.h>
-#include <VMutils/ieverything.hpp>
+#include <VMUtils/ieverything.hpp>
 
 namespace ysl
 {
