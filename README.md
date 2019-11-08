@@ -1,5 +1,6 @@
-
 # VMCore
+
+[![CodeFactor](https://www.codefactor.io/repository/github/cad420/vmcore/badge)](https://www.codefactor.io/repository/github/cad420/vmcore)
 
 This module includes two parts: **VMFoundation** and **VMGraphics**.
 
