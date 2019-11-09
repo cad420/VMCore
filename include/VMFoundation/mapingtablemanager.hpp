@@ -11,6 +11,7 @@
 #include "virtualmemorymanager.h"
 #include "largevolumecache.h"
 #include "VMUtils/vmnew.hpp"
+#include "pluginloader.h"
 
 namespace ysl
 {
@@ -306,64 +307,31 @@ struct _std140_layout_LODInfo
 	uint32_t pad[ 1 ];
 };
 
-struct LVDJSONStruct : vm::json::Serializable<LVDJSONStruct>
-{
-	VM_JSON_FIELD( std::vector<std::string>, fileNames );
-	VM_JSON_FIELD( float, samplingRate );
-	VM_JSON_FIELD( std::vector<float>, spacing );
-};
-
-struct ViewMatrixJSONStruct : vm::json::Serializable<ViewMatrixJSONStruct>
-{
-	VM_JSON_FIELD( std::vector<float>, pos );
-	VM_JSON_FIELD( std::vector<float>, up );
-	VM_JSON_FIELD( std::vector<float>, center );
-};
-
-struct PerspMatrixJSONStruct : vm::json::Serializable<PerspMatrixJSONStruct>
-{
-	VM_JSON_FIELD( float, fov );
-	VM_JSON_FIELD( float, nearPlane );
-	VM_JSON_FIELD( float, farPlane );
-	VM_JSON_FIELD( float, aspectRatio );
-};
-
-struct CameraJSONStruct : vm::json::Serializable<CameraJSONStruct>
-{
-	VM_JSON_FIELD( ViewMatrixJSONStruct, viewMatrix );
-	VM_JSON_FIELD( PerspMatrixJSONStruct, perspectiveMatrix );
-};
-
-struct InputJson : vm::json::Serializable<InputJson>
-{
-	VM_JSON_FIELD( LVDJSONStruct, lvd );
-	VM_JSON_FIELD( CameraJSONStruct, camera );
-};
-
 class LargeVolumeDataSet
 {
 public:
-	LargeVolumeDataSet( const std::string &fileName )
+	LargeVolumeDataSet() = default;
+	LargeVolumeDataSet( const std::vector<std::string> &fileNames )
 	{
-		std::ifstream json( fileName );
-		if ( json.is_open() == false ) {
-			throw std::runtime_error( "Failed to open json file:" + fileName );
-		}
-		json >> JSON;
-		const auto lodCount = JSON.fileNames.size();
-		cpuVolumeData.resize( lodCount );
-		for ( auto i = 0ULL; i < lodCount; i++ ) {
-			cpuVolumeData[ i ] = VM_NEW<MemoryPageAdapter>( JSON.fileNames[ i ] );
-		}
+		Open( fileNames );
 	}
 
+	void Open( const std::vector<std::string> &fileNames )
+	{
+		ysl::PluginLoader::LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
+
+		const auto lodCount = fileNames.size();
+		cpuVolumeData.resize( lodCount );
+		for ( auto i = 0ULL; i < lodCount; i++ ) {
+			cpuVolumeData[ i ] = VM_NEW<MemoryPageAdapter>( fileNames[ i ] );
+		}
+	}
 	MemoryPageAdapter *GetVolumeDataMemory( int lod )
 	{
 		return cpuVolumeData[ lod ];
 	}
 
 private:
-	LVDJSONStruct JSON;
 	std::vector<::vm::Ref<MemoryPageAdapter>> cpuVolumeData;
 };
 

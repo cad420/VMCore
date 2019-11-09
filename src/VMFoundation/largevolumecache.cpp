@@ -71,7 +71,8 @@ MemoryPageAdapter::MemoryPageAdapter(::vm::IRefCnt *cnt, const std::string &file
 	//auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>(cap);
 	auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>( cap );
 
-	if ( p == nullptr ) {
+	if ( p == nullptr ) 
+	{
 		throw std::runtime_error( "Failed to load the plugin that is able to read " + cap + "file" );
 	}
 	p->Open( fileName );
