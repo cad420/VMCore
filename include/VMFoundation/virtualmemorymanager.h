@@ -98,7 +98,7 @@ class AbstrCachePolicy;
 	 */
 class AbstrMemoryCache;
 
-class AbstrMemoryCache : public ::vm::EverythingBase<IPageFile>
+class VMFOUNDATION_EXPORTS AbstrMemoryCache : public ::vm::EverythingBase<IPageFile>
 {
 	::vm::Ref<IPageFile> nextLevel;
 	::vm::Ref<AbstrCachePolicy> cachePolicy;
