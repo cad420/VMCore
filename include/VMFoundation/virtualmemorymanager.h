@@ -93,9 +93,10 @@ struct VirtualMemoryBlockIndex
 class AbstrCachePolicy;
 
 /**
-	 * \brief This class is used to represent a generic cache abstraction layer.
-	 * 
-	 */
+* \brief This class is used to represent a generic cache abstraction layer.
+* 
+*/
+
 class AbstrMemoryCache;
 
 class VMFOUNDATION_EXPORTS AbstrMemoryCache : public ::vm::EverythingBase<IPageFile>
