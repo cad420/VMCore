@@ -4,11 +4,15 @@
 
 #include <VMat/geometry.h>
 #include <VMFoundation/foundation_config.h>
-#include <memory>
 
 #include <VMCoreExtension/i3dblockfileplugininterface.h>
 #include <VMUtils/ieverything.hpp>
 #include <VMUtils/ref.hpp>
+#include <vector>
+#include <list>
+#include <unordered_map>
+
+#include "lineararray.h"
 
 namespace ysl
 {
@@ -19,7 +23,9 @@ struct PageDirectoryEntryAbstractIndex
 	PageDirectoryEntryAbstractIndex( internal_type x_ = -1,
 									 internal_type y_ = -1,
 									 internal_type z_ = -1 ) :
-	  x( x_ ), y( y_ ), z( z_ ) {}
+	  x( x_ ),
+	  y( y_ ),
+	  z( z_ ) {}
 };
 
 struct PageTableEntryAbstractIndex
@@ -30,10 +36,12 @@ struct PageTableEntryAbstractIndex
 	PageTableEntryAbstractIndex( internal_type x_ = -1,
 								 internal_type y_ = -1,
 								 internal_type z_ = -1 ) :
-	  x( x_ ), y( y_ ), z( z_ ) {}
+	  x( x_ ),
+	  y( y_ ),
+	  z( z_ ) {}
 };
 
-struct PhysicalMemoryBlockIndex	 // DataBlock start in 3d texture
+struct PhysicalMemoryBlockIndex  // DataBlock start in 3d texture
 {
 	using internal_type = int;
 	const internal_type x, y, z;
@@ -45,15 +53,22 @@ public:
 	PhysicalMemoryBlockIndex( internal_type x_ = -1,
 							  internal_type y_ = -1,
 							  internal_type z_ = -1 ) :
-	  x( x_ ), y( y_ ), z( z_ ), unit( 0 ) {}
+	  x( x_ ),
+	  y( y_ ),
+	  z( z_ ),
+	  unit( 0 ) {}
 	PhysicalMemoryBlockIndex( internal_type x_,
 							  internal_type y_,
 							  internal_type z_,
 							  uint8_t unit ) :
-	  x( x_ ), y( y_ ), z( z_ ), unit( unit ) {}
+	  x( x_ ),
+	  y( y_ ),
+	  z( z_ ),
+	  unit( unit ) {}
 	int GetPhysicalStorageUnit() const { return unit; }
 	void SetPhysicalStorageUnit( uint8_t u ) { unit = u; }
 	Vec3i ToVec3i() const { return Vec3i{ x, y, z }; }
+
 };
 
 struct VirtualMemoryBlockIndex
@@ -66,7 +81,9 @@ struct VirtualMemoryBlockIndex
 		x = linearId - z * xb * yb - y * xb;
 	}
 	VirtualMemoryBlockIndex( int x, int y, int z ) :
-	  x( x ), y( y ), z( z ) {}
+	  x( x ),
+	  y( y ),
+	  z( z ) {}
 	Vec3i ToVec3i() const { return Vec3i{ x, y, z }; }
 
 	using index_type = int;
@@ -81,7 +98,7 @@ class AbstrCachePolicy;
 	 */
 class AbstrMemoryCache;
 
-class VMFOUNDATION_EXPORTS AbstrMemoryCache : public ::vm::EverythingBase<IPageFile>
+class AbstrMemoryCache : public ::vm::EverythingBase<IPageFile>
 {
 	::vm::Ref<IPageFile> nextLevel;
 	::vm::Ref<AbstrCachePolicy> cachePolicy;
@@ -165,6 +182,7 @@ private:
 
 	void SetOwnerCache( AbstrMemoryCache *cache ) { ownerCache = cache; }
 };
+
 
 }  // namespace ysl
 

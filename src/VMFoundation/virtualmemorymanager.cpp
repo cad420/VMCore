@@ -45,4 +45,5 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 		return GetPageStorage_Implement( storageID );
 	}
 }
+
 }  // namespace ysl
