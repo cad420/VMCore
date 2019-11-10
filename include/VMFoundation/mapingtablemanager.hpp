@@ -315,7 +315,7 @@ public:
 	{
 		Open( fileNames );
 	}
-
+	
 	void Open( const std::vector<std::string> &fileNames )
 	{
 		ysl::PluginLoader::LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
@@ -330,7 +330,7 @@ public:
 	{
 		return cpuVolumeData[ lod ];
 	}
-
+	
 private:
 	std::vector<::vm::Ref<MemoryPageAdapter>> cpuVolumeData;
 };
