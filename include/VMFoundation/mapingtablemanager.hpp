@@ -318,7 +318,7 @@ public:
 	
 	void Open( const std::vector<std::string> &fileNames )
 	{
-		ysl::PluginLoader::LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
+		ysl::PluginLoader::GetPluginLoader()->LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
 
 		const auto lodCount = fileNames.size();
 		cpuVolumeData.resize( lodCount );
