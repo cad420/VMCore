@@ -1,7 +1,7 @@
 
 #include <VMFoundation/libraryloader.h>
 #include <iostream>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <regex>
 
 namespace ysl
@@ -38,7 +38,7 @@ void LibraryReposity::AddLibrary( const std::string &name )
 
 void LibraryReposity::AddLibraries( const std::string &directory )
 {
-	namespace fs = std::experimental::filesystem;
+	namespace fs = std::filesystem;
 	for ( auto &lib : fs::directory_iterator( directory ) ) {
 		const auto fullName = lib.path().filename().string();
 		std::regex reg;
