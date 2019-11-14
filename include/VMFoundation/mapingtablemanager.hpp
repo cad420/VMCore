@@ -234,12 +234,28 @@ public:
 					}
 	}
 
-	const void *GetData() const { return pageTable.Data(); }
+	/*
+	 * \a Warning:
+	 * The following two functions only can be used when the object is initialized with the constructors with no-LOD form
+	 * It should be removed afterwards
+	 */
+	[[deprecated("This function only can be used when the object is initialized with the constructors with no-LOD form")]]const void *GetData() const { return pageTable.Data(); }
+
+	[[deprecated("This function only can be used when the object is initialized with the constructors with no-LOD form")]]size_t GetBytes() { return pageTable.Size().Prod() * sizeof( PageTableEntry ); }
+	
+	const void *GetData( int lod ) const
+	{
+		assert( lod < lodPageTables.size() );
+		return lodPageTables[ lod ].Data();
+	}
 
 	size_t GetBytes( int lod ) { return lodPageTables[ lod ].Size().Prod() * sizeof( PageTableEntry ); }
 
-	int GetResidentBlocks( int lod ) { return blocks[ lod ]; }
-
+	int GetResidentBlocks( int lod )
+	{
+		return blocks[ lod ];
+	}
+	
 	/**
 			 * \brief Translates the virtual space address to the physical address and update the mapping table by LRU policy
 			 */
@@ -315,7 +331,7 @@ public:
 	{
 		Open( fileNames );
 	}
-	
+
 	void Open( const std::vector<std::string> &fileNames )
 	{
 		ysl::PluginLoader::GetPluginLoader()->LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
@@ -330,7 +346,7 @@ public:
 	{
 		return cpuVolumeData[ lod ];
 	}
-	
+
 private:
 	std::vector<::vm::Ref<MemoryPageAdapter>> cpuVolumeData;
 };
