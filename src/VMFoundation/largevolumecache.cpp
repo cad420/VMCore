@@ -65,7 +65,7 @@ void *MemoryPageAdapter::GetPageStorage_Implement( size_t pageID )
 MemoryPageAdapter::MemoryPageAdapter(::vm::IRefCnt *cnt, const std::string &fileName ) :
   AbstrMemoryCache( cnt ),
   //lvdReader(fileName),
-  cacheDim( 20, 20, 20 )
+  cacheDim( 10, 10, 10 )
 {
 	const auto cap = fileName.substr( fileName.find_last_of( '.' ) );
 	//auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>(cap);
