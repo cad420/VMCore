@@ -16,7 +16,7 @@ public:                               \
 	extern "C" DLL_EXPORT vm::IPluginFactory *GetPluginFactoryInstance();
 
 #define EXPORT_PLUGIN_FACTORY_IMPLEMENT( pluginFactoryTypeName ) \
-	ysl::IPluginFactory *GetPluginFactoryInstance()              \
+	vm::IPluginFactory *GetPluginFactoryInstance()              \
 	{                                                            \
 		static pluginFactoryTypeName factory;                    \
 		return &factory;                                         \
