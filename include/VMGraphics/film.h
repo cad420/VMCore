@@ -5,7 +5,7 @@
 
 #include <VMat/geometry.h>
 
-namespace ysl
+namespace vm
 {
 class Film
 {

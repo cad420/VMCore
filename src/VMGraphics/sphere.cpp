@@ -1,7 +1,7 @@
 #include <VMGraphics/sphere.h>
 #include <VMat/geometry.h>
 #include <VMat/arithmetic.h>
-namespace ysl
+namespace vm
 {
 bool Sphere::intersect( const Ray &ray, Float *t, Interaction *iterac ) const
 {

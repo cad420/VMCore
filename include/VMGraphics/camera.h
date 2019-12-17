@@ -14,12 +14,12 @@ class VMGRAPHICS_EXPORTS FocusCamera
 	static constexpr float ZOOM = 45.0f;
 
 	// Camera Attributes
-	ysl::Point3f m_position;
-	ysl::Vector3f m_front;
-	ysl::Vector3f m_up;
-	ysl::Vector3f m_right;
-	ysl::Vector3f m_worldUp;
-	ysl::Point3f m_center;
+	vm::Point3f m_position;
+	vm::Vector3f m_front;
+	vm::Vector3f m_up;
+	vm::Vector3f m_right;
+	vm::Vector3f m_worldUp;
+	vm::Point3f m_center;
 
 	// Camera options
 	float m_movementSpeed;
@@ -28,35 +28,35 @@ class VMGRAPHICS_EXPORTS FocusCamera
 
 public:
 	// Constructor with vectors
-	FocusCamera( const ysl::Point3f &position = { 0.0f, 0.0f, 0.0f }, ysl::Vector3f up = { 0.0f, 1.0f, 0.0f },
-				 const ysl::Point3f &center = { 0, 0, 0 } );
+	FocusCamera( const vm::Point3f &position = { 0.0f, 0.0f, 0.0f }, vm::Vector3f up = { 0.0f, 1.0f, 0.0f },
+				 const vm::Point3f &center = { 0, 0, 0 } );
 
-	ysl::Vector3f front() const { return m_front; }
-	ysl::Vector3f right() const { return m_right; }
-	ysl::Vector3f up() const { return m_up; }
+	vm::Vector3f front() const { return m_front; }
+	vm::Vector3f right() const { return m_right; }
+	vm::Vector3f up() const { return m_up; }
 
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-	ysl::Transform view() const
+	vm::Transform view() const
 	{
-		ysl::Transform vi;
+		vm::Transform vi;
 		vi.SetLookAt( m_position, m_position + m_front, m_up );
 		return vi;
 	}
 
-	ysl::Point3f position() const { return m_position; }
+	vm::Point3f position() const { return m_position; }
 
-	ysl::Point3f center() const { return m_center; }
+	vm::Point3f center() const { return m_center; }
 
-	void setCenter( const ysl::Point3f &center );
+	void setCenter( const vm::Point3f &center );
 
-	void movement( const ysl::Vector3f &direction, float deltaTime );
+	void movement( const vm::Vector3f &direction, float deltaTime );
 
 	void rotation( float xoffset, float yoffset );
 
 	void processMouseScroll( float yoffset );
 
 private:
-	void updateCameraVectors( const ysl::Vector3f &axis, double theta );
+	void updateCameraVectors( const vm::Vector3f &axis, double theta );
 };
 
 #endif	// CAMERA_H

@@ -6,7 +6,7 @@
 #include "shape.h"
 #include "material.h"
 
-namespace ysl
+namespace vm
 {
 class Scene;
 

@@ -1,8 +1,8 @@
 #include <VMGraphics/plane.h>
 
-namespace ysl
+namespace vm
 {
-bool ysl::Plane::Intersect( const Ray &ray, Float *t ) const
+bool vm::Plane::Intersect( const Ray &ray, Float *t ) const
 {
 	const auto f = Dot( ray.d, mNormal );
 	if ( std::abs( f ) <= 0.00001 ) return false;

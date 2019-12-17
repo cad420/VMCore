@@ -5,7 +5,7 @@
 #include <string>
 #include <VMUtils/ieverything.hpp>
 
-namespace ysl
+namespace vm
 {
 class IPluginFactory
 {

@@ -10,7 +10,7 @@
 #include "graphics_config.h"
 #include "spectrum.h"
 
-namespace ysl
+namespace vm
 {
 class VMGRAPHICS_EXPORTS MappingKey
 {
@@ -59,7 +59,7 @@ public:
 	//
 	//}
 
-	void AddColorKey( float intensity, ysl::Color color );
+	void AddColorKey( float intensity, vm::Color color );
 	void AddColorKey( float intensity, const RGBASpectrum &spectrum );
 	void Sort();
 	void SetLeftThreshold( float left ) { leftThreshold = left; }

@@ -4,7 +4,7 @@
 
 #include <VMat/geometry.h>
 
-namespace ysl
+namespace vm
 {
 class Shape;
 class BSDF;

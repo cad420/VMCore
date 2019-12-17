@@ -1,6 +1,6 @@
 #include <VMGraphics/interaction.h>
 
-namespace ysl
+namespace vm
 {
 Ray Interaction::spawnRay( const Vector3f &dir ) const
 {

@@ -6,7 +6,7 @@
 #include <VMFoundation/lvdreader.h>
 #include <VMFoundation/pluginloader.h>
 
-namespace ysl
+namespace vm
 {
 LVDReader::LVDReader( const std::string &fileName ) :
   validFlag( true ), lvdIO( nullptr )
@@ -73,9 +73,9 @@ LVDReader::LVDReader( const std::string &fileName ) :
 	const int by = ( ( vy + aBlockSize - 1 ) & ~( aBlockSize - 1 ) ) / aBlockSize;
 	const int bz = ( ( vz + aBlockSize - 1 ) & ~( aBlockSize - 1 ) ) / aBlockSize;
 
-	vSize = ysl::Size3( ( vx ), ( vy ), ( vz ) );
-	bSize = ysl::Size3( bx, by, bz );
-	oSize = ysl::Size3( originalWidth, originalHeight, originalDepth );
+	vSize = vm::Size3( ( vx ), ( vy ), ( vz ) );
+	bSize = vm::Size3( bx, by, bz );
+	oSize = vm::Size3( originalWidth, originalHeight, originalDepth );
 
 	const std::size_t bytes = std::size_t( vx ) * vy * vz + LVD_HEADER_SIZE;
 	// Load Library

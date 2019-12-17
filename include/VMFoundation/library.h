@@ -4,7 +4,7 @@
 #include <string>
 #include <VMFoundation/foundation_config.h>
 
-namespace ysl
+namespace vm
 {
 class VMFOUNDATION_EXPORTS Library
 {

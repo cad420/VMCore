@@ -8,7 +8,7 @@
 #include <VMFoundation/library.h>
 #include <VMFoundation/foundation_config.h>
 
-namespace ysl
+namespace vm
 {
 class VMFOUNDATION_EXPORTS LibraryReposity
 {

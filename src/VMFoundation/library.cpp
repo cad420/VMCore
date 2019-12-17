@@ -11,7 +11,7 @@
 #include <dlfcn.h>
 #endif
 
-namespace ysl
+namespace vm
 {
 Library::Library( const std::string &name )
 {

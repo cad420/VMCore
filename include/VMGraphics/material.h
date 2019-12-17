@@ -3,7 +3,7 @@
 #define _MATERIAL_H_
 #include "spectrum.h"
 
-namespace ysl
+namespace vm
 {
 enum class MaterialType
 {

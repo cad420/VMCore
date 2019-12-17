@@ -294,12 +294,12 @@ private:
 
 	struct OctreeNode
 	{
-		ysl::Bound3i bound;
-		ysl::Bound3i dataBound;
+		vm::Bound3i bound;
+		vm::Bound3i dataBound;
 		unsigned char minValue, maxValue;
 		OctreeNode *children[ 8 ];
 		bool leaf;
-		OctreeNode( const ysl::Bound3i bound, const ysl::Bound3i &dataBound, char minV = 0, char maxV = 255 ) :
+		OctreeNode( const vm::Bound3i bound, const vm::Bound3i &dataBound, char minV = 0, char maxV = 255 ) :
 		  bound( bound ),
 		  dataBound( dataBound ),
 		  minValue( minV ),
@@ -317,19 +317,19 @@ private:
 		}
 	};
 
-	static OctreeNode *CreateOctree( const unsigned char *d, const ysl::Bound3i &bound, int thVolume );
+	static OctreeNode *CreateOctree( const unsigned char *d, const vm::Bound3i &bound, int thVolume );
 	static void DestroyOctree( OctreeNode *octree );
-	static OctreeNode *BuildOctree( const ysl::Size3 &size, const unsigned char *d, const ysl::Bound3i &octreeBound,
-									const ysl::Bound3i &dataBound, int thresholdVolume );
+	static OctreeNode *BuildOctree( const vm::Size3 &size, const unsigned char *d, const vm::Bound3i &octreeBound,
+									const vm::Bound3i &dataBound, int thresholdVolume );
 
-	static void TraverseOctree( MeshGenerator::OctreeNode *root, std::vector<ysl::Point3f> &triangles,
-								std::vector<ysl::Vector3f> &normals, int value, const ysl::Size3 &dataSize,
-								const unsigned char *data, const std::vector<ysl::Vector3f> &gradient );
+	static void TraverseOctree( MeshGenerator::OctreeNode *root, std::vector<vm::Point3f> &triangles,
+								std::vector<vm::Vector3f> &normals, int value, const vm::Size3 &dataSize,
+								const unsigned char *data, const std::vector<vm::Vector3f> &gradient );
 
 public:
-	MeshGenerator( const unsigned char *d, ysl::Size3 size );
+	MeshGenerator( const unsigned char *d, vm::Size3 size );
 
-	MeshGenerator( const unsigned char *d, ysl::Size3 size, ysl::Vec3f space );
+	MeshGenerator( const unsigned char *d, vm::Size3 size, vm::Vec3f space );
 
 	MeshGenerator( const MeshGenerator & ) = delete;
 
@@ -339,19 +339,19 @@ public:
 
 	MeshGenerator &operator=( MeshGenerator &&generator ) noexcept;
 
-	std::shared_ptr<ysl::TriangleMesh> GenerateMesh( int value ) const;
+	std::shared_ptr<vm::TriangleMesh> GenerateMesh( int value ) const;
 
-	ysl::Vec3f space() const { return ysl::Vec3f{ dataXSpace, dataYSpace, dataZSpace }; }
+	vm::Vec3f space() const { return vm::Vec3f{ dataXSpace, dataYSpace, dataZSpace }; }
 
-	ysl::Size3 DataSize() const { return dataSize; }
+	vm::Size3 DataSize() const { return dataSize; }
 
 private:
 	void Preprocess();
 	OctreeNode *root;
-	ysl::Size3 dataSize;
+	vm::Size3 dataSize;
 	const unsigned char *data;
 	//std::shared_ptr<unsigned char*> data;
-	std::vector<ysl::Vector3f> gradient;
+	std::vector<vm::Vector3f> gradient;
 	float dataXSpace, dataYSpace, dataZSpace;
 };
 

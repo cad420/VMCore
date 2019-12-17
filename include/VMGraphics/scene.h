@@ -5,7 +5,7 @@
 #include "shape.h"
 #include <VMat/geometry.h>
 
-namespace ysl
+namespace vm
 {
 #include <memory>
 class AreaLight;

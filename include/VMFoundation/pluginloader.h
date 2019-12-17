@@ -10,7 +10,7 @@
 #include <VMUtils/ref.hpp>
 #include <VMUtils/ieverything.hpp>
 
-namespace ysl
+namespace vm
 {
 class VMFOUNDATION_EXPORTS PluginLoader final
 {

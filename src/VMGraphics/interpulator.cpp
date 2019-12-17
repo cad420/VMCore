@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <VMGraphics/interpulator.h>
 
-namespace ysl
+namespace vm
 {
-void ColorInterpulator::AddColorKey( float intensity, ysl::Color color )
+void ColorInterpulator::AddColorKey( float intensity, vm::Color color )
 {
 	const auto spectrum = TranslateColor( color );
 	AddColorKey( intensity, spectrum );
@@ -53,8 +53,8 @@ void ColorInterpulator::Read( const std::string &fileName )
 		rgba2[ 2 ] = br / 255.0f;
 		rgba2[ 3 ] = ar / 255.0f;
 
-		const auto s1 = ysl::RGBASpectrum{ rgba1 };
-		const auto s2 = ysl::RGBASpectrum{ rgba2 };
+		const auto s1 = vm::RGBASpectrum{ rgba1 };
+		const auto s2 = vm::RGBASpectrum{ rgba2 };
 
 		keys.emplace_back( intensity, s1, s2 );
 	}

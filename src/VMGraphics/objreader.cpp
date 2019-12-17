@@ -5,7 +5,7 @@
 #include <VMGraphics/objreader.h>
 #include <VMUtils/log.hpp>
 
-namespace ysl
+namespace vm
 {
 ObjReader::ObjReader() noexcept :
   m_loaded( false )

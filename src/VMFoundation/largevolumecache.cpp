@@ -17,7 +17,7 @@
 	}                                                                                                            \
 	std::cout << std::endl;
 
-namespace ysl
+namespace vm
 {
 int MemoryPageAdapter::blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock ) const
 {

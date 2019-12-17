@@ -13,7 +13,7 @@
 
 #include "materialreader.h"
 
-namespace ysl
+namespace vm
 {
 class TriangleMesh
 {
@@ -23,7 +23,7 @@ class TriangleMesh
 	std::vector<int> m_vertexIndices;
 	const int m_nTriangles;
 	const int m_nVertex;
-	ysl::Bound3f m_bound;
+	vm::Bound3f m_bound;
 
 public:
 	TriangleMesh( const Transform &objectToWorld,
@@ -37,7 +37,7 @@ public:
 	  m_nTriangles( nTriangles ),
 	  m_vertexIndices( vertexIndices, vertexIndices + 3 * nTriangles )
 	{
-		m_vertices.reset( new ysl::Point3f[ nVertex ] );
+		m_vertices.reset( new vm::Point3f[ nVertex ] );
 		for ( int i = 0; i < nVertex; i++ ) {
 			m_vertices[ i ] = objectToWorld * vertices[ i ];
 			//objectToWorld += m_vertices[i];
@@ -49,18 +49,18 @@ public:
 		if ( normals != nullptr ) {
 			//const auto nm = trans.normalMatrix();
 			const auto nm = objectToWorld.Matrix().NormalMatrix();
-			normalBytes = m_nVertex * sizeof( ysl::Vector3f );
-			m_normals.reset( new ysl::Vector3f[ nVertex ] );
+			normalBytes = m_nVertex * sizeof( vm::Vector3f );
+			m_normals.reset( new vm::Vector3f[ nVertex ] );
 			for ( int i = 0; i < nVertex; i++ ) {
 				//m_normals[i] = trans * normals[i];
 				const auto x = normals[ i ].x, y = normals[ i ].y, z = normals[ i ].z;
-				m_normals[ i ] = ysl::Vector3f{ x * nm.m[ 0 ][ 0 ] + y * nm.m[ 0 ][ 1 ] + z * nm.m[ 0 ][ 2 ], x * nm.m[ 1 ][ 0 ] + y * nm.m[ 1 ][ 1 ] + z * nm.m[ 1 ][ 2 ], x * nm.m[ 2 ][ 0 ] + y * nm.m[ 2 ][ 1 ] + z * nm.m[ 2 ][ 2 ] }.Normalized();
+				m_normals[ i ] = vm::Vector3f{ x * nm.m[ 0 ][ 0 ] + y * nm.m[ 0 ][ 1 ] + z * nm.m[ 0 ][ 2 ], x * nm.m[ 1 ][ 0 ] + y * nm.m[ 1 ][ 1 ] + z * nm.m[ 1 ][ 2 ], x * nm.m[ 2 ][ 0 ] + y * nm.m[ 2 ][ 1 ] + z * nm.m[ 2 ][ 2 ] }.Normalized();
 			}
 		}
 		if ( textures != nullptr ) {
-			textureBytes = m_nVertex * sizeof( ysl::Point2f );
-			m_textures.reset( new ysl::Point2f[ nVertex ] );
-			std::memcpy( m_textures.get(), textures, nVertex * sizeof( ysl::Point2f ) );
+			textureBytes = m_nVertex * sizeof( vm::Point2f );
+			m_textures.reset( new vm::Point2f[ nVertex ] );
+			std::memcpy( m_textures.get(), textures, nVertex * sizeof( vm::Point2f ) );
 		}
 	}
 	const Point3f *Vertices() const
@@ -231,7 +231,7 @@ public:
 	}
 };
 
-std::shared_ptr<TriangleMesh> CreateTriangleMeshFromFile( const ysl::Transform &objectToWorld, const std::string &fileName );
+std::shared_ptr<TriangleMesh> CreateTriangleMeshFromFile( const vm::Transform &objectToWorld, const std::string &fileName );
 
 }  // namespace ysl
 

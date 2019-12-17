@@ -6,7 +6,7 @@
 #include <VMat/geometry.h>
 #include <VMFoundation/dataarena.h>
 
-namespace ysl
+namespace vm
 {
 template <typename T, int nLogBlockSize>
 class Block2DArray

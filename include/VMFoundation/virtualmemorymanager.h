@@ -8,13 +8,9 @@
 #include <VMCoreExtension/i3dblockfileplugininterface.h>
 #include <VMUtils/ieverything.hpp>
 #include <VMUtils/ref.hpp>
-#include <vector>
-#include <list>
 #include <unordered_map>
 
-#include "lineararray.h"
-
-namespace ysl
+namespace vm
 {
 struct PageDirectoryEntryAbstractIndex
 {
@@ -68,7 +64,6 @@ public:
 	int GetPhysicalStorageUnit() const { return unit; }
 	void SetPhysicalStorageUnit( uint8_t u ) { unit = u; }
 	Vec3i ToVec3i() const { return Vec3i{ x, y, z }; }
-
 };
 
 struct VirtualMemoryBlockIndex
@@ -109,8 +104,8 @@ class VMFOUNDATION_EXPORTS AbstrMemoryCache : public ::vm::EverythingBase<IPageF
 	//std::shared_ptr<IPageFaultEventCallback> callback;
 	//
 public:
-	AbstrMemoryCache( ::vm::IRefCnt *cnt ) :
-	  ::vm::EverythingBase<ysl::IPageFile>( cnt ) {}
+	AbstrMemoryCache( IRefCnt *cnt ) :
+	  ::vm::EverythingBase<IPageFile>( cnt ) {}
 
 	void SetNextLevelCache( IPageFile *cache );
 	/**
@@ -184,7 +179,6 @@ private:
 	void SetOwnerCache( AbstrMemoryCache *cache ) { ownerCache = cache; }
 };
 
-
-}  // namespace ysl
+}  // namespace vm
 
 #endif

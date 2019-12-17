@@ -2,9 +2,9 @@
 #include <VMFoundation/lvdheader.h>
 #include <cstring>
 
-namespace ysl
+namespace vm
 {
-ysl::LVDHeader::LVDHeader() :
+vm::LVDHeader::LVDHeader() :
   buf( new unsigned char[ BufSize ] )
 {
 }

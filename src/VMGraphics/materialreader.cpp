@@ -1,7 +1,7 @@
 #include <VMGraphics/materialreader.h>
 #include <sstream>
 
-namespace ysl
+namespace vm
 {
 MaterialReader::MaterialReader( const std::string &fileName )
 {
@@ -13,7 +13,7 @@ MaterialReader::MaterialReader() :
 {
 }
 
-bool ysl::MaterialReader::loadFromFile( const std::string &fileName )
+bool vm::MaterialReader::loadFromFile( const std::string &fileName )
 {
 	std::ifstream fileIn( fileName, std::ifstream::in );
 	if ( fileIn.is_open() == false )

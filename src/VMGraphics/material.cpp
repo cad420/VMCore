@@ -3,7 +3,7 @@
 #include <VMGraphics/appearance.h>
 #include <VMGraphics/interaction.h>
 
-namespace ysl
+namespace vm
 {
 void Material::computeScatteringFunction( Interaction *isect )
 {

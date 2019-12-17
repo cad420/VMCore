@@ -2,7 +2,7 @@
 #include <VMFoundation/pluginloader.h>
 #include <VMFoundation/libraryloader.h>
 
-namespace ysl
+namespace vm
 {
 PluginLoader *PluginLoader::GetPluginLoader()
 {

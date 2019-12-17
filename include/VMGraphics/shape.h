@@ -8,7 +8,7 @@
 #include "material.h"
 #include "graphics_config.h"
 
-namespace ysl
+namespace vm
 {
 class Interaction;
 class VMGRAPHICS_EXPORTS Shape

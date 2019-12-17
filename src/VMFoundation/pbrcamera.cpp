@@ -1,7 +1,7 @@
 
 #include <VMGraphics/pbrcamera.h>
 
-namespace ysl
+namespace vm
 {
 Camera::~Camera()
 {

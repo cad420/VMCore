@@ -5,7 +5,7 @@
 #include <cmath>
 #include <VMat/vmattype.h>
 
-namespace ysl
+namespace vm
 {
 template <int nSamples>
 class CoefficientSpectrum
@@ -274,7 +274,7 @@ enum class Color
 	gray
 };
 
-inline RGBASpectrum TranslateColor( ysl::Color color )
+inline RGBASpectrum TranslateColor( vm::Color color )
 {
 	float c[ 4 ];
 	switch ( color ) {

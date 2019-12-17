@@ -3,7 +3,7 @@
 #include <VMat/numeric.h>
 #include <cassert>
 
-namespace ysl
+namespace vm
 {
 
 MemoryAllocationTracker::MemoryAllocationTracker( OffsetType MaxSize ) :
@@ -74,7 +74,7 @@ MemoryAllocationTracker::Allocation MemoryAllocationTracker::Allocate( OffsetTyp
 	m_FreeSize -= AdjustedSize;
 
 	if ( ( Size & ( m_CurrAlignment - 1 ) ) != 0 ) {
-		if ( ysl::IsPowerOfTwo( Size ) ) {
+		if ( vm::IsPowerOfTwo( Size ) ) {
 			//VERIFY_EXPR(Size >= Alignment && Size < m_CurrAlignment);
 			m_CurrAlignment = Size;
 		} else {

@@ -7,7 +7,7 @@
 #include <VMFoundation/genericcache.h>
 #include <VMUtils/ieverything.hpp>
 
-namespace ysl
+namespace vm
 {
 /**
 	 * \brief This class is an adapter for the LVDReader.
@@ -55,7 +55,7 @@ public:
 
 	Size3 CPUCacheBlockSize() const;
 
-	ysl::Size3 CPUCacheSize() const;
+	vm::Size3 CPUCacheSize() const;
 
 	[[deprecated]] int Padding() const;
 	[[deprecated]] Size3 DataSizeWithoutPadding() const;

@@ -9,7 +9,7 @@
 #include "interpulator.h"
 #include "graphics_config.h"
 
-namespace ysl
+namespace vm
 {
 class MappingKey;
 

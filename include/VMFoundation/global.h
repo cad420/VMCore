@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace ysl
+namespace vm
 {
 class Object;
 

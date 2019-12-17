@@ -7,7 +7,7 @@
 #include <VMFoundation/foundation_config.h>
 #include <VMFoundation/virtualmemorymanager.h>
 
-namespace ysl
+namespace vm
 {
 class VMFOUNDATION_EXPORTS LRUCachePolicy : public AbstrCachePolicy
 {

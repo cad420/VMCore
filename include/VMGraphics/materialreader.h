@@ -5,7 +5,7 @@
 #include <string>
 #include "spectrum.h"
 
-namespace ysl
+namespace vm
 {
 class MaterialReader
 {

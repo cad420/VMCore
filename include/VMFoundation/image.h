@@ -3,7 +3,7 @@
 #define _IMAGE_H_
 #include <string>
 
-namespace ysl
+namespace vm
 {
 }
 

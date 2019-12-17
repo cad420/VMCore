@@ -1,5 +1,5 @@
 #include <VMGraphics/scene.h>
 
-namespace ysl
+namespace vm
 {
 }

@@ -3,7 +3,7 @@
 #include <map>
 #include "foundation_config.h"
 
-namespace ysl
+namespace vm
 {
 class VMFOUNDATION_EXPORTS MemoryAllocationTracker
 {

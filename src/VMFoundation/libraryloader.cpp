@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <regex>
 
-namespace ysl
+namespace vm
 {
 LibraryReposity *LibraryReposity::instance = nullptr;
 

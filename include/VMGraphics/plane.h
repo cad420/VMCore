@@ -4,7 +4,7 @@
 #include "shape.h"
 #include "graphics_config.h"
 
-namespace ysl
+namespace vm
 {
 class VMGRAPHICS_EXPORTS Plane
 {
@@ -16,7 +16,7 @@ public:
 	Plane( const Vector3f &n, Float o ) :
 	  mOrigin( o ), mNormal( n ) { assert( n.IsNull() == false ); }
 	Plane( const Vector3f &n, const Point3f &p ) :
-	  mOrigin( ysl::Dot( n, p ) ), mNormal( n ) { assert( n.IsNull() == false ); }
+	  mOrigin( vm::Dot( n, p ) ), mNormal( n ) { assert( n.IsNull() == false ); }
 	bool Intersect( const Ray &ray, Float *t ) const;
 	Vector3f GetNormal() const { return mNormal; }
 	Float GetOrigin() const { return mOrigin; }

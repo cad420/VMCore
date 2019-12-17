@@ -2,7 +2,7 @@
 #include <VMGraphics/triangle.h>
 //#include "../gui/transferfunctionwidget.h"
 
-namespace ysl
+namespace vm
 {
 //std::shared_ptr<TriangleMesh> CreateTriangleMeshFromFile(const ysl::Transform& objectToWorld,
 //	const std::string& fileName)
@@ -23,7 +23,7 @@ namespace ysl
 //		reader.GetFaceIndices().size() / 3);
 //}
 
-bool ysl::Triangle::intersect( const Ray &ray, Float *t, Interaction *interac ) const
+bool vm::Triangle::intersect( const Ray &ray, Float *t, Interaction *interac ) const
 {
 	/*
 		* This ray-triangle intersection algorithm is from

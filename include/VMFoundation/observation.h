@@ -6,7 +6,7 @@
 #include <set>
 #include <VMFoundation/object.h>
 
-namespace ysl
+namespace vm
 {
 class Publisher;
 class Subscriber;

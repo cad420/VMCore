@@ -2,7 +2,7 @@
 #include <VMGraphics/sphere.h>
 #include <VMat/arithmetic.h>
 
-namespace ysl
+namespace vm
 {
 Vector3f BSDF::worldToLocal( const Vector3f &v ) const
 {

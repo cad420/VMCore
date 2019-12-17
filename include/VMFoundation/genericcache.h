@@ -2,7 +2,7 @@
 #define _GENERICCACHE_H_
 #include "blockarray.h"
 
-namespace ysl
+namespace vm
 {
 /**
 	 * \brief This is used to eliminate template parameters of \a Block3DArray
@@ -14,7 +14,7 @@ struct IBlock3DArrayAdapter
 };
 
 template <typename T, int log>
-class GenericBlockCache : public ysl::Block3DArray<T, log>, public IBlock3DArrayAdapter
+class GenericBlockCache : public vm::Block3DArray<T, log>, public IBlock3DArrayAdapter
 {
 public:
 	GenericBlockCache( int w, int h, int d, T *data ) :
@@ -22,6 +22,11 @@ public:
 	void *GetBlockData( size_t blockID ) override { return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( blockID ) ); }
 };
 
+
+template <typename T>
+using GenericBlock16Cache = GenericBlockCache<T, 4>;
+template<typename T>
+using GenericBlock32Cache = GenericBlockCache<T,5>;
 template <typename T>
 using GenericBlock64Cache = GenericBlockCache<T, 6>;
 template <typename T>

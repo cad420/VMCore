@@ -6,7 +6,7 @@
 
 #include "spectrum.h"
 
-namespace ysl
+namespace vm
 {
 enum BSDFType
 {
@@ -35,7 +35,7 @@ public:
 	BxDF( BxDFType type ) :
 	  flags( type ){};
 	bool MatchesFlags( BxDFType type ) { return ( flags & type ) == type; }
-	virtual RGBASpectrum f( const ysl::Vector3f &wi, const ysl::Vector3f &wo ) const = 0;
+	virtual RGBASpectrum f( const vm::Vector3f &wi, const vm::Vector3f &wo ) const = 0;
 	virtual RGBASpectrum Sample_f( const Vector3f &wo, Vector3f *wi, const Point2f &sample, Float *pdf, BxDFType *type = nullptr ) const = 0;
 };
 

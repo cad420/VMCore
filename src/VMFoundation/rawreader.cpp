@@ -8,9 +8,9 @@
 #include <cassert>
 #include <iostream>
 
-namespace ysl
+namespace vm
 {
-RawReader::RawReader( const std::string &fileName, const ysl::Size3 &dimensions, size_t voxelSize ) :
+RawReader::RawReader( const std::string &fileName, const vm::Size3 &dimensions, size_t voxelSize ) :
   fileName( fileName ), dimensions( dimensions ), voxelSize( voxelSize )  //,file(fileName,std::ios::binary),
   ,
   offset( 0 ),
@@ -42,13 +42,13 @@ RawReader::~RawReader()
 }
 // Read a region of volume data from the file into the buffer passed. It's assumed
 // the buffer passed has enough room. Returns the number voxels read
-size_t RawReader::readRegion( const ysl::Size3 &start, const ysl::Size3 &size, unsigned char *buffer )
+size_t RawReader::readRegion( const vm::Size3 &start, const vm::Size3 &size, unsigned char *buffer )
 {
 	seekAmt = 0;
 	return readRegion__( start, size, buffer );
 }
 
-std::size_t RawReader::readRegion__( const ysl::Size3 &start, const ysl::Size3 &size, unsigned char *buffer )
+std::size_t RawReader::readRegion__( const vm::Size3 &start, const vm::Size3 &size, unsigned char *buffer )
 {
 	assert( size.x > 0 && size.y > 0 && size.z > 0 );
 	const uint64_t startRead = ( start.x + dimensions.x * ( start.y + dimensions.y * start.z ) ) * voxelSize;
@@ -87,15 +87,15 @@ std::size_t RawReader::readRegion__( const ysl::Size3 &start, const ysl::Size3 &
 		offset = startRead + read * voxelSize;
 	} else if ( size.x == dimensions.x ) {	// read by slice
 		for ( auto z = start.z; z < start.z + size.z; ++z ) {
-			const ysl::Size3 startSlice( start.x, start.y, z );
-			const ysl::Size3 sizeSlice( size.x, size.y, 1 );
+			const vm::Size3 startSlice( start.x, start.y, z );
+			const vm::Size3 sizeSlice( size.x, size.y, 1 );
 			read += readRegion__( startSlice, sizeSlice, buffer + read * voxelSize );
 		}
 	} else {
 		for ( auto z = start.z; z < start.z + size.z; ++z ) {
 			for ( auto y = start.y; y < start.y + size.y; ++y ) {
-				const ysl::Size3 startLine( start.x, y, z );
-				const ysl::Size3 sizeLine( size.x, 1, 1 );
+				const vm::Size3 startLine( start.x, y, z );
+				const vm::Size3 sizeLine( size.x, 1, 1 );
 				read += readRegion__( startLine, sizeLine, buffer + read * voxelSize );
 			}
 		}
@@ -103,7 +103,7 @@ std::size_t RawReader::readRegion__( const ysl::Size3 &start, const ysl::Size3 &
 	return read;
 }
 
-RawReaderIO::RawReaderIO( const std::string &fileName, const ysl::Size3 &dimensions, size_t voxelSize ) :
+RawReaderIO::RawReaderIO( const std::string &fileName, const vm::Size3 &dimensions, size_t voxelSize ) :
   fileName( fileName ), dimensions( dimensions ), voxelSize( voxelSize )  //,file(fileName,std::ios::binary),
   ,
   offset( 0 ),
@@ -120,13 +120,13 @@ RawReaderIO::~RawReaderIO()
 {
 }
 
-size_t RawReaderIO::readRegion( const ysl::Vec3i &start, const ysl::Size3 &size, unsigned char *buffer )
+size_t RawReaderIO::readRegion( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer )
 {
 	seekAmt = 0;
 	return readRegion__( start, size, buffer );
 }
 
-std::size_t RawReaderIO::readRegion__( const ysl::Vec3i &start, const ysl::Size3 &size, unsigned char *buffer )
+std::size_t RawReaderIO::readRegion__( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer )
 {
 	assert( size.x > 0 && size.y > 0 && size.z > 0 );
 	const uint64_t startRead = ( start.x + dimensions.x * ( start.y + dimensions.y * start.z ) ) * voxelSize;
@@ -156,15 +156,15 @@ std::size_t RawReaderIO::readRegion__( const ysl::Vec3i &start, const ysl::Size3
 		offset = startRead + read * voxelSize;
 	} else if ( size.x == dimensions.x ) {	// read by slice
 		for ( auto z = start.z; z < start.z + size.z; ++z ) {
-			const ysl::Vec3i startSlice( start.x, start.y, z );
-			const ysl::Size3 sizeSlice( size.x, size.y, 1 );
+			const vm::Vec3i startSlice( start.x, start.y, z );
+			const vm::Size3 sizeSlice( size.x, size.y, 1 );
 			read += readRegion__( startSlice, sizeSlice, buffer + read * voxelSize );
 		}
 	} else {
 		for ( auto z = start.z; z < start.z + size.z; ++z ) {
 			for ( auto y = start.y; y < start.y + size.y; ++y ) {
-				const ysl::Vec3i startLine( start.x, y, z );
-				const ysl::Size3 sizeLine( size.x, 1, 1 );
+				const vm::Vec3i startLine( start.x, y, z );
+				const vm::Size3 sizeLine( size.x, 1, 1 );
 				read += readRegion__( startLine, sizeLine, buffer + read * voxelSize );
 			}
 		}

@@ -1,7 +1,7 @@
 
 #include <VMGraphics/tfgenerator.h>
 
-namespace ysl
+namespace vm
 {
 TransferFunction::TransferFunction( const std::string &fileName ) :
   ColorInterpulator( fileName )

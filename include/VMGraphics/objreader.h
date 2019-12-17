@@ -5,7 +5,7 @@
 #include <VMat/geometry.h>
 #include <VMGraphics/graphics_config.h>
 
-namespace ysl
+namespace vm
 {
 class VMGRAPHICS_EXPORTS ObjReader
 {

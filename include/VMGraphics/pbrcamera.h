@@ -5,7 +5,7 @@
 #include <VMat/geometry.h>
 #include "film.h"
 
-namespace ysl
+namespace vm
 {
 struct CameraSample
 {

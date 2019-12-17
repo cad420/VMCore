@@ -3,10 +3,12 @@
 #define _IPAGEFILE_H_
 
 #include <VMUtils/ieverything.hpp>
+#include "ifile.h"
 
-namespace ysl
+
+namespace vm
 {
-class IPageFile : public ::vm::IEverything
+class IPageFile : public IFile
 {
 public:
 	virtual ~IPageFile() = default;

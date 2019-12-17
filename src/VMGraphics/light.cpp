@@ -1,6 +1,6 @@
 
 #include <VMGraphics/light.h>
 
-namespace ysl
+namespace vm
 {
 }

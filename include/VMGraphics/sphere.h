@@ -3,7 +3,7 @@
 
 #include "shape.h"
 
-namespace ysl
+namespace vm
 {
 class Sphere : public Shape
 {

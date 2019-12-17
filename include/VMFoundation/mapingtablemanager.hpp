@@ -13,7 +13,7 @@
 #include "VMUtils/vmnew.hpp"
 #include "pluginloader.h"
 
-namespace ysl
+namespace vm
 {
 struct BlockDescriptor
 {
@@ -57,14 +57,15 @@ private:
 	Size3 finalBlockDim = { 0, 0, 0 };
 
 public:
-	DefaultMemoryParamsEvaluator( const ysl::Size3 &virtualDim, const Size3 &blockSize, std::size_t videoMemory ) :
+	DefaultMemoryParamsEvaluator( const vm::Size3 &virtualDim, const Size3 &blockSize, std::size_t videoMemory ) :
 	  virtualDim( virtualDim ),
 	  blockSize( blockSize ),
 	  videoMem( videoMemory )
 	{
 		std::size_t d = 0;
 		textureUnitCount = 1;
-		while ( ++d ) {
+		while ( ++d ) 
+		{
 			const auto memory = d * d * d * blockSize.Prod();
 			if ( memory >= videoMem * 1024 )
 				break;
@@ -334,7 +335,7 @@ public:
 
 	void Open( const std::vector<std::string> &fileNames )
 	{
-		ysl::PluginLoader::GetPluginLoader()->LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
+		vm::PluginLoader::GetPluginLoader()->LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
 
 		const auto lodCount = fileNames.size();
 		cpuVolumeData.resize( lodCount );

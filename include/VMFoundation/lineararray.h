@@ -7,7 +7,7 @@
 #include <cstring>
 #include <iostream>
 
-namespace ysl
+namespace vm
 {
 class LocalBuffer
 {

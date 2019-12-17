@@ -1,7 +1,7 @@
 
 #include <VMGraphics/film.h>
 
-namespace ysl
+namespace vm
 {
 Film::Film( const Vector2i &resolution ) :
   resolution( resolution )

@@ -7,12 +7,12 @@
 #include <VMUtils/ref.hpp>
 #include <fstream>
 
-namespace ysl
+namespace vm
 {
 class VMFOUNDATION_EXPORTS RawReader
 {
 	std::string fileName;
-	ysl::Size3 dimensions;
+	vm::Size3 dimensions;
 	size_t voxelSize;
 	uint64_t offset;
 	//std::shared_ptr<IFileMappingPluginInterface> io;
@@ -26,18 +26,18 @@ public:
 	using SizeType = std::size_t;
 
 	RawReader( const std::string &fileName,
-			   const ysl::Size3 &dimensions, size_t voxelSize );
+			   const vm::Size3 &dimensions, size_t voxelSize );
 	~RawReader();
 	// Read a region of volume data from the file into the buffer passed.
 	// It's assumed the buffer passed has enough room. Returns the
 	// number voxels read
 
-	size_t readRegion( const ysl::Size3 &start,
-					   const ysl::Size3 &size, unsigned char *buffer );
+	size_t readRegion( const vm::Size3 &start,
+					   const vm::Size3 &size, unsigned char *buffer );
 
 private:
-	std::size_t readRegion__( const ysl::Size3 &start, const ysl::Size3 &size, unsigned char *buffer );
-	bool convexRead( const ysl::Size3 &size )
+	std::size_t readRegion__( const vm::Size3 &start, const vm::Size3 &size, unsigned char *buffer );
+	bool convexRead( const vm::Size3 &size )
 	{
 		/// A minimum continuous unit for reading
 
@@ -52,7 +52,7 @@ private:
 class VMFOUNDATION_EXPORTS RawReaderIO
 {
 	std::string fileName;
-	ysl::Size3 dimensions;
+	vm::Size3 dimensions;
 	size_t voxelSize;
 	uint64_t offset;
 	std::ifstream file;
@@ -66,18 +66,18 @@ public:
 	using SizeType = std::size_t;
 
 	RawReaderIO( const std::string &fileName,
-				 const ysl::Size3 &dimensions, size_t voxelSize );
+				 const vm::Size3 &dimensions, size_t voxelSize );
 	~RawReaderIO();
 	// Read a region of volume data from the file into the buffer passed.
 	// It's assumed the buffer passed has enough room. Returns the
 	// number voxels read
 
-	size_t readRegion( const ysl::Vec3i &start,
-					   const ysl::Size3 &size, unsigned char *buffer );
+	size_t readRegion( const vm::Vec3i &start,
+					   const vm::Size3 &size, unsigned char *buffer );
 
 private:
-	std::size_t readRegion__( const ysl::Vec3i &start, const ysl::Size3 &size, unsigned char *buffer );
-	bool convexRead( const ysl::Size3 &size )
+	std::size_t readRegion__( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer );
+	bool convexRead( const vm::Size3 &size )
 	{
 		/// A minimum continuous unit for reading
 

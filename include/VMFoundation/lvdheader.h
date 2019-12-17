@@ -45,7 +45,7 @@
 
 #define LVD_HEADER_SIZE ( ( LVD_DATA_ORIGINAL_DEPTH_FIELD_OFFSET ) + ( LVD_DATA_ORIGINAL_DEPTH_FIELD_SIZE ) )
 
-namespace ysl
+namespace vm
 {
 class VMFOUNDATION_EXPORTS LVDHeader
 {

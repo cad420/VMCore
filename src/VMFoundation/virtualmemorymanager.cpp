@@ -2,7 +2,7 @@
 #include <cstring>
 #include <VMFoundation/virtualmemorymanager.h>
 
-namespace ysl
+namespace vm
 {
 void AbstrMemoryCache::SetNextLevelCache( IPageFile *cache )
 {

@@ -2,7 +2,7 @@
 #include <VMFoundation/cachepolicy.h>
 #include <cassert>
 
-namespace ysl
+namespace vm
 {
 bool LRUCachePolicy::QueryPage( size_t pageID )
 {
