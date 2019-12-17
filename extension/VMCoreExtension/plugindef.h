@@ -13,7 +13,7 @@ public:                               \
 	std::string GetIID() const override { return iid; }
 
 #define EXPORT_PLUGIN_FACTORY( pluginFactoryTypeName ) \
-	extern "C" DLL_EXPORT ysl::IPluginFactory *GetPluginFactoryInstance();
+	extern "C" DLL_EXPORT vm::IPluginFactory *GetPluginFactoryInstance();
 
 #define EXPORT_PLUGIN_FACTORY_IMPLEMENT( pluginFactoryTypeName ) \
 	ysl::IPluginFactory *GetPluginFactoryInstance()              \
