@@ -54,11 +54,12 @@ MemoryPageAdapter::MemoryPageAdapter( ::vm::IRefCnt *cnt, const std::string &fil
 {
 	const auto cap = fileName.substr( fileName.find_last_of( '.' ) );
 	auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>( cap );
-	if ( p == nullptr ) {
+	if ( p == nullptr ) 
+	{
 		throw std::runtime_error( "Failed to load the plugin that is able to read " + cap + "file" );
 	}
-	cacheDim = evaluator( p );
 	p->Open( fileName );
+	cacheDim = evaluator( p );
 	SetDiskFileCache( p );
 	SetCachePolicy( VM_NEW<LRUCachePolicy>() );
 }
