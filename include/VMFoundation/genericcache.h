@@ -17,8 +17,10 @@ template <typename T, int log>
 class GenericBlockCache : public vm::Block3DArray<T, log>, public IBlock3DArrayAdapter
 {
 public:
-	GenericBlockCache( int w, int h, int d, T *data ) :
-	  Block3DArray<T, log>( w, h, d, data ) {}
+	//GenericBlockCache( int w, int h, int d, T *data ) :
+	// Block3DArray<T, log>( w, h, d, data ) {}
+	GenericBlockCache( int xb, int yb, int zb, T *data ) :
+	  Block3DArray<T, log>( xb * ( 1 << log ), yb * ( 1 << log ), zb * ( 1 << log ), data ) {}
 	void *GetBlockData( size_t blockID ) override { return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( blockID ) ); }
 };
 

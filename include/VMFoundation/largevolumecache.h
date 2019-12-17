@@ -6,6 +6,7 @@
 #include <VMFoundation/virtualmemorymanager.h>
 #include <VMFoundation/genericcache.h>
 #include <VMUtils/ieverything.hpp>
+#include <functional>
 
 namespace vm
 {
@@ -43,13 +44,17 @@ class VMFOUNDATION_EXPORTS MemoryPageAdapter : public AbstrMemoryCache
 {
 	Size3 cacheDim;
 	std::unique_ptr<IBlock3DArrayAdapter> m_volumeCache;
-	::vm::Ref<I3DBlockFilePluginInterface> adapter;
+
+	Ref<I3DBlockFilePluginInterface> adapter;
 
 	[[deprecated]] int blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock ) const;
-	void Create();
+	
+	void Create( I3DBlockFilePluginInterface * pageFile);
+
 
 public:
-	explicit MemoryPageAdapter(::vm::IRefCnt *cnt, const std::string &fileName );
+	MemoryPageAdapter(::vm::IRefCnt *cnt, const std::string & fileName,std::function<Size3(I3DBlockFilePluginInterface*)> evaluator);
+	MemoryPageAdapter( ::vm::IRefCnt *cnt, const std::string &fileName );
 
 	void SetDiskFileCache( I3DBlockFilePluginInterface *diskCache );
 
@@ -66,6 +71,7 @@ public:
 	size_t GetPhysicalPageCount() const override { return CacheBlockDim().Prod(); }
 	size_t GetVirtualPageCount() const override { return BlockDim().Prod(); }
 	size_t GetPageSize() const override { return BlockSize().Prod() * sizeof( char ); }
+	
 	const void *GetPage( int xBlock, int yBlock, int zBlock ) { return AbstrMemoryCache::GetPage( blockCoordinateToBlockId( xBlock, yBlock, zBlock ) ); }
 	const void *GetPage( const VirtualMemoryBlockIndex &index ) { return GetPage( index.x, index.y, index.z ); };
 
