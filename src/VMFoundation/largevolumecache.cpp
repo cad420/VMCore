@@ -147,6 +147,7 @@ Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName, std
 	if ( p == nullptr ) {
 		throw std::runtime_error( "Failed to load the plugin that is able to read " + cap + "file" );
 	}
+	
 	p->Open( fileName );
 
 	_->cacheDim = evaluator( p );

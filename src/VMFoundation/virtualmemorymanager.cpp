@@ -98,7 +98,7 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 }
 
 AbstrCachePolicy::AbstrCachePolicy( ::vm::IRefCnt *cnt ):
-	AbstrMemoryCache( cnt )
+	AbstrMemoryCache( cnt ),d_ptr( new AbstrCachePolicy__pImpl(this) )
 {
 
 }
