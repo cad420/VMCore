@@ -6,6 +6,7 @@
 #include <VMFoundation/foundation_config.h>
 #include <VMUtils/ref.hpp>
 #include <fstream>
+#include <VMCoreExtension/i3dblockfileplugininterface.h>
 
 namespace vm
 {
@@ -59,6 +60,8 @@ class VMFOUNDATION_EXPORTS RawReaderIO
 	unsigned char *ptr;
 	uint64_t seekAmt;
 	uint64_t totalBytes;
+
+	
 	//Bound3i bound;
 public:
 	using PosType = unsigned long long;
@@ -75,6 +78,14 @@ public:
 	size_t readRegion( const vm::Vec3i &start,
 					   const vm::Size3 &size, unsigned char *buffer );
 
+	size_t readRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer );
+
+	Size3 GetDimension() const
+	{
+		return dimensions;
+	}
+	size_t GetElementSize() const { return voxelSize; }
+
 private:
 	std::size_t readRegion__( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer );
 	bool convexRead( const vm::Size3 &size )
@@ -85,8 +96,26 @@ private:
 		// - We're reading a set of slices of the volume
 		// - We're reading a set of scanlines of a slice
 		// - We're reading a set of voxels in a scanline
-		return ( size.x == dimensions.x && size.y == dimensions.y ) || ( size.x == dimensions.x && size.z == 1 ) || ( size.y == 1 && size.z == 1 );
+		return ( size.x == dimensions.x && size.y == dimensions.y )
+		|| ( size.x == dimensions.x && size.z == 1 )
+		|| ( size.y == 1 && size.z == 1 );
 	}
+
+	bool convexReadNoBoundary(const Vec3i & start,const Size3 &size )
+	{
+		/// A minimum continuous unit for reading
+
+		// 3 cases for convex reads:
+		// - We're reading a set of slices of the volume
+		// - We're reading a set of scanlines of a slice
+		// - We're reading a set of voxels in a scanline
+		return ( start.x + size.x == dimensions.x && start.y + size.y == dimensions.y )
+		|| ( start.x + size.x == dimensions.x && size.z == 1 )
+		|| ( size.y == 1 && size.z == 1 );
+	}
+
+	size_t readRegionNoBoundary__( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer );
+	
 	//bool inside(const ysl::Vec3i& start, const ysl::Size3 & size)const
 	//{
 	//	const Bound3i t(Point3i(start.x, start.y, start.z), Point3i{start.x+size.x,start.y+size.y,start.z+size.z});
@@ -94,5 +123,35 @@ private:
 	//}
 };
 
-}  // namespace ysl
+
+class RawFile : public EverythingBase<I3DBlockFilePluginInterface>
+{
+	std::unique_ptr<RawReaderIO> rawReader;
+	Size3 blockDimension;
+	int blockSizeInLog = -1;
+	Size3 pageCount;
+	const int padding = 0;
+	bool exact = false;
+	void Create();
+	std::unique_ptr<char[]> buf;  // buffer for a block
+public:
+	RawFile( IRefCnt *cnt, const std::string &fileName, const vm::Size3 &dimensions, size_t voxelSize ,int blockDimensionInLog);
+	RawFile( IRefCnt *cnt );
+	void Open( const std::string &fileName ) override;
+	int GetPadding() const override;
+
+	Size3 GetDataSizeWithoutPadding() const override;
+	Size3 Get3DPageSize() const override;
+	int Get3DPageSizeInLog() const override;
+
+	Size3 Get3DPageCount() const override;
+	const const void *GetPage(size_t pageID) override;
+
+	Size3 GetDimension() const;
+	size_t GetElementSize() const;
+	size_t ReadRegion( const Vec3i &start, const Size3 &size, unsigned char *buffer );
+	size_t ReadRegionNoBoundary( const Vec3i &start, const Size3 &size, unsigned char *buffer );
+};
+
+}  // namespace vm
 #endif

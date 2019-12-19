@@ -40,7 +40,9 @@ private:
 	void *GetPageStorage_Implement( size_t pageID ) override { return nullptr; }
 };
 
-class VMFOUNDATION_EXPORTS MemoryPageAdapter : public AbstrMemoryCache
+
+
+class VMFOUNDATION_EXPORTS Block3DCache : public AbstrMemoryCache
 {
 	Size3 cacheDim;
 	std::unique_ptr<IBlock3DArrayAdapter> m_volumeCache;
@@ -50,11 +52,13 @@ class VMFOUNDATION_EXPORTS MemoryPageAdapter : public AbstrMemoryCache
 	[[deprecated]] int blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock ) const;
 	
 	void Create( I3DBlockFilePluginInterface * pageFile);
-
-
 public:
-	MemoryPageAdapter(::vm::IRefCnt *cnt, const std::string & fileName,std::function<Size3(I3DBlockFilePluginInterface*)> evaluator);
-	MemoryPageAdapter( ::vm::IRefCnt *cnt, const std::string &fileName );
+
+	Block3DCache(::vm::IRefCnt *cnt, const std::string & fileName,std::function<Size3(I3DBlockFilePluginInterface*)> evaluator);
+	Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName );
+
+	Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator );
+	Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile );
 
 	void SetDiskFileCache( I3DBlockFilePluginInterface *diskCache );
 

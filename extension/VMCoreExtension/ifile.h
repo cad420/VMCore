@@ -6,7 +6,6 @@ namespace vm
 {
 struct IFile: vm::IEverything
 {
-	
 };
 
 }
