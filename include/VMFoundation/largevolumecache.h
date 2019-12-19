@@ -71,6 +71,7 @@ public:
 	const void *GetPage( int xBlock, int yBlock, int zBlock ) { return AbstrMemoryCache::GetPage( blockCoordinateToBlockId( xBlock, yBlock, zBlock ) ); }
 	const void *GetPage( const VirtualMemoryBlockIndex &index ) { return GetPage( index.x, index.y, index.z ); };
 
+	virtual ~Block3DCache();
 protected:
 	[[deprecated]] int GetLog() const;
 	void *GetPageStorage_Implement( size_t pageID ) override;

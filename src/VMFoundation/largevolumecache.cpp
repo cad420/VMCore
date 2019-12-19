@@ -155,6 +155,10 @@ Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName, std
 	SetCachePolicy( VM_NEW<LRUCachePolicy>() );
 }
 
+	Block3DCache::~Block3DCache()
+{
+}
+
 int Block3DCache::GetLog() const
 {
 	const auto p = dynamic_cast<const I3DBlockFilePluginInterface *>( GetNextLevelCache() );
