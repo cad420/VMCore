@@ -47,8 +47,6 @@ class VMFOUNDATION_EXPORTS Block3DCache : public AbstrMemoryCache
 	void Create( I3DBlockFilePluginInterface * pageFile);
 public:
 
-	Block3DCache(IRefCnt *cnt, const std::string & fileName,std::function<Size3(I3DBlockFilePluginInterface*)> evaluator);
-	Block3DCache( IRefCnt *cnt, const std::string &fileName );
 
 	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface * pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator );
 	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface * pageFile );
