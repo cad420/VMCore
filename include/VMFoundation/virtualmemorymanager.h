@@ -8,6 +8,7 @@
 #include <VMCoreExtension/i3dblockfileplugininterface.h>
 #include <VMUtils/ieverything.hpp>
 #include <VMUtils/ref.hpp>
+#include <VMUtils/common.h>
 #include <unordered_map>
 
 namespace vm
@@ -93,19 +94,13 @@ class AbstrCachePolicy;
 */
 
 class AbstrMemoryCache;
+class AbstrMemoryCache__pImpl;
 
 class VMFOUNDATION_EXPORTS AbstrMemoryCache : public ::vm::EverythingBase<IPageFile>
 {
-	::vm::Ref<IPageFile> nextLevel;
-	::vm::Ref<AbstrCachePolicy> cachePolicy;
-	//::vm::Ref<IPageFaultEventCallback> callback;
-	//std::shared_ptr<IPageFile> nextLevel;
-	//std::unique_ptr<AbstrCachePolicy> cachePolicy;
-	//std::shared_ptr<IPageFaultEventCallback> callback;
-	//
+
 public:
-	AbstrMemoryCache( IRefCnt *cnt ) :
-	  ::vm::EverythingBase<IPageFile>( cnt ) {}
+	AbstrMemoryCache( IRefCnt *cnt );
 
 	void SetNextLevelCache( IPageFile *cache );
 	/**
@@ -115,32 +110,36 @@ public:
 	void SetCachePolicy( AbstrCachePolicy *policy );
 	AbstrCachePolicy *TakeCachePolicy();
 
-	IPageFile *GetNextLevelCache() { return nextLevel; }
+	IPageFile *GetNextLevelCache();
 	//void SetPageFaultEventCallback(std::shared_ptr<IPageFaultEventCallback> callback) { this->callback = std::move(callback); }
-	const IPageFile *GetNextLevelCache() const { return nextLevel; }
+	const IPageFile *GetNextLevelCache() const;
 
 	/**
-		 * \brief Get the page give by \a pageID. If the page does not exist in the cache, it will be swapped in.
+		 * \brief Get the page given by \a pageID. If the page does not exist in the cache, it will be swapped in.
 		 * \note The page data pointed by the  pointer returned by the function is only valid at current call.
 		 * It could be invalid when next call because its data has been swapped out.
 		 */
 	virtual const void *GetPage( size_t pageID );
-	virtual ~AbstrMemoryCache() = default;
+	virtual ~AbstrMemoryCache();
 
+protected:
+	virtual void *GetPageStorage_Implement( size_t pageID ) = 0;
 private:
 	/**
 		 * \brief 
 		 * \param pageID 
 		 * \return 
 		 */
-	virtual void *GetPageStorage_Implement( size_t pageID ) = 0;
+	VM_DECL_IMPL( AbstrMemoryCache )
 };
+
+class AbstrCachePolicy__pImpl;
 
 class VMFOUNDATION_EXPORTS AbstrCachePolicy : public AbstrMemoryCache
 {
+	VM_DECL_IMPL( AbstrCachePolicy )
 public:
-	AbstrCachePolicy( ::vm::IRefCnt *cnt ) :
-	  AbstrMemoryCache( cnt ) {}
+	AbstrCachePolicy( ::vm::IRefCnt *cnt );
 	/**
 		 * \brief Queries the page given by \a pageID if it exists in storage cache. Returns \a true if it exists or \a false if not
 		 */
@@ -154,9 +153,9 @@ public:
 		 */
 	virtual size_t QueryAndUpdate( size_t pageID ) = 0;
 
-	AbstrMemoryCache *GetOwnerCache() { return ownerCache; }
+	AbstrMemoryCache *GetOwnerCache();
 
-	const AbstrMemoryCache *GetOwnerCache() const { return ownerCache; }
+	const AbstrMemoryCache *GetOwnerCache() const;
 
 	const void *GetPage( size_t pageID ) override { return nullptr; }
 
@@ -166,18 +165,18 @@ public:
 
 	size_t GetVirtualPageCount() const override { return 0; }
 
+	virtual ~AbstrCachePolicy();
+
 protected:
 	void *GetPageStorage_Implement( size_t pageID ) override { return nullptr; }
-
 	virtual void InitEvent( AbstrMemoryCache *cache ) = 0;
 
 private:
 	friend AbstrMemoryCache;
-
-	AbstrMemoryCache *ownerCache = nullptr;
-
-	void SetOwnerCache( AbstrMemoryCache *cache ) { ownerCache = cache; }
+	void SetOwnerCache( AbstrMemoryCache *cache );
 };
+
+
 
 }  // namespace vm
 

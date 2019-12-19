@@ -13,57 +13,49 @@ namespace vm
 /**
 	 * \brief This class is an adapter for the LVDReader.
 	 */
+
+class Disk3DPageAdapter__pImpl;
+
 class VMFOUNDATION_EXPORTS Disk3DPageAdapter : public AbstrMemoryCache
 {
-	LVDReader lvdReader;
+	VM_DECL_IMPL( Disk3DPageAdapter )
 
 public:
-	Disk3DPageAdapter(::vm::IRefCnt *cnt, const std::string &fileName ) :
-	  AbstrMemoryCache( cnt ),
-	  lvdReader( fileName ) {}
-	const void *GetPage( size_t pageID ) override { return lvdReader.ReadBlock( pageID ); }
-	size_t GetPageSize() const override { return lvdReader.BlockSize(); }
-	size_t GetPhysicalPageCount() const override { return lvdReader.BlockCount(); }
-	size_t GetVirtualPageCount() const override { return lvdReader.BlockCount(); }
+	Disk3DPageAdapter( ::vm::IRefCnt *cnt, const std::string &fileName );
+	const void *GetPage( size_t pageID ) override;
+	size_t GetPageSize() const override;
+	size_t GetPhysicalPageCount() const override;
+	size_t GetVirtualPageCount() const override;
 
-	int GetPadding() const { return lvdReader.GetBlockPadding(); }
-	Size3 GetDataSizeWithoutPadding() const { return lvdReader.OriginalDataSize(); }
-	Size3 Get3DPageSize() const
-	{
-		const std::size_t len = lvdReader.BlockSize();
-		return Size3{ len, len, len };
-	}
-	int Get3DPageSizeInLog() const { return lvdReader.BlockSizeInLog(); }
-	Size3 Get3DPageCount() const { return lvdReader.SizeByBlock(); }
+	int GetPadding() const;
+	Size3 GetDataSizeWithoutPadding() const;
+	Size3 Get3DPageSize() const;
+	int Get3DPageSizeInLog() const;
+	Size3 Get3DPageCount() const;
 
 private:
 	void *GetPageStorage_Implement( size_t pageID ) override { return nullptr; }
 };
 
 
-
+class Block3DCache__pImpl;
 class VMFOUNDATION_EXPORTS Block3DCache : public AbstrMemoryCache
 {
-	Size3 cacheDim;
-	std::unique_ptr<IBlock3DArrayAdapter> m_volumeCache;
-
-	Ref<I3DBlockFilePluginInterface> adapter;
+	VM_DECL_IMPL( Block3DCache )
 
 	[[deprecated]] int blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock ) const;
-	
 	void Create( I3DBlockFilePluginInterface * pageFile);
 public:
 
-	Block3DCache(::vm::IRefCnt *cnt, const std::string & fileName,std::function<Size3(I3DBlockFilePluginInterface*)> evaluator);
-	Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName );
+	Block3DCache(IRefCnt *cnt, const std::string & fileName,std::function<Size3(I3DBlockFilePluginInterface*)> evaluator);
+	Block3DCache( IRefCnt *cnt, const std::string &fileName );
 
-	Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator );
-	Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile );
+	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface * pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator );
+	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface * pageFile );
 
 	void SetDiskFileCache( I3DBlockFilePluginInterface *diskCache );
 
 	Size3 CPUCacheBlockSize() const;
-
 	vm::Size3 CPUCacheSize() const;
 
 	[[deprecated]] int Padding() const;
@@ -71,7 +63,7 @@ public:
 	[[deprecated]] Size3 BlockDim() const;
 	[[deprecated]] Size3 BlockSize() const;
 
-	Size3 CacheBlockDim() const { return cacheDim; }
+	Size3 CacheBlockDim() const;
 	size_t GetPhysicalPageCount() const override { return CacheBlockDim().Prod(); }
 	size_t GetVirtualPageCount() const override { return BlockDim().Prod(); }
 	size_t GetPageSize() const override { return BlockSize().Prod() * sizeof( char ); }

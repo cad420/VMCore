@@ -19,10 +19,97 @@
 
 namespace vm
 {
+
+class Block3DCache__pImpl
+{
+	VM_DECL_API( Block3DCache )
+public:
+	Block3DCache__pImpl( Block3DCache *api ) :
+	  q_ptr( api ) {}
+	Size3 cacheDim;
+	std::unique_ptr<IBlock3DArrayAdapter> m_volumeCache;
+	Ref<I3DBlockFilePluginInterface> adapter;
+};
+
+class Disk3DPageAdapter__pImpl
+{
+	VM_DECL_API( Disk3DPageAdapter )
+public:
+	Disk3DPageAdapter__pImpl( Disk3DPageAdapter *api ,const std::string & fileName):q_ptr( api ),lvdReader( fileName ) {}
+	LVDReader lvdReader;
+};
+
+Disk3DPageAdapter::Disk3DPageAdapter( ::vm::IRefCnt *cnt, const std::string &fileName ):
+	AbstrMemoryCache( cnt ),d_ptr( new Disk3DPageAdapter__pImpl(this,fileName) )
+{
+}
+
+const void *Disk3DPageAdapter::GetPage( size_t pageID )
+{
+	VM_IMPL( Disk3DPageAdapter )
+	return _->lvdReader.ReadBlock( pageID );
+}
+
+size_t Disk3DPageAdapter::GetPageSize() const
+{
+	const auto _ = d_func();
+	return _->lvdReader.BlockSize();
+}
+
+size_t Disk3DPageAdapter::GetPhysicalPageCount() const
+{
+
+	const auto _ = d_func();
+	return _->lvdReader.BlockCount();
+}
+
+size_t Disk3DPageAdapter::GetVirtualPageCount() const
+{
+
+	const auto _ = d_func();
+	return _->lvdReader.BlockCount();
+}
+
+int Disk3DPageAdapter::GetPadding() const
+{
+
+	const auto _ = d_func();
+	return _->lvdReader.GetBlockPadding();
+}
+
+Size3 Disk3DPageAdapter::GetDataSizeWithoutPadding() const
+{
+	const auto _ = d_func();
+	return _->lvdReader.OriginalDataSize();
+}
+
+Size3 Disk3DPageAdapter::Get3DPageSize() const
+{
+
+	const auto _ = d_func();
+	const std::size_t len = _->lvdReader.BlockSize();
+	return Size3{ len, len, len };
+}
+
+int Disk3DPageAdapter::Get3DPageSizeInLog() const
+{
+
+	const auto _ = d_func();
+	return _->lvdReader.BlockSizeInLog();
+}
+
+Size3 Disk3DPageAdapter::Get3DPageCount() const
+{
+
+	const auto _ = d_func();
+	return _->lvdReader.SizeByBlock();
+}
+
 int Block3DCache::blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock ) const
 {
 	//const auto size = lvdReader.SizeByBlock();
-	const auto size = adapter->Get3DPageCount();
+	const auto _ = d_func();
+	const auto size = _->adapter->Get3DPageCount();
 	const auto x = size.x, y = size.y, z = size.z;
 	return zBlock * x * y + yBlock * x + xBlock;
 }
@@ -30,28 +117,31 @@ int Block3DCache::blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock )
 void Block3DCache::Create( I3DBlockFilePluginInterface *pageFile )
 {
 	//const auto p = dynamic_cast<I3DBlockFilePluginInterface *>( GetNextLevelCache() );
-
+	VM_IMPL( Block3DCache )
 	const int log = pageFile->Get3DPageSizeInLog();
 	//const auto cacheSize = cacheDim*Size3( 1 << log, 1 << log, 1 << log );
 	switch ( log ) {
-	case 6: m_volumeCache = std::make_unique<Int8Block64Cache>( cacheDim.x, cacheDim.y, cacheDim.z, nullptr ); break;
-	case 7: m_volumeCache = std::make_unique<Int8Block128Cache>( cacheDim.x, cacheDim.y, cacheDim.z, nullptr ); break;
-	case 8: m_volumeCache = std::make_unique<Int8Block256Cache>( cacheDim.x, cacheDim.y, cacheDim.z, nullptr ); break;
-	case 9: m_volumeCache = std::make_unique<Int8Block512Cache>( cacheDim.x, cacheDim.y, cacheDim.z, nullptr ); break;
-	case 10: m_volumeCache = std::make_unique<Int8Block1024Cache>( cacheDim.x, cacheDim.y, cacheDim.z, nullptr ); break;
+	case 6: _->m_volumeCache = std::make_unique<Int8Block64Cache>( _->cacheDim.x, _->cacheDim.y, _->cacheDim.z, nullptr ); break;
+	case 7: _->m_volumeCache = std::make_unique<Int8Block128Cache>( _->cacheDim.x, _->cacheDim.y, _->cacheDim.z, nullptr ); break;
+	case 8: _->m_volumeCache = std::make_unique<Int8Block256Cache>( _->cacheDim.x, _->cacheDim.y, _->cacheDim.z, nullptr ); break;
+	case 9: _->m_volumeCache = std::make_unique<Int8Block512Cache>( _->cacheDim.x, _->cacheDim.y, _->cacheDim.z, nullptr ); break;
+	case 10: _->m_volumeCache = std::make_unique<Int8Block1024Cache>( _->cacheDim.x, _->cacheDim.y, _->cacheDim.z, nullptr ); break;
 	default:
 		Warning( "Unsupported Cache block Size\n" );
 		break;
 	}
-	if ( !m_volumeCache ) {
+	if ( !_->m_volumeCache ) {
 		std::cerr << "Can not allocate memory for cache\n";
 		exit( 0 );
 	}
 }
 
 Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator ) :
-  AbstrMemoryCache( cnt )
+  AbstrMemoryCache( cnt ),
+  d_ptr( new Block3DCache__pImpl( this ) )
 {
+	VM_IMPL( Block3DCache )
+
 	const auto cap = fileName.substr( fileName.find_last_of( '.' ) );
 	auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>( cap );
 	if ( p == nullptr ) {
@@ -59,7 +149,8 @@ Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName, std
 	}
 	p->Open( fileName );
 
-	cacheDim = evaluator( p );
+	_->cacheDim = evaluator( p );
+
 	SetDiskFileCache( p );
 	SetCachePolicy( VM_NEW<LRUCachePolicy>() );
 }
@@ -74,7 +165,8 @@ int Block3DCache::GetLog() const
 
 void *Block3DCache::GetPageStorage_Implement( size_t pageID )
 {
-	return m_volumeCache->GetBlockData( pageID );
+	VM_IMPL( Block3DCache )
+	return _->m_volumeCache->GetBlockData( pageID );
 }
 
 Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName ) :
@@ -90,7 +182,8 @@ Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName ) :
 Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator ) :
   AbstrMemoryCache( cnt )
 {
-	cacheDim = evaluator( pageFile );
+	VM_IMPL( Block3DCache )
+	_->cacheDim = evaluator( pageFile );
 	SetDiskFileCache( pageFile );
 	SetCachePolicy( VM_NEW<LRUCachePolicy>() );
 }
@@ -107,8 +200,9 @@ Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pag
 
 void Block3DCache::SetDiskFileCache( I3DBlockFilePluginInterface *diskCache )
 {
+	VM_IMPL( Block3DCache )
 	SetNextLevelCache( diskCache );
-	adapter = diskCache;
+	_->adapter = diskCache;
 	Create( diskCache );
 }
 
@@ -124,22 +218,32 @@ Size3 Block3DCache::CPUCacheSize() const
 
 Size3 Block3DCache::BlockSize() const
 {
-	return adapter->Get3DPageSize();
+	const auto _ = d_func();
+	return _->adapter->Get3DPageSize();
+}
+
+Size3 Block3DCache::CacheBlockDim() const
+{
+	const auto _ = d_func();
+	return _->cacheDim;
 }
 
 int Block3DCache::Padding() const
 {
-	return adapter->GetPadding();
+	const auto _ = d_func();
+	return _->adapter->GetPadding();
 }
 
 Size3 Block3DCache::DataSizeWithoutPadding() const
 {
-	return adapter->GetDataSizeWithoutPadding();
+	const auto _ = d_func();
+	return _->adapter->GetDataSizeWithoutPadding();
 }
 
 Size3 Block3DCache::BlockDim() const
 {
-	return adapter->Get3DPageCount();
+	const auto _ = d_func();
+	return _->adapter->Get3DPageCount();
 }
 
 }  // namespace vm
