@@ -341,16 +341,16 @@ public:
 		const auto lodCount = fileNames.size();
 		cpuVolumeData.resize( lodCount );
 		for ( auto i = 0ULL; i < lodCount; i++ ) {
-			cpuVolumeData[ i ] = VM_NEW<MemoryPageAdapter>( fileNames[ i ] );
+			cpuVolumeData[ i ] = VM_NEW<Block3DCache>( fileNames[ i ] );
 		}
 	}
-	MemoryPageAdapter *GetVolumeDataMemory( int lod )
+	Block3DCache *GetVolumeDataMemory( int lod )
 	{
 		return cpuVolumeData[ lod ];
 	}
 
 private:
-	std::vector<::vm::Ref<MemoryPageAdapter>> cpuVolumeData;
+	std::vector<::vm::Ref<Block3DCache>> cpuVolumeData;
 };
 
 }  // namespace ysl
