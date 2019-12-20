@@ -3,25 +3,24 @@
 
 #include <VMat/geometry.h>
 #include <VMCoreExtension/i3dblockfileplugininterface.h>
+#include "foundation_config.h"
+#include <VMUtils/common.h>
 
 namespace vm
 {
 
 class RawReader;
 
-class VolumeFile : public EverythingBase<I3DBlockFilePluginInterface>
+
+class GridVolumeFile__pImpl;
+
+class VMFOUNDATION_EXPORTS GridVolumeFile : public EverythingBase<I3DBlockFilePluginInterface>
 {
-	std::unique_ptr<RawReader> rawReader;
-	Size3 blockDimension;
-	int blockSizeInLog = -1;
-	Size3 pageCount;
-	const int padding = 0;
-	bool exact = false;
+	VM_DECL_IMPL( GridVolumeFile )
 	void Create();
-	std::unique_ptr<char[]> buf;  // buffer for a block
 public:
-	VolumeFile( IRefCnt *cnt, const std::string &fileName, const vm::Size3 &dimensions, size_t voxelSize, int blockDimensionInLog );
-	VolumeFile( IRefCnt *cnt );
+	GridVolumeFile( IRefCnt *cnt, const std::string &fileName, const vm::Size3 &dimensions, size_t voxelSize, int blockDimensionInLog );
+	GridVolumeFile( IRefCnt *cnt );
 	void Open( const std::string &fileName ) override;
 
 	int GetPadding() const override;
