@@ -129,7 +129,7 @@ private:
 		 * \brief 
 		 * \param pageID 
 		 * \return 
-		 */
+	*/
 	VM_DECL_IMPL( AbstrMemoryCache )
 };
 
@@ -142,15 +142,19 @@ public:
 	AbstrCachePolicy( ::vm::IRefCnt *cnt );
 	/**
 		 * \brief Queries the page given by \a pageID if it exists in storage cache. Returns \a true if it exists or \a false if not
-		 */
+	*/
 	virtual bool QueryPage( size_t pageID ) = 0;
+
 	/**
 		 * \brief Updates the fault page given by \a pageID. Returns the actually storage ID of the page. If the page exists, the function does nothing.
-		 */
+	*/
+
 	virtual void UpdatePage( size_t pageID ) = 0;
+	
 	/**
 		 * \brief Queries and updates at the same time. It will always return a valid storage id.
 		 */
+	
 	virtual size_t QueryAndUpdate( size_t pageID ) = 0;
 
 	AbstrMemoryCache *GetOwnerCache();

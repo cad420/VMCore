@@ -7,6 +7,7 @@
 #include <VMUtils/ref.hpp>
 #include <fstream>
 #include <VMCoreExtension/i3dblockfileplugininterface.h>
+#include "dataarena.h"
 
 namespace vm
 {
@@ -20,6 +21,12 @@ class VMFOUNDATION_EXPORTS RawReader
 	::vm::Ref<IFileMapping> io;
 	unsigned char *ptr;
 	uint64_t seekAmt;
+
+
+
+	
+
+	
 
 public:
 	using PosType = unsigned long long;
@@ -58,8 +65,16 @@ class VMFOUNDATION_EXPORTS RawReaderIO
 	uint64_t offset;
 	std::ifstream file;
 	unsigned char *ptr;
+	
 	uint64_t seekAmt;
 	uint64_t totalBytes;
+	
+	DataArena<64> stagingBuffer;
+	
+
+
+	Vec3i stagingBufferSize;
+	Vec3i readingBufferSize;
 
 	
 	//Bound3i bound;
@@ -78,7 +93,10 @@ public:
 	size_t readRegion( const vm::Vec3i &start,
 					   const vm::Size3 &size, unsigned char *buffer );
 
-	size_t readRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer );
+	
+	size_t readRegionNoBoundary( const vm::Vec3i &start,
+					   const vm::Size3 &size, unsigned char *buffer );
+	
 
 	Size3 GetDimension() const
 	{
@@ -86,9 +104,12 @@ public:
 	}
 	size_t GetElementSize() const { return voxelSize; }
 
+	
+	
 private:
+	size_t Transport3D( const unsigned char *src, const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer );
 	std::size_t readRegion__( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer );
-	bool convexRead( const vm::Size3 &size )
+	bool convexRead( const vm::Size3 &size )const
 	{
 		/// A minimum continuous unit for reading
 
@@ -100,21 +121,9 @@ private:
 		|| ( size.x == dimensions.x && size.z == 1 )
 		|| ( size.y == 1 && size.z == 1 );
 	}
+	
 
-	bool convexReadNoBoundary(const Vec3i & start,const Size3 &size )
-	{
-		/// A minimum continuous unit for reading
-
-		// 3 cases for convex reads:
-		// - We're reading a set of slices of the volume
-		// - We're reading a set of scanlines of a slice
-		// - We're reading a set of voxels in a scanline
-		return ( start.x + size.x == dimensions.x && start.y + size.y == dimensions.y )
-		|| ( start.x + size.x == dimensions.x && size.z == 1 )
-		|| ( size.y == 1 && size.z == 1 );
-	}
-
-	size_t readRegionNoBoundary__( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer );
+	//size_t transport3d__( const unsigned char *src, const vm::Vec3i &start, const vm::Size3 &size, unsigned char *dst );
 	
 	//bool inside(const ysl::Vec3i& start, const ysl::Size3 & size)const
 	//{

@@ -4,6 +4,7 @@
 #include <VMFoundation/libraryloader.h>
 #include <VMFoundation/pluginloader.h>
 #include <VMUtils/log.hpp>
+#include <VMat/geometry.h>
 #include <filesystem>
 
 #include <cstring>  // memcpy
@@ -135,7 +136,64 @@ size_t RawReaderIO::readRegion( const vm::Vec3i &start, const vm::Size3 &size, u
 
 size_t RawReaderIO::readRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer )
 {
-	return readRegionNoBoundary__( start, size, buffer );
+	const Bound3i dataBound( { 0, 0, 0 }, Point3i( dimensions.x, dimensions.y, dimensions.z ) );
+	const Bound3i readBound( { start.x, start.y, start.z }, Point3i( size.x, size.y, size.z ) + start );
+	const auto isectBound = dataBound.IntersectWidth( readBound );
+	const auto dstSize = Size3(readBound.Diagonal());
+	const auto dig = isectBound.Diagonal();
+	const auto readSize = Size3( dig.x, dig.y, dig.z );
+	auto buf = stagingBuffer.Alloc<unsigned char>( isectBound.Volume(), true );
+	const auto read = readRegion( { isectBound.min.x, isectBound.min.y, isectBound.min.z }, readSize, buf );
+	assert( read == readSize.Prod() );
+	const auto newStart = isectBound.min - readBound.min;
+
+	std::function<size_t( unsigned char *,
+						const Vec3i &,
+						const unsigned char *, 
+		                const Size3 & )>
+	  carray = [&carray,this,&dstSize](unsigned char * dst,
+		  		  const Vec3i & start,
+		  const unsigned char * src,
+		  const Size3 & srcSize)
+	{
+		  //assert( size.x > 0 && size.y > 0 && size.z > 0 );
+		  // Figure out how to actually read the region since it may not be a full X/Y slice and
+		  // we'll need to read the portions in X & Y and seek around to skip regions
+		  size_t r = 0;
+		  if ( 
+			  ( srcSize.x == dstSize.x && srcSize.y == dstSize.y ) 
+			  || ( srcSize.x == dstSize.x && srcSize.z == 1 ) 
+			  || ( srcSize.y == 1 && srcSize.z == 1 )
+			  )  // continuous read
+		  {
+			  const uint64_t offset = ( start.x + dstSize.x * ( start.y + dstSize.y * start.z ) ) * voxelSize;
+			  memcpy( dst + offset, src, voxelSize * srcSize.x * srcSize.y * srcSize.z );
+			  r = srcSize.x * srcSize.y * srcSize.z;  // voxel count
+		  } else if ( srcSize.x == dstSize.x ) {	  // read by slice
+			  for ( auto z = start.z; z < start.z + srcSize.z; ++z ) {
+				  const Vec3i startSlice( start.x, start.y, z );
+				  const Size3 sizeSlice( srcSize.x, srcSize.y, 1 );
+				  r += carray( dst, startSlice, src + r * voxelSize, sizeSlice );
+			  }
+		  } else {
+			  for ( auto z = start.z; z < start.z + srcSize.z; ++z ) {
+				  for ( auto y = start.y; y < start.y + srcSize.y; ++y ) {
+					  const Vec3i startLine( start.x, y, z );
+					  const Size3 sizeLine( srcSize.x, 1, 1 );
+					  r += carray( dst, startLine, src + r * voxelSize,sizeLine);
+				  }
+			  }
+		  }
+		  return r;
+	};
+
+	return carray( buffer, newStart, buf, readSize );
+}
+
+size_t RawReaderIO::Transport3D( const unsigned char *src, const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer )
+{
+	//return transport3d__( src, start, size, buffer );
+	return 0;
 }
 
 std::size_t RawReaderIO::readRegion__( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer )
@@ -184,70 +242,39 @@ std::size_t RawReaderIO::readRegion__( const vm::Vec3i &start, const vm::Size3 &
 	return read;
 }
 
-size_t RawReaderIO::readRegionNoBoundary__( const vm::Vec3i &start, const vm::Size3 &size, unsigned char * buffer )
-{
-	assert( size.x > 0 && size.y > 0 && size.z > 0 );
-
-	const uint64_t startRead = ( start.x + dimensions.x * ( start.y + dimensions.y * start.z ) ) * voxelSize;
-	if ( offset != startRead ) {
-		seekAmt += startRead - offset;
-		seekAmt = startRead - offset;
-		if ( !file.seekg( seekAmt, std::ios_base::cur ) ) {
-			throw std::runtime_error( "ImportRAW: Error seeking file" );
-		}
-		offset = startRead;
-	}
-
-	// Figure out how to actually read the region since it may not be a full X/Y slice and
-	// we'll need to read the portions in X & Y and seek around to skip regions
-	size_t read = 0;
-	if ( convexReadNoBoundary( start, size ) )  // continuous read
-	{
-		size_t read__ = 0;
-		const auto xlSize = std::max( 0 - start.x, 0 );
-		const auto ybSize = std::max( 0 - start.y, 0 );
-		const auto zdSize = std::max( 0 - start.z, 0 );
-
-		const auto xrSize = std::max( 0, int(start.x + size.x - dimensions.x ));
-		const auto yfSize = std::max( 0, int(start.y + size.y - dimensions.y ));
-		const auto zuSize = std::max( 0, int(start.z + size.z - dimensions.z ));
-
-		const auto xmSize = size.x - xlSize - xrSize;
-		const auto ymSize = size.y - ybSize - yfSize;
-		const auto zmSize = size.z - zdSize - zuSize;
-		
-
-		memset( buffer + read__,0, size_t( xlSize ) * ybSize * zdSize * voxelSize );
-		read__ += size_t( xlSize ) * ybSize * zdSize;
-
-		file.read( reinterpret_cast<char *>( buffer + read__ ), voxelSize * xmSize * ymSize * zmSize );
-		read__ += xmSize  * ymSize * zmSize;
-
-		memset( buffer + read__, 0, size_t( xrSize ) * yfSize * zmSize );
-		read__ += size_t( xrSize ) * yfSize * zmSize;
-
-		read = size.x * size.y * size.z;  // voxel count
-
-		assert( read__ == read );
-
-		offset = startRead + read * voxelSize;
-	} else if ( start.x + size.x == dimensions.x ) {  // read by slice
-		for ( auto z = start.z; z < start.z + size.z; ++z ) {
-			const vm::Vec3i startSlice( start.x, start.y, z );
-			const vm::Size3 sizeSlice( size.x, size.y, 1 );
-			read += readRegionNoBoundary__( startSlice, sizeSlice, buffer + read * voxelSize );
-		}
-	} else {
-		for ( auto z = start.z; z < start.z + size.z; ++z ) {
-			for ( auto y = start.y; y < start.y + size.y; ++y ) {
-				const vm::Vec3i startLine( start.x, y, z );
-				const vm::Size3 sizeLine( size.x, 1, 1 );
-				read += readRegionNoBoundary__( startLine, sizeLine, buffer + read * voxelSize );
-			}
-		}
-	}
-	return read;
-}
+//size_t RawReaderIO::transport3d__( unsigned char *dst,
+//								   const vm::Vec3i &start,
+//								   const vm::Size3 &size,
+//								   const unsigned char *src,
+//								   const Vec3i &srcSize )
+//{
+//	assert( size.x > 0 && size.y > 0 && size.z > 0 );
+//	// Figure out how to actually read the region since it may not be a full X/Y slice and
+//	// we'll need to read the portions in X & Y and seek around to skip regions
+//
+//	size_t read = 0;
+//	if ( convexRead( size ) )  // continuous read
+//	{
+//		const uint64_t startRead = ( start.x + dimensions.x * ( start.y + dimensions.y * start.z ) ) * voxelSize;
+//		memcpy( dst + startRead, src, voxelSize * size.x * size.y * size.z );
+//		read = size.x * size.y * size.z;	// voxel count
+//	} else if ( size.x == dimensions.x ) {  // read by slice
+//		for ( auto z = start.z; z < start.z + size.z; ++z ) {
+//			const vm::Vec3i startSlice( start.x, start.y, z );
+//			const vm::Size3 sizeSlice( size.x, size.y, 1 );
+//			read += transport3d__( src + read * voxelSize, startSlice, sizeSlice, dst );
+//		}
+//	} else {
+//		for ( auto z = start.z; z < start.z + size.z; ++z ) {
+//			for ( auto y = start.y; y < start.y + size.y; ++y ) {
+//				const vm::Vec3i startLine( start.x, y, z );
+//				const vm::Size3 sizeLine( size.x, 1, 1 );
+//				read += transport3d__( src + read * voxelSize, startLine, sizeLine, dst );
+//			}
+//		}
+//	}
+//	return read;
+//}
 
 void RawFile::Create()
 {
@@ -255,9 +282,7 @@ void RawFile::Create()
 	pageCount = Size3( vm::RoundUpDivide( dataDimension.x, blockDimension.x ),
 					   RoundUpDivide( dataDimension.y, blockDimension.y ),
 					   RoundUpDivide( dataDimension.z, blockDimension.z ) );
-	exact = (dataDimension.x % blockDimension.x == 0)
-	&& (dataDimension.y % blockDimension.y ==0)
-	&& (dataDimension.z % blockDimension.z == 0);
+	exact = ( dataDimension.x % blockDimension.x == 0 ) && ( dataDimension.y % blockDimension.y == 0 ) && ( dataDimension.z % blockDimension.z == 0 );
 
 	buf.reset( new char[ dataDimension.Prod() * rawReader->GetElementSize() ] );
 }
@@ -335,11 +360,11 @@ const void *RawFile::GetPage( size_t pageID )
 	if ( !exact ) {
 		const auto idx3d = vm::Dim( pageID, { pageCount.x, pageCount.y } );
 		rawReader->readRegionNoBoundary( Vec3i( idx3d.x * blockDimension.x, idx3d.y * blockDimension.y, idx3d.z * blockDimension.z ),
-							   blockDimension, (unsigned char *)buf.get() );
+										 blockDimension, (unsigned char *)buf.get() );
 	} else {
-	    const auto idx3d = vm::Dim( pageID, { pageCount.x, pageCount.y } );
-		rawReader->readRegion( Vec3i(idx3d.x * blockDimension.x,idx3d.y*blockDimension.y ,idx3d.z * blockDimension.z ),
-			blockDimension, (unsigned char *)buf.get() );
+		const auto idx3d = vm::Dim( pageID, { pageCount.x, pageCount.y } );
+		rawReader->readRegion( Vec3i( idx3d.x * blockDimension.x, idx3d.y * blockDimension.y, idx3d.z * blockDimension.z ),
+							   blockDimension, (unsigned char *)buf.get() );
 	}
 	return nullptr;
 }

@@ -136,26 +136,6 @@ void Block3DCache::Create( I3DBlockFilePluginInterface *pageFile )
 	}
 }
 
-Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator ) :
-  AbstrMemoryCache( cnt ),
-  d_ptr( new Block3DCache__pImpl( this ) )
-{
-	VM_IMPL( Block3DCache )
-
-	const auto cap = fileName.substr( fileName.find_last_of( '.' ) );
-	auto p = PluginLoader::CreatePlugin<I3DBlockFilePluginInterface>( cap );
-	if ( p == nullptr ) {
-		throw std::runtime_error( "Failed to load the plugin that is able to read " + cap + "file" );
-	}
-	
-	p->Open( fileName );
-
-	_->cacheDim = evaluator( p );
-
-	SetDiskFileCache( p );
-	SetCachePolicy( VM_NEW<LRUCachePolicy>() );
-}
-
 	Block3DCache::~Block3DCache()
 {
 }
@@ -174,15 +154,6 @@ void *Block3DCache::GetPageStorage_Implement( size_t pageID )
 	return _->m_volumeCache->GetBlockData( pageID );
 }
 
-Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, const std::string &fileName ) :
-  Block3DCache( cnt, fileName, []( I3DBlockFilePluginInterface *pageFile ) {
-	  const auto ps = pageFile->GetPageSize();
-	  constexpr size_t maxMemory = 1024 * 1024 * 1024;  // 1GB
-	  const auto d = maxMemory / ps;
-	  return Size3{ d, 1, 1 };
-  } )
-{
-}
 
 Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator ) :
   AbstrMemoryCache( cnt )

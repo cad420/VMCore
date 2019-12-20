@@ -65,3 +65,9 @@ target_include_directories(vmcore PUBLIC "external" "include" "extension")
 
 install(TARGETS vmcore LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
 install(DIRECTORY "include" DESTINATION "include/VMutils")
+
+
+#option(VMCORE_BUILD_TEST ON)
+#if(VMCORE_BUILD_TEST)
+add_subdirectory(test)
+#endif()
