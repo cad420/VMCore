@@ -69,7 +69,8 @@ void GridVolumeFile::Open( const std::string &fileName )
 	
 	// a .vifo file
 	std::ifstream vifo( fileName );
-	if ( vifo.is_open() == false ) {
+	if ( vifo.is_open() == false ) 
+	{
 		throw std::runtime_error( "Failed to open .vifo file" );
 	}
 

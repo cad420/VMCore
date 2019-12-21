@@ -172,6 +172,9 @@ size_t RawReader::readRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 
 	if ( isectBound.Volume() == 0 ) 
 	{
 		memset( buffer, 0, size.Prod() *_->voxelSize );
+		return size.Prod();
+	} else if (_->dataBound.InsideEx(isectBound) == true) {
+		return readRegion( start, size, buffer );
 	}
 	const auto dig = isectBound.Diagonal();
 	const auto dstSize = Size3( readBound.Diagonal() );
