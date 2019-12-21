@@ -8,16 +8,13 @@
 
 namespace vm
 {
-
-
 class GridVolumeFile__pImpl
 {
 	VM_DECL_API( GridVolumeFile )
 public:
-
 	GridVolumeFile__pImpl( GridVolumeFile *api ) :
 	  q_ptr( api ) {}
-	
+
 	std::unique_ptr<RawReader> rawReader;
 	Size3 blockDimension;
 	int blockSizeInLog = -1;
@@ -28,11 +25,10 @@ public:
 	std::unique_ptr<char[]> buf;  // buffer for a block
 };
 
-
 void GridVolumeFile::Create()
 {
 	VM_IMPL( GridVolumeFile )
-	
+
 	const auto dataDimension = _->rawReader->GetDimension();
 	_->pageCount = Size3( vm::RoundUpDivide( dataDimension.x, _->blockDimension.x ),
 						  RoundUpDivide( dataDimension.y, _->blockDimension.y ),
@@ -42,13 +38,15 @@ void GridVolumeFile::Create()
 	_->buf.reset( new char[ dataDimension.Prod() * _->rawReader->GetElementSize() ] );
 }
 
+
+
 GridVolumeFile::GridVolumeFile( IRefCnt *cnt,
-						const std::string &fileName,
-						const vm::Size3 &dimensions,
-						size_t voxelSize,
-						int blockDimensionInLog ):
-d_ptr( new GridVolumeFile__pImpl(this) ),
- EverythingBase<I3DBlockFilePluginInterface>( cnt )
+								const std::string &fileName,
+								const vm::Size3 &dimensions,
+								size_t voxelSize,
+								int blockDimensionInLog ) :
+  d_ptr( new GridVolumeFile__pImpl( this ) ),
+  EverythingBase<I3DBlockFilePluginInterface>( cnt )
 {
 	VM_IMPL( GridVolumeFile )
 	_->blockDimension = Size3( 1 << blockDimensionInLog, 1 << blockDimensionInLog, 1 << blockDimensionInLog );
@@ -64,13 +62,11 @@ GridVolumeFile::GridVolumeFile( IRefCnt *cnt ) :
 
 void GridVolumeFile::Open( const std::string &fileName )
 {
-
 	VM_IMPL( GridVolumeFile )
-	
+
 	// a .vifo file
 	std::ifstream vifo( fileName );
-	if ( vifo.is_open() == false ) 
-	{
+	if ( vifo.is_open() == false ) {
 		throw std::runtime_error( "Failed to open .vifo file" );
 	}
 
@@ -125,14 +121,14 @@ const void *GridVolumeFile::GetPage( size_t pageID )
 {
 	VM_IMPL( GridVolumeFile )
 	// read boundary
-	if ( !_->exact ) {
-		const auto idx3d = vm::Dim( pageID, { _->pageCount.x, _->pageCount.y } );
-		_->rawReader->readRegionNoBoundary( Vec3i( idx3d.x * _->blockDimension.x, idx3d.y * _->blockDimension.y, idx3d.z * _->blockDimension.z ),
-											_->blockDimension, (unsigned char *)_->buf.get() );
+	const auto idx3d = vm::Dim( pageID, { _->pageCount.x, _->pageCount.y } );
+	const auto start = Vec3i( idx3d.x * _->blockDimension.x, idx3d.y * _->blockDimension.y, idx3d.z * _->blockDimension.z );
+	if ( !_->exact) {
+		_->rawReader->readRegionNoBoundary( start,
+										_->blockDimension, (unsigned char *)_->buf.get() );
 	} else {
-		const auto idx3d = vm::Dim( pageID, { _->pageCount.x, _->pageCount.y } );
-		_->rawReader->readRegion( Vec3i( idx3d.x * _->blockDimension.x, idx3d.y * _->blockDimension.y, idx3d.z * _->blockDimension.z ),
-							   _->blockDimension, (unsigned char *)_->buf.get() );
+		_->rawReader->readRegion( start,
+								  _->blockDimension, (unsigned char *)_->buf.get() );
 	}
 	return nullptr;
 }
@@ -160,4 +156,4 @@ size_t GridVolumeFile::ReadRegionNoBoundary( const Vec3i &start, const Size3 &si
 	const auto _ = d_func();
 	return _->rawReader->readRegionNoBoundary( start, size, buffer );
 }
-}
+}  // namespace vm
