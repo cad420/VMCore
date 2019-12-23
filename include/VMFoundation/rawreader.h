@@ -1,13 +1,9 @@
 
 #ifndef _RAWREADER_H_
 #define _RAWREADER_H_
+
 #include <VMat/geometry.h>
-#include <VMCoreExtension/ifilemappingplugininterface.h>
 #include <VMFoundation/foundation_config.h>
-#include <VMUtils/ref.hpp>
-#include <fstream>
-#include <VMCoreExtension/i3dblockfileplugininterface.h>
-#include <VMFoundation/dataarena.h>
 #include <VMUtils/common.h>
 
 namespace vm

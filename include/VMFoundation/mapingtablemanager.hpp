@@ -48,52 +48,6 @@ struct IVideoMemoryParamsEvaluator
 	virtual ~IVideoMemoryParamsEvaluator() = default;
 };
 
-//struct DefaultMemoryParamsEvaluator : IVideoMemoryParamsEvaluator
-//{
-//private:
-//	const Size3 virtualDim;
-//	const Size3 blockSize;
-//	const std::size_t videoMem;
-//	int textureUnitCount = 0;
-//	Size3 finalBlockDim = { 0, 0, 0 };
-//
-//public:
-//	DefaultMemoryParamsEvaluator( const vm::Size3 &virtualDim, const Size3 &blockSize, std::size_t videoMemory ) :
-//	  virtualDim( virtualDim ),
-//	  blockSize( blockSize ),
-//	  videoMem( videoMemory )
-//	{
-//		std::size_t d = 0;
-//		textureUnitCount = 1;
-//		while ( ++d ) 
-//		{
-//			const auto memory = d * d * d * blockSize.Prod();
-//			if ( memory >= videoMem * 1024 )
-//				break;
-//		}
-//		while ( d > 10 ) {
-//			d /= 2;
-//			textureUnitCount++;
-//		}
-//		finalBlockDim = Size3{ d, d, d };
-//	}
-//
-//	Size3 EvalPhysicalTextureSize() const override
-//	{
-//		return blockSize * EvalPhysicalBlockDim();
-//	}
-//	Size3 EvalPhysicalBlockDim() const override
-//	{
-//		return { 10, 10, 10 };
-//	}
-//
-//	int EvalPhysicalTextureCount() const override
-//	{
-//		return 3;
-//	}
-//	~DefaultMemoryParamsEvaluator() = default;
-//};
-
 struct LODPageTableInfo
 {
 	Vec3i virtualSpaceSize;

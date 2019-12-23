@@ -5,8 +5,10 @@
 #include <VMFoundation/pluginloader.h>
 #include <VMUtils/log.hpp>
 #include <VMat/geometry.h>
-#include <filesystem>
+#include <VMFoundation/dataarena.h>
 
+#include <fstream>
+#include <filesystem>
 #include <cstring>  // memcpy
 #include <cassert>
 
@@ -168,13 +170,14 @@ size_t RawReader::readRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 
 	VM_IMPL( RawReader )
 	
 	const Bound3i readBound( { start.x, start.y, start.z }, Point3i( size.x, size.y, size.z ) + start );
+	if ( _->dataBound.InsideEx( readBound ) == true ) {
+		return _->readRegion( start, size, buffer );
+	}
 	const auto isectBound = _->dataBound.IntersectWidth( readBound );
-	if ( isectBound.Volume() == 0 ) 
+	if ( isectBound.IsNull()) 
 	{
 		memset( buffer, 0, size.Prod() *_->voxelSize );
 		return size.Prod();
-	} else if (_->dataBound.InsideEx(isectBound) == true) {
-		return readRegion( start, size, buffer );
 	}
 	const auto dig = isectBound.Diagonal();
 	const auto dstSize = Size3( readBound.Diagonal() );
