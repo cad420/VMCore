@@ -18,7 +18,6 @@ class VMFOUNDATION_EXPORTS GridVolumeFile : public EverythingBase<I3DBlockFilePl
 {
 	VM_DECL_IMPL( GridVolumeFile )
 	void Create();
-
 public:
 	GridVolumeFile( IRefCnt *cnt, const std::string &fileName, const vm::Size3 &dimensions, size_t voxelSize, int blockDimensionInLog );
 	GridVolumeFile( IRefCnt *cnt );

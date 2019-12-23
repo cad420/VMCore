@@ -17,28 +17,44 @@ public:
 
 	std::unique_ptr<RawReader> rawReader;
 	Size3 blockDimension;
+
 	int blockSizeInLog = -1;
 	Size3 pageCount;
 	const int padding = 0;
-	bool exact = false;
-	void Create();
+
+	bool exact[ 3 ] = { false, false, false };
+	//Vec3i sampleStart;
+	//void Create();
 	std::unique_ptr<char[]> buf;  // buffer for a block
+
+	bool IsBoundaryBlock( const Point3i &idx3d );
 };
 
+
+
+bool GridVolumeFile__pImpl::IsBoundaryBlock( const Point3i &idx3d )
+{
+	return true;
+}
 void GridVolumeFile::Create()
 {
 	VM_IMPL( GridVolumeFile )
+	assert( _->blockSizeInLog != -1 );
+	assert( _->padding >= 0 );
 
 	const auto dataDimension = _->rawReader->GetDimension();
 	_->pageCount = Size3( vm::RoundUpDivide( dataDimension.x, _->blockDimension.x ),
 						  RoundUpDivide( dataDimension.y, _->blockDimension.y ),
 						  RoundUpDivide( dataDimension.z, _->blockDimension.z ) );
-	_->exact = ( dataDimension.x % _->blockDimension.x == 0 ) && ( dataDimension.y % _->blockDimension.y == 0 ) && ( dataDimension.z % _->blockDimension.z == 0 );
+
+	_->exact[ 0 ] = dataDimension.x % _->blockDimension.x == 0;
+	_->exact[ 1 ] = dataDimension.y % _->blockDimension.y == 0;
+	_->exact[ 2 ] = dataDimension.z % _->blockDimension.z == 0;
 
 	_->buf.reset( new char[ dataDimension.Prod() * _->rawReader->GetElementSize() ] );
+
+	const auto &p = _->padding;
 }
-
-
 
 GridVolumeFile::GridVolumeFile( IRefCnt *cnt,
 								const std::string &fileName,
@@ -123,9 +139,9 @@ const void *GridVolumeFile::GetPage( size_t pageID )
 	// read boundary
 	const auto idx3d = vm::Dim( pageID, { _->pageCount.x, _->pageCount.y } );
 	const auto start = Vec3i( idx3d.x * _->blockDimension.x, idx3d.y * _->blockDimension.y, idx3d.z * _->blockDimension.z );
-	if ( !_->exact) {
+	if ( _->IsBoundaryBlock( idx3d ) ) {
 		_->rawReader->readRegionNoBoundary( start,
-										_->blockDimension, (unsigned char *)_->buf.get() );
+											_->blockDimension, (unsigned char *)_->buf.get() );
 	} else {
 		_->rawReader->readRegion( start,
 								  _->blockDimension, (unsigned char *)_->buf.get() );
@@ -156,4 +172,11 @@ size_t GridVolumeFile::ReadRegionNoBoundary( const Vec3i &start, const Size3 &si
 	const auto _ = d_func();
 	return _->rawReader->readRegionNoBoundary( start, size, buffer );
 }
+
+
+
+
+
+
+
 }  // namespace vm
