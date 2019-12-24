@@ -279,32 +279,32 @@ struct _std140_layout_LODInfo
 	uint32_t pad[ 1 ];
 };
 
-class LargeVolumeDataSet
-{
-public:
-	LargeVolumeDataSet() = default;
-	LargeVolumeDataSet( const std::vector<std::string> &fileNames )
-	{
-		Open( fileNames );
-	}
-
-	void Open( const std::vector<std::string> &fileNames )
-	{
-		vm::PluginLoader::GetPluginLoader()->LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
-
-		const auto lodCount = fileNames.size();
-		cpuVolumeData.resize( lodCount );
-		for ( auto i = 0ULL; i < lodCount; i++ ) {
-			cpuVolumeData[ i ] = VM_NEW<Block3DCache>( fileNames[ i ] );
-		}
-	}
-	Block3DCache *GetVolumeDataMemory( int lod )
-	{
-		return cpuVolumeData[ lod ];
-	}
-
-private:
-	std::vector<::vm::Ref<Block3DCache>> cpuVolumeData;
-};
+//class LargeVolumeDataSet
+//{
+//public:
+//	LargeVolumeDataSet() = default;
+//	LargeVolumeDataSet( const std::vector<std::string> &fileNames )
+//	{
+//		Open( fileNames );
+//	}
+//
+//	void Open( const std::vector<std::string> &fileNames )
+//	{
+//		vm::PluginLoader::GetPluginLoader()->LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
+//
+//		const auto lodCount = fileNames.size();
+//		cpuVolumeData.resize( lodCount );
+//		for ( auto i = 0ULL; i < lodCount; i++ ) {
+//			cpuVolumeData[ i ] = VM_NEW<Block3DCache>( fileNames[ i ] );
+//		}
+//	}
+//	Block3DCache *GetVolumeDataMemory( int lod )
+//	{
+//		return cpuVolumeData[ lod ];
+//	}
+//
+//private:
+//	std::vector<::vm::Ref<Block3DCache>> cpuVolumeData;
+//};
 
 }  // namespace ysl
