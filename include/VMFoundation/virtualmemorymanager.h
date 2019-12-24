@@ -120,6 +120,9 @@ public:
 		 * It could be invalid when next call because its data has been swapped out.
 		 */
 	virtual const void *GetPage( size_t pageID );
+
+	virtual void * GetRawData() = 0;
+	
 	virtual ~AbstrMemoryCache();
 
 protected:

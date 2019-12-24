@@ -10,6 +10,7 @@ namespace vm
 struct IBlock3DArrayAdapter
 {
 	virtual void *GetBlockData( size_t blockID ) = 0;
+	virtual void *GetRawData() = 0;
 	virtual ~IBlock3DArrayAdapter() = default;
 };
 
@@ -22,6 +23,7 @@ public:
 	GenericBlockCache( int xb, int yb, int zb, T *data ) :
 	  Block3DArray<T, log>( xb * ( 1 << log ), yb * ( 1 << log ), zb * ( 1 << log ), data ) {}
 	void *GetBlockData( size_t blockID ) override { return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( blockID ) ); }
+	void *GetRawData() override { return Block3DArray<T, log>::Data(); }
 };
 
 

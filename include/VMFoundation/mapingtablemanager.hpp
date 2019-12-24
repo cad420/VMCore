@@ -43,8 +43,6 @@ struct IVideoMemoryParamsEvaluator
 	virtual Size3 EvalPhysicalTextureSize() const = 0;
 	virtual int EvalPhysicalTextureCount() const = 0;
 	virtual Size3 EvalPhysicalBlockDim() const = 0;
-	//	virtual int EvalHashBufferSize()const = 0;
-	//	virtual int EvalIDBufferCount()const = 0;
 	virtual ~IVideoMemoryParamsEvaluator() = default;
 };
 
@@ -79,50 +77,11 @@ public:
 private:
 	using LRUList = std::list<std::pair<PageTableEntryAbstractIndex, PhysicalMemoryBlockIndex>>;
 	using LRUMap = std::unordered_map<size_t, LRUList::iterator>;
-
-	Linear3DArray<PageTableEntry> pageTable;
-
+	//Linear3DArray<PageTableEntry> pageTable;
 	std::vector<Linear3DArray<PageTableEntry>> lodPageTables;
-
 	LRUMap lruMap;
 	LRUList lruList;
-
 	std::vector<size_t> blocks;
-
-	void InitCPUPageTable( const Size3 &blockDim, void *external )
-	{
-		// Only initialization flag filed, the table entry is determined by cache miss at run time using lazy evaluation policy.
-		if ( external == nullptr )
-			pageTable = Linear3DArray<PageTableEntry>( blockDim, nullptr );
-		else
-			pageTable = Linear3DArray<PageTableEntry>( blockDim.x, blockDim.y, blockDim.z, (PageTableEntry *)external, false );
-		size_t blockId = 0;
-		for ( auto z = 0; z < pageTable.Size().z; z++ )
-			for ( auto y = 0; y < pageTable.Size().y; y++ )
-				for ( auto x = 0; x < pageTable.Size().x; x++ ) {
-					PageTableEntry entry;
-					entry.x = -1;
-					entry.y = -1;
-					entry.z = -1;
-					entry.SetMapFlag( EM_UNMAPPED );
-					//entry.w = EM_UNMAPPED;
-					( pageTable )( x, y, z ) = entry;
-					lruMap[ blockId++ ] = lruList.end();
-				}
-	}
-	void InitLRUList( const Size3 &physicalMemoryBlock, int unitCount )
-	{
-		for ( int i = 0; i < unitCount; i++ )
-			for ( auto z = 0; z < physicalMemoryBlock.z; z++ )
-				for ( auto y = 0; y < physicalMemoryBlock.y; y++ )
-					for ( auto x = 0; x < physicalMemoryBlock.x; x++ ) {
-						lruList.emplace_back(
-						  PageTableEntryAbstractIndex( -1, -1, -1 ),
-						  PhysicalMemoryBlockIndex( x, y, z, i ) );
-					}
-	}
-
-	//void InitCPUPageTable();
 
 public:
 	using size_type = std::size_t;
@@ -130,24 +89,6 @@ public:
 			 * \brief
 			 * \param virtualSpaceSize virtual space size
 			 */
-	MappingTableManager( const Size3 &virtualSpaceSize, const Size3 &physicalSpaceSize )
-	{
-		InitCPUPageTable( virtualSpaceSize, nullptr );
-		InitLRUList( physicalSpaceSize, 1 );
-	}
-
-	MappingTableManager( const Size3 &virtualSpaceSize, const Size3 &physicalSpaceSize, int physicalSpaceCount )
-	{
-		InitCPUPageTable( virtualSpaceSize, nullptr );
-		InitLRUList( physicalSpaceSize, physicalSpaceCount );
-	}
-
-	MappingTableManager( const Size3 &virtualSpaceSize, const Size3 &physicalSpaceSize, int physicalSpaceCount, void *external )
-	{
-		assert( external );
-		InitCPUPageTable( virtualSpaceSize, external );
-		InitLRUList( physicalSpaceSize, physicalSpaceCount );
-	}
 
 	MappingTableManager( const std::vector<LODPageTableInfo> &infos, const Size3 &physicalSpaceSize, int physicalSpaceCount )
 	{
@@ -190,15 +131,6 @@ public:
 					}
 	}
 
-	/*
-	 * \a Warning:
-	 * The following two functions only can be used when the object is initialized with the constructors with no-LOD form
-	 * It should be removed afterwards
-	 */
-	[[deprecated("This function only can be used when the object is initialized with the constructors with no-LOD form")]]const void *GetData() const { return pageTable.Data(); }
-
-	[[deprecated("This function only can be used when the object is initialized with the constructors with no-LOD form")]]size_t GetBytes() { return pageTable.Size().Prod() * sizeof( PageTableEntry ); }
-	
 	const void *GetData( int lod ) const
 	{
 		assert( lod < lodPageTables.size() );
@@ -279,32 +211,5 @@ struct _std140_layout_LODInfo
 	uint32_t pad[ 1 ];
 };
 
-//class LargeVolumeDataSet
-//{
-//public:
-//	LargeVolumeDataSet() = default;
-//	LargeVolumeDataSet( const std::vector<std::string> &fileNames )
-//	{
-//		Open( fileNames );
-//	}
-//
-//	void Open( const std::vector<std::string> &fileNames )
-//	{
-//		vm::PluginLoader::GetPluginLoader()->LoadPlugins( "plugins" );  // Load reader plugins used in MemoryPageAdapter
-//
-//		const auto lodCount = fileNames.size();
-//		cpuVolumeData.resize( lodCount );
-//		for ( auto i = 0ULL; i < lodCount; i++ ) {
-//			cpuVolumeData[ i ] = VM_NEW<Block3DCache>( fileNames[ i ] );
-//		}
-//	}
-//	Block3DCache *GetVolumeDataMemory( int lod )
-//	{
-//		return cpuVolumeData[ lod ];
-//	}
-//
-//private:
-//	std::vector<::vm::Ref<Block3DCache>> cpuVolumeData;
-//};
 
 }  // namespace ysl

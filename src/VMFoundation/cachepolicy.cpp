@@ -5,12 +5,12 @@
 namespace vm
 {
 
-class LRUCachePolicy__pImpl
+class ListBasedLRUCachePolicy__pImpl
 {
-	VM_DECL_API( LRUCachePolicy )
+	VM_DECL_API( ListBasedLRUCachePolicy )
 
 public:
-	LRUCachePolicy__pImpl( LRUCachePolicy *api ) :
+	ListBasedLRUCachePolicy__pImpl( ListBasedLRUCachePolicy *api ) :
 	  q_ptr( api ) {}
 
 	struct LRUListCell;
@@ -30,29 +30,30 @@ public:
 };
 
 
-LRUCachePolicy::LRUCachePolicy( ::vm::IRefCnt *cnt ):
-	AbstrCachePolicy( cnt ),d_ptr( new LRUCachePolicy__pImpl(this) )
+ListBasedLRUCachePolicy::ListBasedLRUCachePolicy( ::vm::IRefCnt *cnt ) :
+  AbstrCachePolicy( cnt ),
+  d_ptr( new ListBasedLRUCachePolicy__pImpl( this ) )
 {
 }
 
-bool LRUCachePolicy::QueryPage( size_t pageID )
+bool ListBasedLRUCachePolicy::QueryPage( size_t pageID )
 {
-	VM_IMPL( LRUCachePolicy )
+	VM_IMPL( ListBasedLRUCachePolicy )
 	return _->m_blockIdInCache.find( pageID ) == _->m_blockIdInCache.end() ? false : true;
 }
 
-void LRUCachePolicy::UpdatePage( size_t pageID )
+void ListBasedLRUCachePolicy::UpdatePage( size_t pageID )
 {
-	VM_IMPL( LRUCachePolicy )
+	VM_IMPL( ListBasedLRUCachePolicy )
 	const auto it = _->m_blockIdInCache.find( pageID );
 	if ( it == _->m_blockIdInCache.end() ) {
 		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second );  // move the node that it->second points to the head.
 	}
 }
 
-size_t LRUCachePolicy::QueryAndUpdate( size_t pageID )
+size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 {
-	VM_IMPL( LRUCachePolicy )
+	VM_IMPL( ListBasedLRUCachePolicy )
 	const auto it = _->m_blockIdInCache.find( pageID );
 	if ( it == _->m_blockIdInCache.end() ) {
 		// replace the last block in cache
@@ -71,16 +72,22 @@ size_t LRUCachePolicy::QueryAndUpdate( size_t pageID )
 	}
 }
 
-	LRUCachePolicy::~LRUCachePolicy()
+void *ListBasedLRUCachePolicy::GetRawData()
 {
+	return nullptr;
 }
 
-void LRUCachePolicy::InitEvent( AbstrMemoryCache *cache )
+ListBasedLRUCachePolicy::~ListBasedLRUCachePolicy()
 {
-	VM_IMPL( LRUCachePolicy )
+	
+}
+
+void ListBasedLRUCachePolicy::InitEvent( AbstrMemoryCache *cache )
+{
+	VM_IMPL( ListBasedLRUCachePolicy )
 	assert( cache );
-	LRUCachePolicy__pImpl::LRUList().swap( _->m_lruList );
+	ListBasedLRUCachePolicy__pImpl::LRUList().swap( _->m_lruList );
 	for ( auto i = std::size_t( 0 ); i < cache->GetPhysicalPageCount(); i++ )
-		_->m_lruList.push_front( LRUCachePolicy__pImpl::LRUListCell( i, _->m_blockIdInCache.end() ) );
+		_->m_lruList.push_front( ListBasedLRUCachePolicy__pImpl::LRUListCell( i, _->m_blockIdInCache.end() ) );
 }
 }  // namespace ysl

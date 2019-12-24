@@ -9,19 +9,26 @@
 
 namespace vm
 {
-class LRUCachePolicy__pImpl;
+class ListBasedLRUCachePolicy__pImpl;
 
-  class VMFOUNDATION_EXPORTS LRUCachePolicy : public AbstrCachePolicy
+ class VMFOUNDATION_EXPORTS ListBasedLRUCachePolicy : public AbstrCachePolicy
 {
-  	VM_DECL_IMPL( LRUCachePolicy )
-public:
-    LRUCachePolicy( ::vm::IRefCnt *cnt );
+	 VM_DECL_IMPL( ListBasedLRUCachePolicy )
+ public:
+	 ListBasedLRUCachePolicy( ::vm::IRefCnt *cnt );
 	bool QueryPage( size_t pageID ) override;
 	void UpdatePage( size_t pageID ) override;
 	size_t QueryAndUpdate( size_t pageID ) override;
-	~LRUCachePolicy();
+    void *GetRawData() override;
+	~ListBasedLRUCachePolicy();
+
 protected:
 	void InitEvent( AbstrMemoryCache *cache ) override;
 };
+
+
+
+
+
 }  // namespace vm
 #endif

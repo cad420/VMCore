@@ -32,6 +32,7 @@ public:
 	Size3 Get3DPageSize() const;
 	int Get3DPageSizeInLog() const;
 	Size3 Get3DPageCount() const;
+	void * GetRawData() override;
 
 private:
 	void *GetPageStorage_Implement( size_t pageID ) override { return nullptr; }
@@ -68,6 +69,8 @@ public:
 	
 	const void *GetPage( int xBlock, int yBlock, int zBlock ) { return AbstrMemoryCache::GetPage( blockCoordinateToBlockId( xBlock, yBlock, zBlock ) ); }
 	const void *GetPage( const VirtualMemoryBlockIndex &index ) { return GetPage( index.x, index.y, index.z ); };
+
+	void * GetRawData() override;
 
 	virtual ~Block3DCache();
 protected:

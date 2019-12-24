@@ -105,6 +105,11 @@ Size3 Disk3DPageAdapter::Get3DPageCount() const
 	return _->lvdReader.SizeByBlock();
 }
 
+void * Disk3DPageAdapter::GetRawData()
+{
+	return nullptr;
+}
+
 int Block3DCache::blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock ) const
 {
 	//const auto size = lvdReader.SizeByBlock();
@@ -136,6 +141,12 @@ void Block3DCache::Create( I3DBlockFilePluginInterface *pageFile )
 	}
 }
 
+void * Block3DCache::GetRawData()
+{
+	VM_IMPL( Block3DCache )
+	return _->m_volumeCache->GetRawData();
+}
+
 	Block3DCache::~Block3DCache()
 {
 }
@@ -161,7 +172,7 @@ Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pag
 	VM_IMPL( Block3DCache )
 	_->cacheDim = evaluator( pageFile );
 	SetDiskFileCache( pageFile );
-	SetCachePolicy( VM_NEW<LRUCachePolicy>() );
+	SetCachePolicy( VM_NEW<ListBasedLRUCachePolicy>() );
 }
 
 Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile ) :
