@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <list>
+#include <VMat/numeric.h>
 
 #include "foundation_config.h"
 
@@ -18,6 +19,17 @@ T *AllocAligned( std::size_t n )
 {
 	return (T *)( AllocAligned( sizeof( T ) * n, 64 ) );
 }
+
+
+
+namespace vm
+{
+
+};
+
+
+
+// A region-based memory manager "Fast allocation and deallocation of memory based on object lifetimes"
 
 template <int nCashLine = 64>
 class DataArena
@@ -45,13 +57,13 @@ public:
 	DataArena( const DataArena &arena ) = delete;
 	DataArena &operator=( const DataArena &arena ) = delete;
 
-	DataArena( DataArena &&arena ) noexcept :
+	DataArena( DataArena && arena ) noexcept :
 	  m_blockSize( arena.m_blockSize ), m_currentBlockPos( arena.m_currentBlockPos ), m_currentAllocBlockSize( arena.m_currentAllocBlockSize ), m_currentBlock( arena.m_currentBlock ), m_fragmentSize( arena.m_fragmentSize ), m_used( std::move( arena.m_used ) ), m_available( std::move( arena.m_available ) )
 	{
 		arena.m_currentBlock = nullptr;
 	}
 
-	DataArena &operator=( DataArena &&arena ) noexcept
+	DataArena &operator=( DataArena && arena ) noexcept
 	{
 		Release();	// Release memory
 		m_blockSize = arena.m_blockSize;

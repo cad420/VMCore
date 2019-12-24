@@ -41,7 +41,6 @@ private:
 	};
 
 
-
 public:
 	MemoryAllocationTracker( OffsetType MaxSize );
 	~MemoryAllocationTracker();

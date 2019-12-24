@@ -1,6 +1,7 @@
 
 #include <cstring>
 #include <VMFoundation/virtualmemorymanager.h>
+#include <VMUtils/ref.hpp>
 
 namespace vm
 {

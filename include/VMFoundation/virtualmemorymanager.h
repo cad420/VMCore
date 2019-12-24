@@ -7,84 +7,10 @@
 
 #include <VMCoreExtension/i3dblockfileplugininterface.h>
 #include <VMUtils/ieverything.hpp>
-#include <VMUtils/ref.hpp>
 #include <VMUtils/common.h>
-#include <unordered_map>
 
 namespace vm
 {
-struct PageDirectoryEntryAbstractIndex
-{
-	using internal_type = int;
-	const internal_type x, y, z;
-	PageDirectoryEntryAbstractIndex( internal_type x_ = -1,
-									 internal_type y_ = -1,
-									 internal_type z_ = -1 ) :
-	  x( x_ ),
-	  y( y_ ),
-	  z( z_ ) {}
-};
-
-struct PageTableEntryAbstractIndex
-{
-	using internal_type = int;
-	internal_type x, y, z;
-	internal_type lod = 0;
-	PageTableEntryAbstractIndex( internal_type x_ = -1,
-								 internal_type y_ = -1,
-								 internal_type z_ = -1 ) :
-	  x( x_ ),
-	  y( y_ ),
-	  z( z_ ) {}
-};
-
-struct PhysicalMemoryBlockIndex  // DataBlock start in 3d texture
-{
-	using internal_type = int;
-	const internal_type x, y, z;
-
-private:
-	uint8_t unit = 0;
-
-public:
-	PhysicalMemoryBlockIndex( internal_type x_ = -1,
-							  internal_type y_ = -1,
-							  internal_type z_ = -1 ) :
-	  x( x_ ),
-	  y( y_ ),
-	  z( z_ ),
-	  unit( 0 ) {}
-	PhysicalMemoryBlockIndex( internal_type x_,
-							  internal_type y_,
-							  internal_type z_,
-							  uint8_t unit ) :
-	  x( x_ ),
-	  y( y_ ),
-	  z( z_ ),
-	  unit( unit ) {}
-	int GetPhysicalStorageUnit() const { return unit; }
-	void SetPhysicalStorageUnit( uint8_t u ) { unit = u; }
-	Vec3i ToVec3i() const { return Vec3i{ x, y, z }; }
-};
-
-struct VirtualMemoryBlockIndex
-{
-	VirtualMemoryBlockIndex() = default;
-	VirtualMemoryBlockIndex( std::size_t linearId, int xb, int yb, int zb )
-	{
-		z = linearId / ( xb * yb );
-		y = ( linearId - z * xb * yb ) / xb;
-		x = linearId - z * xb * yb - y * xb;
-	}
-	VirtualMemoryBlockIndex( int x, int y, int z ) :
-	  x( x ),
-	  y( y ),
-	  z( z ) {}
-	Vec3i ToVec3i() const { return Vec3i{ x, y, z }; }
-
-	using index_type = int;
-	index_type x = -1, y = -1, z = -1;
-};
 
 class AbstrCachePolicy;
 

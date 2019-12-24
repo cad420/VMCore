@@ -110,6 +110,10 @@ void * Disk3DPageAdapter::GetRawData()
 	return nullptr;
 }
 
+	Disk3DPageAdapter::~Disk3DPageAdapter()
+{
+}
+
 int Block3DCache::blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock ) const
 {
 	//const auto size = lvdReader.SizeByBlock();
