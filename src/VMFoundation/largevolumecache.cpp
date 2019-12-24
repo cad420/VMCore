@@ -156,7 +156,7 @@ void *Block3DCache::GetPageStorage_Implement( size_t pageID )
 
 
 Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator ) :
-  AbstrMemoryCache( cnt )
+  AbstrMemoryCache( cnt ),d_ptr( new Block3DCache__pImpl(this) )
 {
 	VM_IMPL( Block3DCache )
 	_->cacheDim = evaluator( pageFile );
