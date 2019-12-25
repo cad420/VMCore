@@ -45,7 +45,7 @@ Library::Library( const std::string &name )
 		errorMsg = dlerror();
 #endif /*defined(__MACOSX__) || defined(__APPLE__)*/
 	if ( !lib ) {
-		vm::Debug( "%s can bot be found.", name.c_str() );
+		println( "{} can bot be found.", name );
 		throw std::runtime_error( errorMsg );
 	}
 }

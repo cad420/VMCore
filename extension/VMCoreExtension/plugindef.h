@@ -12,14 +12,31 @@
 public:                               \
 	std::string GetIID() const override { return iid; }
 
+
+#define VM_REGISTER_PLUGIN_FACTORY_DECL(pluginFactoryTypeName)   \
+	vm::IPluginFactory *GetHelper__##pluginFactoryTypeName();
+
+#define VM_REGISTER_PLUGIN_FACTORY_IMPL(pluginFactoryTypeName)   \
+	vm::IPluginFactory *GetHelper__##pluginFactoryTypeName()     \
+	{                                                            \
+	    static pluginFactoryTypeName factory;                    \
+        return &factory;                                         \
+	}
+
 #define EXPORT_PLUGIN_FACTORY( pluginFactoryTypeName ) \
 	extern "C" DLL_EXPORT vm::IPluginFactory *GetPluginFactoryInstance();
 
+//#define EXPORT_PLUGIN_FACTORY_IMPLEMENT( pluginFactoryTypeName ) \
+//	vm::IPluginFactory *GetPluginFactoryInstance()               \
+//	{                                                            \
+//		static pluginFactoryTypeName factory;                    \
+//		return &factory;                                         \
+//	}
+
 #define EXPORT_PLUGIN_FACTORY_IMPLEMENT( pluginFactoryTypeName ) \
-	vm::IPluginFactory *GetPluginFactoryInstance()              \
+	vm::IPluginFactory *GetPluginFactoryInstance()               \
 	{                                                            \
-		static pluginFactoryTypeName factory;                    \
-		return &factory;                                         \
+	   return GetHelper__##pluginFactoryTypeName();              \
 	}
 
 #define DECLARE_PLUGIN_METADATA( pluginInterfaceTypeName, iid ) \

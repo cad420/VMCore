@@ -2,81 +2,80 @@
 #pragma once
 #include <map>
 #include "foundation_config.h"
+#include <VMUtils/concepts.hpp>
 
 namespace vm
 {
-class VMFOUNDATION_EXPORTS MemoryAllocationTracker
-{
-public:
-	using OffsetType = size_t;
 
-private:
+struct Allocation
+{
+	Allocation( size_t offset, size_t size ) :
+	  UnalignedOffset( offset ),
+	  Size( size )
+	{
+	}
+
+	Allocation() {}
+
+	static constexpr size_t InvalidOffset = static_cast<size_t>( -1 );
+	static Allocation InvalidAllocation()
+	{
+		return Allocation{ InvalidOffset, 0 };
+	}
+
+	bool IsValid() const
+	{
+		return UnalignedOffset != InvalidAllocation().UnalignedOffset;
+	}
+
+	size_t UnalignedOffset = InvalidOffset;
+	size_t Size = 0;
+};
+
+
+class VMFOUNDATION_EXPORTS MemoryAllocationTracker:NoCopy
+{
 	struct FreeBlockInfo;
 
 	// Type of the map that keeps memory blocks sorted by their offsets
 	using TFreeBlocksByOffsetMap =
-	  std::map<OffsetType,
+	  std::map<size_t,
 			   FreeBlockInfo,
-			   std::less<OffsetType>  // Standard ordering
+			   std::less<size_t>  // Standard ordering
 			   // Raw memory allocator
 			   >;
 
 	// Type of the map that keeps memory blocks sorted by their sizes
 	using TFreeBlocksBySizeMap =
-	  std::multimap<OffsetType,
+	  std::multimap<size_t,
 					TFreeBlocksByOffsetMap::iterator,
-					std::less<OffsetType>  // Standard ordering
+					std::less<size_t>  // Standard ordering
 					>;
 
 	struct FreeBlockInfo
 	{
 		// Block size (no reserved space for the size of the allocation)
-		OffsetType Size;
+		size_t Size;
 
 		// Iterator referencing this block in the multimap sorted by the block size
 		TFreeBlocksBySizeMap::iterator OrderBySizeIt;
 
-		FreeBlockInfo( OffsetType _Size ) :
+		FreeBlockInfo( size_t _Size ) :
 		  Size( _Size ) {}
 	};
 
 
 public:
-	MemoryAllocationTracker( OffsetType MaxSize );
+	MemoryAllocationTracker( size_t MaxSize );
 	~MemoryAllocationTracker();
 	MemoryAllocationTracker( MemoryAllocationTracker &&rhs ) noexcept;
 	MemoryAllocationTracker &operator=( MemoryAllocationTracker &&rhs ) = default;
-	MemoryAllocationTracker( const MemoryAllocationTracker & ) = delete;
-	MemoryAllocationTracker &operator=( const MemoryAllocationTracker & ) = delete;
 
 	// Offset returned by Allocate() may not be aligned, but the size of the allocation
 	// is sufficient to properly align it
-	struct Allocation
-	{
-		Allocation( OffsetType offset, OffsetType size ) :
-		  UnalignedOffset( offset ),
-		  Size( size )
-		{
-		}
 
-		Allocation() {}
 
-		static constexpr OffsetType InvalidOffset = static_cast<OffsetType>( -1 );
-		static Allocation InvalidAllocation()
-		{
-			return Allocation{ InvalidOffset, 0 };
-		}
-
-		bool IsValid() const
-		{
-			return UnalignedOffset != InvalidAllocation().UnalignedOffset;
-		}
-
-		OffsetType UnalignedOffset = InvalidOffset;
-		OffsetType Size = 0;
-	};
-
-	Allocation Allocate( OffsetType Size, OffsetType Alignment );
+	Allocation Allocate( size_t Size, size_t Alignment );
 
 	void Free( Allocation &&allocation )
 	{
@@ -84,25 +83,25 @@ public:
 		allocation = Allocation{};
 	}
 
-	void Free( OffsetType Offset, OffsetType Size );
+	void Free( size_t Offset, size_t Size );
 
 	bool IsFull() const { return m_FreeSize == 0; };
 	bool IsEmpty() const { return m_FreeSize == m_MaxSize; };
-	OffsetType GetMaxSize() const { return m_MaxSize; }
-	OffsetType GetFreeSize() const { return m_FreeSize; }
-	OffsetType GetUsedSize() const { return m_MaxSize - m_FreeSize; }
+	size_t GetMaxSize() const { return m_MaxSize; }
+	size_t GetFreeSize() const { return m_FreeSize; }
+	size_t GetUsedSize() const { return m_MaxSize - m_FreeSize; }
 
 private:
-	void AddNewBlock( OffsetType Offset, OffsetType Size );
+	void AddNewBlock( size_t Offset, size_t Size );
 
 	void ResetCurrAlignment();
 
 	TFreeBlocksByOffsetMap m_FreeBlocksByOffset;
 	TFreeBlocksBySizeMap m_FreeBlocksBySize;
 
-	OffsetType m_MaxSize = 0;
-	OffsetType m_FreeSize = 0;
-	OffsetType m_CurrAlignment = 0;
+	size_t m_MaxSize = 0;
+	size_t m_FreeSize = 0;
+	size_t m_CurrAlignment = 0;
 	// When adding new members, do not forget to update move ctor
 };
 }  // namespace ysl

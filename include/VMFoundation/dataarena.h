@@ -20,14 +20,14 @@ T *AllocAligned( std::size_t n )
 	return (T *)( AllocAligned( sizeof( T ) * n, 64 ) );
 }
 
-
-
 namespace vm
 {
-
+class MemoryPool
+{
+	
 };
 
-
+}
 
 // A region-based memory manager "Fast allocation and deallocation of memory based on object lifetimes"
 

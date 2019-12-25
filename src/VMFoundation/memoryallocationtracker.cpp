@@ -6,7 +6,7 @@
 namespace vm
 {
 
-MemoryAllocationTracker::MemoryAllocationTracker( OffsetType MaxSize ) :
+MemoryAllocationTracker::MemoryAllocationTracker( size_t MaxSize ) :
   m_MaxSize( MaxSize ),
   m_FreeSize( MaxSize )
 {
@@ -31,7 +31,7 @@ MemoryAllocationTracker::MemoryAllocationTracker( MemoryAllocationTracker &&rhs 
 	rhs.m_CurrAlignment = 0;
 }
 
-MemoryAllocationTracker::Allocation MemoryAllocationTracker::Allocate( OffsetType Size, OffsetType Alignment )
+Allocation MemoryAllocationTracker::Allocate( size_t Size, size_t Alignment )
 {
 	assert( IsPowerOfTwo( Alignment ) );
 	Size = Align( Size, Alignment );
@@ -84,7 +84,7 @@ MemoryAllocationTracker::Allocation MemoryAllocationTracker::Allocate( OffsetTyp
 	return Allocation{ Offset, AdjustedSize };
 }
 
-void MemoryAllocationTracker::Free( OffsetType Offset, OffsetType Size )
+void MemoryAllocationTracker::Free( size_t Offset, size_t Size )
 {
 	//VERIFY_EXPR(Offset + Size <= m_MaxSize);
 
@@ -102,7 +102,7 @@ void MemoryAllocationTracker::Free( OffsetType Offset, OffsetType Size )
 	} else
 		PrevBlockIt = m_FreeBlocksByOffset.end();
 
-	OffsetType NewSize, NewOffset;
+	size_t NewSize, NewOffset;
 	if ( PrevBlockIt != m_FreeBlocksByOffset.end() && Offset == PrevBlockIt->first + PrevBlockIt->second.Size ) {
 		//  PrevBlock.Offset             Offset
 		//       |                          |
@@ -158,7 +158,7 @@ void MemoryAllocationTracker::Free( OffsetType Offset, OffsetType Size )
 	}
 }
 
-void MemoryAllocationTracker::AddNewBlock( OffsetType Offset, OffsetType Size )
+void MemoryAllocationTracker::AddNewBlock( size_t Offset, size_t Size )
 {
 	auto NewBlockIt = m_FreeBlocksByOffset.emplace( Offset, Size );
 	//VERIFY_EXPR(NewBlockIt.second);

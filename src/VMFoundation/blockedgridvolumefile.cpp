@@ -1,10 +1,11 @@
 
-#include <VMFoundation/BlockedGridVolumeFile.h>
+#include <VMFoundation/blockedgridvolumefile.h>
 #include <VMat/numeric.h>
 #include <VMFoundation/rawreader.h>
 #include <VMUtils/log.hpp>
+#include <VMUtils/vmnew.hpp>
+#include <VMFoundation/pluginloader.h>
 #include <fstream>
-
 #include <filesystem>
 
 namespace vm
@@ -36,11 +37,11 @@ bool BlockedGridVolumeFile__pImpl::IsBoundaryBlock( const Vec3i &start )
 	const auto maxPoint = start + Vec3i( _->Get3DPageSize() );
 	const auto dataSize = _->GetDimension();
 	if ( start.x < 0 ||
-		start.y < 0 || 
-		start.z < 0 ||
-		( exact[ 0 ] == false && maxPoint.x > dataSize.x ) || 
-		( exact[ 1 ] == false && maxPoint.y > dataSize.y ) ||
-		( exact[ 2 ] == false && maxPoint.z > dataSize.z ) ) return true;
+		 start.y < 0 ||
+		 start.z < 0 ||
+		 ( exact[ 0 ] == false && maxPoint.x > dataSize.x ) ||
+		 ( exact[ 1 ] == false && maxPoint.y > dataSize.y ) ||
+		 ( exact[ 2 ] == false && maxPoint.z > dataSize.z ) ) return true;
 	return false;
 }
 
@@ -48,32 +49,30 @@ void BlockedGridVolumeFile::Create()
 {
 	VM_IMPL( BlockedGridVolumeFile )
 
-	assert( _->blockSizeInLog >=0);
+	assert( _->blockSizeInLog >= 0 );
 	assert( _->padding >= 0 );
-	assert( ( 1 << _->blockSizeInLog) - 2 * _->padding > 0  );
+	assert( ( 1 << _->blockSizeInLog ) - 2 * _->padding > 0 );
 
 	const auto &p = _->padding;
 	_->sampleStart = { -p, -p, -p };
 	_->blockNoPadding = Vec3i( Get3DPageSize() ) - Vec3i( 2 * p, 2 * p, 2 * p );
-	
+
 	const auto dataDimension = _->rawReader->GetDimension();
 	_->pageCount = Size3( vm::RoundUpDivide( dataDimension.x, _->blockNoPadding.x ),
 						  RoundUpDivide( dataDimension.y, _->blockNoPadding.y ),
 						  RoundUpDivide( dataDimension.z, _->blockNoPadding.z ) );
 
-
-	_->exact[ 0 ] = dataDimension.x % _->blockDimension.x == 0;
-	_->exact[ 1 ] = dataDimension.y % _->blockDimension.y == 0;
-	_->exact[ 2 ] = dataDimension.z % _->blockDimension.z == 0;
-	_->buf.reset( new char[ dataDimension.Prod() * _->rawReader->GetElementSize() ] );
-
+	_->exact[ 0 ] = dataDimension.x % _->blockNoPadding.x == 0;
+	_->exact[ 1 ] = dataDimension.y % _->blockNoPadding.y == 0;
+	_->exact[ 2 ] = dataDimension.z % _->blockNoPadding.z == 0;
+	_->buf.reset( new char[ _->blockDimension.Prod() * _->rawReader->GetElementSize() ] );
 }
 
 BlockedGridVolumeFile::BlockedGridVolumeFile( IRefCnt *cnt,
-								const std::string &fileName,
-								const vm::Size3 &dimensions,
-								size_t voxelSize,
-								int blockDimensionInLog ,int padding):
+											  const std::string &fileName,
+											  const vm::Size3 &dimensions,
+											  size_t voxelSize,
+											  int blockDimensionInLog, int padding ) :
   d_ptr( new BlockedGridVolumeFile__pImpl( this ) ),
   EverythingBase<I3DBlockFilePluginInterface>( cnt )
 {
@@ -86,7 +85,7 @@ BlockedGridVolumeFile::BlockedGridVolumeFile( IRefCnt *cnt,
 }
 
 BlockedGridVolumeFile::BlockedGridVolumeFile( IRefCnt *cnt ) :
-  EverythingBase<I3DBlockFilePluginInterface>( cnt )
+  EverythingBase<I3DBlockFilePluginInterface>( cnt ),d_ptr( new BlockedGridVolumeFile__pImpl(this) )
 {
 }
 
@@ -96,11 +95,10 @@ void BlockedGridVolumeFile::Open( const std::string &fileName )
 
 	std::ifstream vifo( fileName );
 
-	if ( vifo.is_open() == false ) 
-	{
-		throw std::runtime_error( "Failed to open .vifo file" );
+	if ( vifo.is_open() == false ) {
+		throw std::runtime_error( "Failed to open .brv file" );
 	}
-	
+
 	std::string rawFileName;
 	int x, y, z;
 	int blockSizeInLog;
@@ -110,13 +108,12 @@ void BlockedGridVolumeFile::Open( const std::string &fileName )
 	std::filesystem::path pa( fileName );
 
 	pa.replace_filename( rawFileName );
-	vm::Debug( "Failed to open file: {}", pa.c_str() );
-	_->rawReader = std::make_unique<RawReader>( fileName, _->blockDimension, 1 );
-
-	_->blockDimension = Size3( x, y, z );
+	_->blockDimension = Size3(1<<blockSizeInLog,1<<blockSizeInLog,1<<blockSizeInLog);
+	
 	_->blockSizeInLog = blockSizeInLog;
 	_->padding = 2;
-	
+	_->rawReader = std::make_unique<RawReader>( pa.string(), Size3(x,y,z), 1 );
+
 	Create();
 }
 
@@ -171,13 +168,14 @@ const void *BlockedGridVolumeFile::GetPage( size_t pageID )
 	// read boundary
 	const auto idx3d = vm::Dim( pageID, { _->pageCount.x, _->pageCount.y } );
 	const auto start = _->sampleStart + Vec3i( idx3d.x * _->blockNoPadding.x, idx3d.y * _->blockNoPadding.y, idx3d.z * _->blockNoPadding.z );
-	if ( _->IsBoundaryBlock( start) ) 
-	{
+	if ( _->IsBoundaryBlock( start ) ) {
 		_->rawReader->readRegionNoBoundary( start,
 											_->blockDimension, (unsigned char *)_->buf.get() );
+		println( "BoundaryBlock: {}", idx3d );
 	} else {
 		_->rawReader->readRegion( start,
 								  _->blockDimension, (unsigned char *)_->buf.get() );
+		println( "Non-Boundary Block: {}", idx3d );
 	}
 	return nullptr;
 }
@@ -206,8 +204,25 @@ size_t BlockedGridVolumeFile::ReadRegionNoBoundary( const Vec3i &start, const Si
 	return _->rawReader->readRegionNoBoundary( start, size, buffer );
 }
 
-	BlockedGridVolumeFile::~BlockedGridVolumeFile()
+BlockedGridVolumeFile::~BlockedGridVolumeFile()
 {
 }
+
+std::vector<std::string> BlockedGridVolumeFilePluginFactory::Keys() const
+{
+	return { ".brv" };
+}
+
+IEverything *BlockedGridVolumeFilePluginFactory::Create( const std::string &key )
+{
+	if ( key == ".brv" ) {
+		return VM_NEW<BlockedGridVolumeFile>();
+	}
+	return nullptr;
+}
+
+VM_REGISTER_PLUGIN_FACTORY_IMPL( BlockedGridVolumeFilePluginFactory )
+
+VM_REGISTER_INTERNAL_PLUGIN_IMPL( BlockedGridVolumeFilePluginFactory )
 
 }  // namespace vm

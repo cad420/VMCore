@@ -7,19 +7,22 @@
 #include <VMCoreExtension/plugin.h>
 #include <VMCoreExtension/plugindef.h>
 #include <VMFoundation/foundation_config.h>
-#include <VMUtils/ref.hpp>
-#include <VMUtils/ieverything.hpp>
 
-namespace vm
+namespace vm {
+
+class VMFOUNDATION_EXPORTS _Register__PluginFactory
 {
-class VMFOUNDATION_EXPORTS PluginLoader final
-{
+public:
+	_Register__PluginFactory( std::function<IPluginFactory *()> func);
+};
+
+class VMFOUNDATION_EXPORTS PluginLoader final {
 	std::unordered_map<std::string, std::vector<std::function<IPluginFactory *()>>> factories;
-
+	// std::vector should be replaced by std::set
+	friend class _Register__PluginFactory;
 public:
 	template <typename T>
-	static T *CreatePlugin( const std::string &key )
-	{
+	static T *CreatePlugin( const std::string &key ) {
 		const auto &f = PluginLoader::GetPluginLoader()->factories;
 		auto iter = f.find( _iid_trait<T>::GetIID() );
 		if ( iter == f.end() ) {
@@ -41,6 +44,9 @@ public:
 private:
 	PluginLoader() = default;
 };
+
+#define VM_REGISTER_INTERNAL_PLUGIN_IMPL(pluginFactoryTypeName)\
+	static _Register__PluginFactory _##pluginFactoryTypeName__RegisterHelper( GetHelper__##pluginFactoryTypeName );
 
 }  // namespace ysl
 #endif

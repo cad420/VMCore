@@ -5,6 +5,7 @@
 #include <VMUtils/ref.hpp>
 #include <VMUtils/vmnew.hpp>
 #include <VMUtils/timer.hpp>
+#include <VMFoundation/pluginloader.h>
 #include "VMat/numeric.h"
 #include "VMFoundation/largevolumecache.h"
 
@@ -14,12 +15,10 @@ int main()
 
 	std::string fileName = R"(E:\Desktop\mixfrac.raw)";
 
-	I3DBlockFilePluginInterface * p = nullptr;
+	auto file = PluginLoader::GetPluginLoader()->CreatePlugin<I3DBlockFilePluginInterface>( ".brv" );
+	
 
-	Ref<Block3DCache> c = VM_NEW<Block3DCache>( p, []( I3DBlockFilePluginInterface *pp ) { return Size3(); } );
-
-	Ref<BlockedGridVolumeFile> file = VM_NEW<BlockedGridVolumeFile>( fileName, Size3{ 480, 720, 120 }, 1, 6, 2 );
-
+	file->Open(R"(G:\mousehighres\lod4.brv)");
 	{
 		Timer::Scoped s( []( auto d ) {
 			std::cout << d.s();
@@ -30,7 +29,6 @@ int main()
 		std::cout << blockDim << std::endl;
 		for ( int i = 0; i < blockDim.Prod(); i++ ) {
 			const auto buf = file->GetPage( i );
-
 			//std::cout << vm::Dim( i, { blockDim.x, blockDim.y } ) << std::endl;
 		}
 	}

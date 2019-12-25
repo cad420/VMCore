@@ -4,6 +4,14 @@
 
 namespace vm
 {
+_Register__PluginFactory::_Register__PluginFactory( std::function<IPluginFactory *()> func )
+{
+	if ( func != nullptr ) {
+		const auto iid = func()->GetIID();
+		PluginLoader::GetPluginLoader()->factories[ iid ].push_back( func );
+	}
+}
+
 PluginLoader *PluginLoader::GetPluginLoader()
 {
 	static PluginLoader pluginLoader;
@@ -22,4 +30,4 @@ void PluginLoader::LoadPlugins( const std::string &directory )
 		}
 	}
 }
-}  // namespace ysl
+}  // namespace vm

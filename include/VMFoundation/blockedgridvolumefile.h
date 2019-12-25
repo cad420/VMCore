@@ -1,10 +1,13 @@
 
 #pragma once
 
-#include <VMat/geometry.h>
-#include <VMCoreExtension/i3dblockfileplugininterface.h>
 #include "foundation_config.h"
+
+#include <VMat/geometry.h>
 #include <VMUtils/common.h>
+
+#include <VMCoreExtension/i3dblockfileplugininterface.h>
+#include <VMCoreExtension/plugin.h>
 
 namespace vm
 {
@@ -42,4 +45,17 @@ public:
 
 	~BlockedGridVolumeFile();
 };
+
+class BlockedGridVolumeFilePluginFactory : public IPluginFactory
+{
+public:
+	DECLARE_PLUGIN_FACTORY( "visualman.blockdata.io" );
+	std::vector<std::string> Keys() const override;
+	IEverything * Create(const std::string &key) override;
+};
+
+VM_REGISTER_PLUGIN_FACTORY_DECL( BlockedGridVolumeFilePluginFactory )
+
 }
+
+
