@@ -171,11 +171,11 @@ const void *BlockedGridVolumeFile::GetPage( size_t pageID )
 	if ( _->IsBoundaryBlock( start ) ) {
 		_->rawReader->readRegionNoBoundary( start,
 											_->blockDimension, (unsigned char *)_->buf.get() );
-		println( "BoundaryBlock: {}", idx3d );
+		return _->buf.get();
 	} else {
 		_->rawReader->readRegion( start,
 								  _->blockDimension, (unsigned char *)_->buf.get() );
-		println( "Non-Boundary Block: {}", idx3d );
+		return _->buf.get();
 	}
 	return nullptr;
 }
