@@ -1,6 +1,8 @@
 
 #include <VMFoundation/cachepolicy.h>
 #include <cassert>
+#include <list>
+#include <map>
 
 namespace vm
 {

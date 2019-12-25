@@ -1,5 +1,5 @@
-#ifndef _GENERICCACHE_H_
-#define _GENERICCACHE_H_
+#pragma once
+
 #include "blockarray.h"
 
 namespace vm
@@ -48,5 +48,3 @@ using Int8Block256Cache = GenericBlock256Cache<char>;
 using Int8Block512Cache = GenericBlock512Cache<char>;
 using Int8Block1024Cache = GenericBlock1024Cache<char>;
 }  // namespace ysl
-
-#endif

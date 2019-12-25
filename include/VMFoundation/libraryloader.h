@@ -1,17 +1,20 @@
 
-#ifndef _LIBRARY_LOADER_H_
-#define _LIBRARY_LOADER_H_
+#pragma once
 
 #include <string>
 #include <map>
 #include <memory>
 #include <VMFoundation/library.h>
 #include <VMFoundation/foundation_config.h>
+#include <VMUtils/common.h>
 
 namespace vm
 {
+class LibraryReposity__pImpl;
+
 class VMFOUNDATION_EXPORTS LibraryReposity
 {
+	VM_DECL_IMPL( LibraryReposity )
 public:
 	static LibraryReposity *GetLibraryRepo();
 
@@ -43,13 +46,12 @@ public:
 			 */
 	bool Exists( const std::string &name ) const;
 
+	~LibraryReposity();
+
 	const std::map<std::string, std::shared_ptr<Library>> &GetLibRepo() const;
 
 private:
 	LibraryReposity();
-	static LibraryReposity *instance;
-	std::map<std::string, std::shared_ptr<Library>> repo;
 };
 
-}  // namespace ysl
-#endif
+}  // namespace vm

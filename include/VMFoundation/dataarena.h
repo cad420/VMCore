@@ -1,5 +1,4 @@
-#ifndef DATAARENA_H_
-#define DATAARENA_H_
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -192,4 +191,3 @@ public:
 		Release();
 	}
 };
-#endif

@@ -1,10 +1,7 @@
 
-#ifndef _IPAGEFILE_H_
-#define _IPAGEFILE_H_
+#pragma once
 
-#include <VMUtils/ieverything.hpp>
 #include "ifile.h"
-
 
 namespace vm
 {
@@ -36,5 +33,4 @@ public:
 
 protected:
 };
-}  // namespace ysl
-#endif
+}  // namespace vm

@@ -29,7 +29,7 @@ public:
 	unsigned char *ptr = nullptr;
 	int64_t seekAmt = 0;
 	DataArena<64> stagingBuffer = DataArena<64>(1024*1024*10);
-	Ref<IFileMapping> mappingFile;
+	Ref<IMappingFile> mappingFile;
 	std::function<size_t( const Vec3i &, const vm::Size3 &, unsigned char * )> readRegion;
 };
 
@@ -127,7 +127,7 @@ RawReader::RawReader( const std::string &fileName,
 
 	} else {
 #ifdef _WIN32
-		_->mappingFile = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "windows" );
+		_->mappingFile = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
 #else
 		_->mappingFile = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "linux" );
 #endif

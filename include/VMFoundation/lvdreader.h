@@ -1,6 +1,6 @@
 
-#ifndef _LVDREADER_H_
-#define _LVDREADER_H_
+#pragma once
+
 
 #include <memory>
 #include <VMFoundation/blockarray.h>
@@ -60,7 +60,7 @@ public:
 
 private:
 	//std::shared_ptr<IFileMappingPluginInterface> lvdIO;		// the declaration must be behind the declaration of ~LVDReader()
-	::vm::Ref<IFileMapping> lvdIO;
+	::vm::Ref<IMappingFile> lvdIO;
 };
 
 template <typename T, int nLogBlockSize>
@@ -77,5 +77,3 @@ std::shared_ptr<Block3DArray<T, nLogBlockSize>> LVDReader::ReadAll( int lod )
 	return ptr;
 }
 }  // namespace ysl
-
-#endif

@@ -18,8 +18,8 @@ int main()
 	auto file = PluginLoader::GetPluginLoader()->CreatePlugin<I3DBlockFilePluginInterface>( ".brv" );
 
 	
-
-	file->Open(R"(G:\mousehighres\lod4.brv)");
+	//file->Open(R"(G:\mousehighres\lod3.brv)");
+	file->Open(R"(C:\temp\lod5.brv)");
 	{
 		Timer::Scoped s( []( auto d ) {
 			std::cout << d.s();
@@ -27,12 +27,15 @@ int main()
 		
 		const auto blockDim = file->Get3DPageCount();
 
+		srand( time( 0 ) );
+
 		std::cout << blockDim << std::endl;
-		for ( int i = 0; i < blockDim.Prod(); i++ ) {
-			const auto buf = file->GetPage( i );
+		for ( int i = 0; i < 200; i++ ) {
+			const auto idx = rand() % blockDim.Prod();
+			const auto buf = file->GetPage( idx );
+			std::cout << i << std::endl;
 			//std::cout << vm::Dim( i, { blockDim.x, blockDim.y } ) << std::endl;
 		}
 	}
-
 	return 0;
 }

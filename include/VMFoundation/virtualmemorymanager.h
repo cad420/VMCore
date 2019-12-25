@@ -1,6 +1,6 @@
 
-#ifndef _VIRTUALMEMORYMANAGER_H_
-#define _VIRTUALMEMORYMANAGER_H_
+#pragma once
+
 
 #include <VMat/geometry.h>
 #include <VMFoundation/foundation_config.h>
@@ -113,4 +113,3 @@ private:
 
 }  // namespace vm
 
-#endif

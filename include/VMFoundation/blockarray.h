@@ -1,5 +1,5 @@
-#ifndef BLOCKARRAY_H_
-#define BLOCKARRAY_H_
+#pragma once
+
 
 #include <cstring>
 #include <VMat/arithmetic.h>
@@ -298,4 +298,3 @@ public:
 };
 
 }  // namespace ysl
-#endif

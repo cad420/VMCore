@@ -1,8 +1,8 @@
-#ifndef _FILEMAPPINGPLUGININTERFACE_H_
-#define _FILEMAPPINGPLUGININTERFACE_H_
+#pragma once
+
 #include <string>
-#include <VMUtils/ieverything.hpp>
 #include <VMCoreExtension/plugindef.h>
+#include "ifile.h"
 
 enum class FileAccess
 {
@@ -16,7 +16,7 @@ enum class MapAccess
 	ReadWrite  //= PAGE_READWRITE
 };
 
-class IFileMapping : public ::vm::IEverything
+class IMappingFile : public ::vm::IFile
 {
 public:
 	virtual bool Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags ) = 0;
@@ -24,8 +24,7 @@ public:
 	virtual void DestroyFileMemPointer( unsigned char *addr ) = 0;
 	virtual bool WriteCommit() = 0;
 	virtual bool Close() = 0;
-	virtual ~IFileMapping() = default;
+	virtual ~IMappingFile() = default;
 };
 
-DECLARE_PLUGIN_METADATA( IFileMapping, "visualman.io" )
-#endif
+DECLARE_PLUGIN_METADATA( IMappingFile, "vmcore.imappingfile" )

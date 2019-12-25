@@ -86,7 +86,7 @@ LVDReader::LVDReader( const std::string &fileName ) :
 
 	//lvdIO = Object::CreateObject<ysl::IFileMappingPluginInterface>("common.filemapio");
 #ifdef _WIN32
-	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "windows" );
+	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
 #else defined( __linux__ ) || defined( __APPLE__ )
 	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "linux" );
 #endif

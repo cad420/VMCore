@@ -1,6 +1,6 @@
 
-#ifndef _PAGEFILEPLUGININTERFACE_H_
-#define _PAGEFILEPLUGININTERFACE_H_
+#pragma once
+
 #include <VMat/geometry.h>
 #include <../extension/VMCoreExtension/plugindef.h>
 #include <../extension/VMCoreExtension/ipagefile.h>
@@ -25,5 +25,3 @@ public:
 };
 
 DECLARE_PLUGIN_METADATA( I3DBlockFilePluginInterface, "visualman.blockdata.io" )
-
-#endif

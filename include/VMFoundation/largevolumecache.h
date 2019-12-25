@@ -1,6 +1,5 @@
 
-#ifndef _LARGEVOLUMECACHE_H_
-#define _LARGEVOLUMECACHE_H_
+#pragma once
 #include "lvdreader.h"
 #include <VMat/geometry.h>
 #include <VMFoundation/virtualmemorymanager.h>
@@ -126,5 +125,3 @@ protected:
 	void *GetPageStorage_Implement( size_t pageID ) override;
 };
 }  // namespace ysl
-
-#endif /*_LARGEVOLUMECACHE_H_*/

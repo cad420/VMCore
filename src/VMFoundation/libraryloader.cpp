@@ -6,31 +6,44 @@
 
 namespace vm
 {
-LibraryReposity *LibraryReposity::instance = nullptr;
+
+
+class LibraryReposity__pImpl
+{
+	VM_DECL_API( LibraryReposity )
+public:
+	LibraryReposity__pImpl( LibraryReposity *api ) :
+	  q_ptr( api ) {}
+	static LibraryReposity *instance;
+	std::map<std::string, std::shared_ptr<Library>> repo;
+};
+
+LibraryReposity *LibraryReposity__pImpl::instance = nullptr;
 
 LibraryReposity *LibraryReposity::GetLibraryRepo()
 {
-	if ( !instance )
-		instance = new LibraryReposity;
-	return instance;
+	if ( !LibraryReposity__pImpl::instance )
+		LibraryReposity__pImpl::instance = new LibraryReposity;
+	return LibraryReposity__pImpl::instance;
 }
 
 void LibraryReposity::AddLibrary( const std::string &name )
 {
-	if ( repo.find( name ) != repo.end() )
+	VM_IMPL( LibraryReposity )
+	if ( _->repo.find( name ) != _->repo.end() )
 		return;
 
 	std::string fullName;
 #ifdef _WIN32
 	fullName = name + ".dll";
 #elif defined( __MACOSX__ ) || defined( __APPLE__ )
-	fullName = "lib" + name + ".dylib";	 // mac extension
+	fullName = "lib" + name + ".dylib";  // mac extension
 #elof defined( __linux__ )
 	fullName = "lib" + name + ".so";	 // linux extension
 #endif
 	try {
 		auto lib = std::make_shared<Library>( fullName );
-		repo[ name ] = lib;
+		_->repo[ name ] = lib;
 	} catch ( std::exception &e ) {
 		std::cerr << e.what() << std::endl;
 	}
@@ -38,6 +51,7 @@ void LibraryReposity::AddLibrary( const std::string &name )
 
 void LibraryReposity::AddLibraries( const std::string &directory )
 {
+	VM_IMPL( LibraryReposity )
 	namespace fs = std::filesystem;
 	for ( auto &lib : fs::directory_iterator( directory ) ) {
 		const auto fullName = lib.path().filename().string();
@@ -57,7 +71,7 @@ void LibraryReposity::AddLibraries( const std::string &directory )
 #endif /*defined(__MACOSX__) || defined(__APPLE__)*/
 		try {
 			auto rp = std::make_shared<Library>( lib.path().string() );
-			repo[ libName ] = rp;
+			_->repo[ libName ] = rp;
 		} catch ( std::exception &e ) {
 			std::cerr << e.what() << std::endl;
 		}
@@ -66,17 +80,19 @@ void LibraryReposity::AddLibraries( const std::string &directory )
 
 void *LibraryReposity::GetSymbol( const std::string &name ) const
 {
+	const auto _ = d_func();
 	void *sym = nullptr;
-	for ( auto iter = repo.cbegin(); sym == nullptr && iter != repo.cend(); ++iter )
+	for ( auto iter = _->repo.cbegin(); sym == nullptr && iter != _->repo.cend(); ++iter )
 		sym = iter->second->Symbol( name );
 	return sym;
 }
 
 void *LibraryReposity::GetSymbol( const std::string &libName, const std::string &symbolName ) const
 {
+	const auto _ = d_func();
 	void *sym = nullptr;
-	auto iter = repo.find( libName );
-	if ( iter != repo.end() ) {
+	auto iter = _->repo.find( libName );
+	if ( iter != _->repo.end() ) {
 		sym = iter->second->Symbol( symbolName );
 	}
 	return sym;
@@ -88,16 +104,23 @@ void LibraryReposity::AddDefaultLibrary()
 
 bool LibraryReposity::Exists( const std::string &name ) const
 {
-	return repo.find( name ) != repo.end();
+	const auto _ = d_func();
+	return _->repo.find( name ) != _->repo.end();
+}
+
+LibraryReposity::~LibraryReposity()
+{
 }
 
 const std::map<std::string, std::shared_ptr<Library>> &LibraryReposity::GetLibRepo() const
 {
-	return repo;
+	const auto _ = d_func();
+	return _->repo;
 }
 
-LibraryReposity::LibraryReposity()
+LibraryReposity::LibraryReposity() :
+  d_ptr( new LibraryReposity__pImpl( this ) )
 {
 }
 
-}  // namespace ysl
+}  // namespace vm

@@ -1,6 +1,7 @@
 
-#ifndef _PLUGINDEF_H_
-#define _PLUGINDEF_H_
+
+#pragma once
+
 
 #ifdef _WIN32
 #define DLL_EXPORT __declspec(dllexport)
@@ -49,4 +50,3 @@ public:                               \
 template <typename T>
 struct _iid_trait;
 
-#endif

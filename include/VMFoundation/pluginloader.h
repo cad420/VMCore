@@ -1,6 +1,7 @@
 
-#ifndef _PLUGINLOADER_H_
-#define _PLUGINLOADER_H_
+
+#pragma once
+
 
 #include <unordered_map>
 #include <functional>
@@ -25,7 +26,8 @@ public:
 	static T *CreatePlugin( const std::string &key ) {
 		const auto &f = PluginLoader::GetPluginLoader()->factories;
 		auto iter = f.find( _iid_trait<T>::GetIID() );
-		if ( iter == f.end() ) {
+		if ( iter == f.end() ) 
+		{
 			return nullptr;
 		}
 		for ( const auto &fptr : iter->second ) {
@@ -46,7 +48,6 @@ private:
 };
 
 #define VM_REGISTER_INTERNAL_PLUGIN_IMPL(pluginFactoryTypeName)\
-	static _Register__PluginFactory _##pluginFactoryTypeName__RegisterHelper( GetHelper__##pluginFactoryTypeName );
+	static vm::_Register__PluginFactory _##pluginFactoryTypeName__RegisterHelper( GetHelper__##pluginFactoryTypeName );
 
 }  // namespace ysl
-#endif

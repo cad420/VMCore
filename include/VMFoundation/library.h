@@ -1,6 +1,6 @@
 
-#ifndef _LIBRARY_H_
-#define _LIBRARY_H_
+#pragma once
+
 #include <string>
 #include <VMFoundation/foundation_config.h>
 
@@ -18,5 +18,3 @@ private:
 	void *lib;
 };
 }  // namespace ysl
-
-#endif

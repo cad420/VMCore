@@ -1,6 +1,6 @@
 
-#ifndef _LVDHEADER_H_
-#define _LVDHEADER_H_
+#pragma once
+
 #include <cstdint>
 #include <memory>
 #include <VMFoundation/foundation_config.h>
@@ -66,5 +66,3 @@ public:
 	unsigned char *Encode();
 };
 }  // namespace ysl
-
-#endif

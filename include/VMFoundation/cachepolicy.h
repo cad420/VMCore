@@ -1,8 +1,5 @@
 
-#ifndef _CACHEPOLICY_H_
-#define _CACHEPOLICY_H_
-#include <list>
-#include <map>
+#pragma once
 
 #include <VMFoundation/foundation_config.h>
 #include <VMFoundation/virtualmemorymanager.h>
@@ -31,4 +28,3 @@ protected:
 
 
 }  // namespace vm
-#endif

@@ -1,12 +1,11 @@
 
-#ifndef _LINEARARRAY_H_
-#define _LINEARARRAY_H_
+#pragma once
 
-#include "dataarena.h"
 #include <VMat/geometry.h>
 #include <cstring>
 #include <iostream>
 
+#include <VMFoundation/dataarena.h>
 namespace vm
 {
 class LocalBuffer
@@ -506,4 +505,3 @@ using Volume4ui = Linear3DArray<Vector4<unsigned int>>;
 
 }  // namespace ysl
 
-#endif /*_LINEARARRAY_H_*/

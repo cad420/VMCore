@@ -1,6 +1,4 @@
-
-#ifndef _RAWREADER_H_
-#define _RAWREADER_H_
+#pragma once
 
 #include <VMat/geometry.h>
 #include <VMFoundation/foundation_config.h>
@@ -42,4 +40,3 @@ private:
 };
 
 }  // namespace vm
-#endif
