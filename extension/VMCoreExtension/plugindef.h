@@ -14,17 +14,17 @@ public:                               \
 
 
 #define VM_REGISTER_PLUGIN_FACTORY_DECL(pluginFactoryTypeName)   \
-	vm::IPluginFactory *GetHelper__##pluginFactoryTypeName();
+	extern "C" ::vm::IPluginFactory *GetHelper__##pluginFactoryTypeName();
 
 #define VM_REGISTER_PLUGIN_FACTORY_IMPL(pluginFactoryTypeName)   \
-	vm::IPluginFactory *GetHelper__##pluginFactoryTypeName()     \
+	::vm::IPluginFactory *GetHelper__##pluginFactoryTypeName()     \
 	{                                                            \
 	    static pluginFactoryTypeName factory;                    \
         return &factory;                                         \
 	}
 
 #define EXPORT_PLUGIN_FACTORY( pluginFactoryTypeName ) \
-	extern "C" DLL_EXPORT vm::IPluginFactory *GetPluginFactoryInstance();
+	extern "C" DLL_EXPORT ::vm::IPluginFactory *GetPluginFactoryInstance();
 
 //#define EXPORT_PLUGIN_FACTORY_IMPLEMENT( pluginFactoryTypeName ) \
 //	vm::IPluginFactory *GetPluginFactoryInstance()               \
@@ -34,7 +34,7 @@ public:                               \
 //	}
 
 #define EXPORT_PLUGIN_FACTORY_IMPLEMENT( pluginFactoryTypeName ) \
-	vm::IPluginFactory *GetPluginFactoryInstance()               \
+	::vm::IPluginFactory *GetPluginFactoryInstance()               \
 	{                                                            \
 	   return GetHelper__##pluginFactoryTypeName();              \
 	}
