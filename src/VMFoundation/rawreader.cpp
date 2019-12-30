@@ -195,6 +195,29 @@ size_t RawReader::readRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 
 	return ret;
 }
 
+std::future<size_t> RawReader::asyncReadRegion( const Vec3i &start, const Vec3i &size, unsigned char *buffer, std::function<void()> cb )
+{
+	
+	return std::async( [this]( const Vec3i &start, 
+		const Vec3i &size,unsigned char *buffer, decltype( cb ) callback )
+	{
+		VM_IMPL( RawReader );
+		const auto read = _->readRegion( start, Size3( size ), buffer );callback();
+		return read;
+	},start,size,buffer,std::move(cb));
+}
+
+std::future<size_t> RawReader::asyncReadRegionNoBoundary( const Vec3i &start, const Vec3i &size, unsigned char *buffer, std::function<void()> cb )
+{
+	return std::async( [this]( const Vec3i &start, const Vec3i &size, unsigned char *buffer, decltype( cb ) callback )
+	{
+		VM_IMPL( RawReader )
+		const auto read = readRegionNoBoundary( start, Size3( size ), buffer );
+		callback();
+		return read;
+	}, start, size, buffer, std::move(cb) );
+}
+
 Vec3i RawReader::GetDimension() const
 {
 	const auto _ = d_func();

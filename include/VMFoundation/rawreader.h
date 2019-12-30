@@ -4,6 +4,9 @@
 #include <VMFoundation/foundation_config.h>
 #include <VMUtils/common.h>
 
+#include <functional>
+#include <future>
+
 namespace vm
 {
 
@@ -30,6 +33,11 @@ public:
 	
 	size_t readRegionNoBoundary( const vm::Vec3i &start,
 					   const vm::Size3 &size, unsigned char *buffer );
+
+	std::future<size_t> asyncReadRegion( const Vec3i &start, const Vec3i &size, unsigned char *buffer, std::function<void()> cb );
+
+	std::future<size_t> asyncReadRegionNoBoundary( const Vec3i &start, const Vec3i &size, unsigned char * buffer, std::function<void()> cb );
+	
 	Vec3i GetDimension() const;
 	
 	size_t GetElementSize() const;

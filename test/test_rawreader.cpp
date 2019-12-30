@@ -21,23 +21,24 @@ int main()
 		{ { -40, -40, -40 }, { 480, 720, 120 } }
 	};
 
-
 	int id = 0;
 
 	DataArena<64> arena;
-	
+
 	for ( const auto &c : cases ) {
+		auto buf = arena.Alloc<unsigned char>( c.second.Prod(), true );
 
-		auto buf = arena.Alloc<unsigned char>(c.second.Prod(),true);
-
-		reader.readRegionNoBoundary( c.first, c.second, buf);
-
-		std::string sid = std::to_string( id );
+		auto  f = reader.asyncReadRegionNoBoundary( c.first, Vec3i( c.second ), buf, [buf,id,c]() {
+			std::cout << "read finished\n";
+			std::string sid = std::to_string( id );
+			std::ofstream out( R"(E:\Desktop\output)" + sid + ".raw", std::ios::binary );
+			out.write( (const char *)buf, c.second.Prod() );
+			out.close();
+		} );
+		while ( f.wait_for( std::chrono::seconds(1) ) != std::future_status::ready ) {
+			std::cout << "not ready\n";
+		}
 		id++;
-		std::ofstream out( R"(E:\Desktop\output)"+sid+".raw", std::ios::binary );
-
-		out.write( (const char *)buf, c.second.Prod() * reader.GetElementSize() );
-		out.close();
 	}
 
 	return 0;
