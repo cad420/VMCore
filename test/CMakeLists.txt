@@ -16,4 +16,5 @@ target_sources(test_blockedgridvolumefile PRIVATE "test_blockedgridvolumefile.cp
 target_link_libraries(test_blockedgridvolumefile vmcore)
 target_include_directories(test_blockedgridvolumefile PRIVATE "../include" "../extension")
 
-install(TARGETS test_blockedgridvolumefile LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
+
+install(TARGETS test_blockedgridvolumefile test_rawreader LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")

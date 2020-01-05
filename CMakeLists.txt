@@ -67,7 +67,7 @@ install(TARGETS vmcore LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHI
 install(DIRECTORY "include" DESTINATION "include/VMutils")
 
 
-#option(VMCORE_BUILD_TEST ON)
-#if(VMCORE_BUILD_TEST)
+option(VMCORE_BUILD_TEST OFF)
+if(VMCORE_BUILD_TEST)
 add_subdirectory(test)
-#endif()
+endif()
