@@ -1,12 +1,8 @@
 
 #include <iostream>
 
-#include <VMFoundation/blockedgridvolumefile.h>
-#include <VMUtils/ref.hpp>
-#include <VMUtils/vmnew.hpp>
 #include <VMUtils/timer.hpp>
 #include <VMFoundation/pluginloader.h>
-#include "VMat/numeric.h"
 #include "VMFoundation/largevolumecache.h"
 
 int main()

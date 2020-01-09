@@ -50,4 +50,4 @@ private:
 #define VM_REGISTER_INTERNAL_PLUGIN_IMPL(pluginFactoryTypeName)\
 	static vm::_Register__PluginFactory _##pluginFactoryTypeName__RegisterHelper( GetHelper__##pluginFactoryTypeName );
 
-}  // namespace ysl
+}  // namespace ysltest_concurrent 
