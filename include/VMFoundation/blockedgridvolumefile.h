@@ -36,7 +36,7 @@ public:
 	size_t GetPhysicalPageCount() const override;
 	size_t GetVirtualPageCount() const override;
 	size_t GetPageSize() const override;
-	const const void *GetPage( size_t pageID ) override;
+	const void *GetPage( size_t pageID ) override;
 
 	Vec3i GetDimension() const;
 	size_t GetElementSize() const;

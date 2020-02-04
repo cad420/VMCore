@@ -88,7 +88,7 @@ LVDReader::LVDReader( const std::string &fileName ) :
 #ifdef _WIN32
 	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
 #else defined( __linux__ ) || defined( __APPLE__ )
-	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "linux" );
+	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "linux" );
 #endif
 	if ( lvdIO == nullptr )
 		throw std::runtime_error( "can not load ioplugin" );
@@ -104,9 +104,8 @@ LVDReader::LVDReader( const std::vector<std::string> &fileName, const std::vecto
 	if ( lods.size() == 0 ) {
 		for ( int i = 0; i < fileName.size(); i++ )
 			levelOfDetails.push_back( i );
-	}
+	} 
 }
-
 void LVDReader::ReadBlock( char *dest, int blockId, int lod )
 {
 	const size_t blockCount = BlockDataCount();

@@ -1,6 +1,7 @@
 
 #include <VMFoundation/memorypool.h>
 #include <VMFoundation/memoryallocationtracker.h>
+#include <cstddef>
 #include <mutex>
 
 namespace vm

@@ -3,9 +3,10 @@
 #include <VMFoundation/pluginloader.h>
 #include "mappingfile.h"
 #include <VMUtils/vmnew.hpp>
+
+#ifdef _WIN32
 namespace vm
 {
-#ifdef _WIN32
 
 void WindowsFileMapping::PrintLastErrorMsg()
 {
@@ -243,6 +244,7 @@ bool LinuxFileMapping::Close()
 	}
 	return true;
 }
+
 LinuxFileMapping::~LinuxFileMapping()
 {
 	Close();
@@ -255,9 +257,9 @@ std::vector<std::string> LinuxFileMappingFactory::Keys() const
 	return { "linux" };
 }
 
-::vm::IEverything *LinuxFileMappingFactory::Create( const std::string &key )
+vm::IEverything * LinuxFileMappingFactory::Create( const std::string &key )
 {
-	return VM_NEW<LinuxFileMapping>();
+	return VM_NEW<vm::LinuxFileMapping>();
 }
 VM_REGISTER_PLUGIN_FACTORY_IMPL( LinuxFileMappingFactory )
 VM_REGISTER_INTERNAL_PLUGIN_IMPL( LinuxFileMappingFactory )

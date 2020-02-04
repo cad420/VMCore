@@ -129,7 +129,7 @@ RawReader::RawReader( const std::string &fileName,
 #ifdef _WIN32
 		_->mappingFile = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
 #else
-		_->mappingFile = PluginLoader::GetPluginLoader()->CreatePlugin<IFileMapping>( "linux" );
+		_->mappingFile = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "linux" );
 #endif
 
 		if ( _->mappingFile == nullptr ) {
