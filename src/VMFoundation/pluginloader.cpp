@@ -30,4 +30,6 @@ void PluginLoader::LoadPlugins( const std::string &directory )
 		}
 	}
 }
+
+
 }  // namespace vm

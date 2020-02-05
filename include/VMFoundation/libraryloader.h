@@ -20,9 +20,13 @@ public:
 
 	/**
 			 * \brief Add a library to the repository
-			 * \param name
+			 * \param 
 			 */
-	void AddLibrary( const std::string &name );
+	void AddLibrary( const std::string &path );
+
+	
+	void AddLibrary(const std::string & directory,const std::string & libName);
+
 
 	/**
 			 * \brief Add all libraries given by \a directory
@@ -31,8 +35,8 @@ public:
 
 	/**
 			 * \brief  return the function pointer by the given name
-			 */
-	void *GetSymbol( const std::string &name ) const;
+	*/
+	void *GetSymbol( const std::string &libName ) const;
 
 	void *GetSymbol( const std::string &libName, const std::string &symbolName ) const;
 
@@ -44,7 +48,7 @@ public:
 	/**
 			 * \brief Check whether the library exists
 			 */
-	bool Exists( const std::string &name ) const;
+	bool Exists( const std::string &libName ) const;
 
 	~LibraryReposity();
 
@@ -53,5 +57,14 @@ public:
 private:
 	LibraryReposity();
 };
+
+/**
+ *  \brief return the library name if the \a fileName is a valid library name depended on the current platform
+ *  or return an empty string
+ */
+std::string VMFOUNDATION_EXPORTS ValidateLibraryName(const std::string & fileName);
+
+std::string VMFOUNDATION_EXPORTS MakeValidLibraryName(const std::string & libName);
+
 
 }  // namespace vm
