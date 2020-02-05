@@ -76,6 +76,9 @@ void LibraryReposity::AddLibraries( const std::string &directory )
 {
 	VM_IMPL( LibraryReposity )
 	namespace fs = std::filesystem;
+
+	try{
+
 	for ( auto &lib : fs::directory_iterator( directory ) ) {
 		const auto fullName = lib.path().filename().string();
 
@@ -106,6 +109,11 @@ void LibraryReposity::AddLibraries( const std::string &directory )
 		} catch ( std::exception &e ) {
 			std::cerr << e.what() << std::endl;
 		}
+	}
+	}
+	catch(const fs::filesystem_error& e){
+		vm::Log("No such directory: {}",directory);
+		return;
 	}
 }
 
