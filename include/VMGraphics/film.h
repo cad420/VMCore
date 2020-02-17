@@ -1,16 +1,17 @@
 
-#ifndef _FILM_H_
-#define _FILM_H_
+#pragma once
 #include <memory>
+
 
 #include <VMat/geometry.h>
 
 namespace vm
 {
+	
 class Film
 {
 public:
-	const Vector2i resolution;
+	const Vector2i Resolution;
 	struct Pixel
 	{
 		unsigned char v[ 4 ];
@@ -19,6 +20,4 @@ public:
 	Film( const Vector2i &resolution );
 };
 
-}  // namespace ysl
-
-#endif
+}  // namespace vm

@@ -7,7 +7,7 @@ aux_source_directory(src/VMFoundation FOUNDATION_SRC)
 aux_source_directory(src/VMGraphics GRAPHICS_SRC)
 
 
-option(VMUTILS_SHARED_LIBRARY OFF)	 # static linking
+#option(VMUTILS_SHARED_LIBRARY OFF)	 # static linking
 
 #add_subdirectory(external/VMUtils)
 
@@ -22,26 +22,6 @@ endif()
 if(NOT MSVC)
   target_link_libraries(vmcore stdc++fs)
 endif()
-
-#add_library(vmfoundation ${VMCORE_SHARED}) 
-#add_dependencies(vmfoundation vmutils)
-#target_sources(vmfoundation PRIVATE ${FOUNDATION_SRC})
-#message(vmfoundation PUBLIC )
-#target_link_libraries(vmfoundation PUBLIC vmutils)
-#target_include_directories(vmfoundation PUBLIC "external/VMat/include" "external/VMUtils/include" "include" "external")
-
-#install(TARGETS vmfoundation LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
-#install(DIRECTORY "include" DESTINATION "include/VMutils")
-
-#add_library(vmgraphics ${VMCORE_SHARED})
-#add_dependencies(vmgraphics vmutils)
-#target_sources(vmgraphics PRIVATE ${GRAPHICS_SRC})
-#target_link_libraries(vmgraphics PUBLIC vmutils)
-#target_include_directories(vmgraphics PUBLIC "external/VMat/include" "external/VMUtils/include" "include" "external")
-
-
-#install(TARGETS vmgraphics LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
-#install(DIRECTORY "include" DESTINATION "include/VMutils")
 
 include(scripts/external.cmake)
 

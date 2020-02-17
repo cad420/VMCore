@@ -5,6 +5,7 @@
 #include <VMat/transformation.h>
 #include <VMGraphics/graphics_config.h>
 
+
 class VMGRAPHICS_EXPORTS FocusCamera
 {
 	static constexpr float YAW = -90.0f;
