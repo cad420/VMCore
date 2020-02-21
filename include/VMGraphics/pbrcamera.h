@@ -84,8 +84,9 @@ public:
 	Float focalDistance,
 	Film *film );
 	Float GenerateRay( const CameraSample &sample, Ray * ray ) const override;
+	Float GenerateDifferentialRay(const CameraSample &sample,DifferentialRay * ray)const override;
 };
 
 
 
-}  // namespace ysl
+}  // namespace 

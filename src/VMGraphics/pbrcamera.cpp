@@ -129,8 +129,40 @@ Float PerspectiveCamera::GenerateRay( const CameraSample &sample, Ray *ray ) con
 	assert(ray);
 	*ray = Ray( Vector3f( pCamera ).Normalized(), { 0, 0, 0 } );
 
+	if(Aperture > 0){
+		const auto lensPos = Aperture * concentricDiskSample(sample.LensSample);
+
+		const auto focus = (*ray)(FocalDistance/ray->d.z);
+
+		ray->o = Point3f(lensPos.x,lensPos.y);
+		ray->d = (focus-ray->o).Normalized();
+	}
+
+	ray->Time = Lerp(sample.Time,ShutterOpen,ShutterClose);
+
 	*ray = CameraToWorld * ( *ray );
 	return 1;
 }
 
+Float PerspectiveCamera::GenerateDifferentialRay(const CameraSample &sample,DifferentialRay * ray)const
+{
+	assert(ray);
+	const auto posOnFilm = Point3f(sample.FilmSample.x,sample.FilmSample.y,0);
+	const auto posInCamera = RasterToCamera * (posOnFilm);
+	*ray = DifferentialRay(Vec3f(posInCamera).Normalized(),{0.f,0.f,0.f});
+
+	if(Aperture > 0){ // effect of depth of field
+		const auto sampleOnLens = Aperture * concentricDiskSample(sample.LensSample);
+
+	}
+
+	if(Aperture > 0){
+
+	}else{
+
+	}
+	ray->Time = Lerp(sample.Time,ShutterOpen,ShutterClose);
+	*ray = CameraToWorld * (*ray);
+	return 1;
+}
 }  // namespace vm
