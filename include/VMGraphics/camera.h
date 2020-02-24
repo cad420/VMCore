@@ -118,10 +118,10 @@ private:
 class VMGRAPHICS_EXPORTS ViewingTransform
 {
 public:
-	ViewingTransform( const Point3f &position = { 0.0f, 0.0f, 5.0f },
-			Vector3f up = { 0.0f, 1.0f, 0.0f },
-			const Point3f &center = { 0, 0, 0 } )  //:lookAtTransform(position,up,center)
-	  ;
+    ViewingTransform() = default;
+	ViewingTransform( const Point3f &position,
+			const Vector3f &up,
+			const Point3f &center );
 
 	Transform ViewMatrix() const { return lookAtTransform.LookAt(); }
 

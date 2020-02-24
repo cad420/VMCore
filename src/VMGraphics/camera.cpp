@@ -175,7 +175,7 @@ void LookAtTransform::Rotate( const Vector3f &axis, double theta, const Point3f 
 
 }
 
-ViewingTransform::ViewingTransform( const Point3f &position, Vector3f up, const Point3f &center )
+ViewingTransform::ViewingTransform( const Point3f &position, const Vector3f &up, const Point3f &center )
 {
 	lookAtTransform = LookAtTransform( position, up, center );
 	projTransform.SetGLPerspective( fov, aspectRatio, nearPlan, farPlan );
