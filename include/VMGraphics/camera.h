@@ -89,8 +89,9 @@ class VMGRAPHICS_EXPORTS LookAtTransform
 
 public:
 	// Constructor with vectors
-	LookAtTransform( const Point3f &position = { 0.0f, 0.0f, 0.0f }, Vector3f up = { 0.0f, 1.0f, 0.0f },
-					   const Point3f &center = { 0, 0, 0 } );
+	LookAtTransform()=default;
+	LookAtTransform( const Point3f &position ,const Vector3f &up,
+					   const Point3f &center);
 	LookAtTransform( const Point3f &position, Vector3f up,
 					   const Vector3f &front );
 

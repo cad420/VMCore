@@ -70,7 +70,7 @@ void FocusCamera::updateCameraVectors( const vm::Vector3f &axis, double theta )
 
 
 namespace vm{
-LookAtTransform::LookAtTransform( const Point3f &position, Vector3f worldUp, const Point3f &center ) :
+LookAtTransform::LookAtTransform( const Point3f &position,const  Vector3f &worldUp, const Point3f &center ) :
   m_position( position ),
   m_front( center - position ),
   m_worldUp( worldUp ),
