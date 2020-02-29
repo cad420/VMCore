@@ -21,19 +21,19 @@ public:
 	std::vector<size_t> blocks;
 };
 
-MappingTableManager::MappingTableManager( const std::vector<LODPageTableInfo> &infos, const Size3 &physicalSpaceSize, int physicalSpaceCount ):
+MappingTableManager::MappingTableManager( const std::vector<LODPageTableInfo> &createInfo, const Size3 &physicalSpaceSize, int physicalSpaceCount ):
 d_ptr( new MappingTableManager__pImpl(this))
 {
 	VM_IMPL( MappingTableManager )
-	
-	const int lod = infos.size();
+	assert(physicalSpaceSize.x && physicalSpaceSize.y && physicalSpaceSize.z && physicalSpaceCount);
+	const int lod = createInfo.size();
 	_->lodPageTables.resize( lod );
 	_->blocks.resize( lod );
 
 	// lod page table
 	for ( int i = 0; i < lod; i++ ) {
-		if ( infos[ i ].external == nullptr ) _->lodPageTables[ i ] = Linear3DArray<PageTableEntry>( Size3( infos[ i ].virtualSpaceSize ), nullptr );
-		else _->lodPageTables[ i ] = Linear3DArray<PageTableEntry>( infos[ i ].virtualSpaceSize.x, infos[ i ].virtualSpaceSize.y, infos[ i ].virtualSpaceSize.z, (PageTableEntry *)infos[ i ].external, false );
+		if ( createInfo[ i ].external == nullptr ) _->lodPageTables[ i ] = Linear3DArray<PageTableEntry>( Size3( createInfo[ i ].virtualSpaceSize ), nullptr );
+		else _->lodPageTables[ i ] = Linear3DArray<PageTableEntry>( createInfo[ i ].virtualSpaceSize.x, createInfo[ i ].virtualSpaceSize.y, createInfo[ i ].virtualSpaceSize.z, (PageTableEntry *)createInfo[ i ].external, false );
 		size_t blockId = 0;
 
 		for ( auto z = 0; z < _->lodPageTables[ i ].Size().z; z++ )
