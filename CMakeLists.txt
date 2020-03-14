@@ -63,5 +63,5 @@ target_link_libraries(vmcore PRIVATE)
 target_include_directories(vmcore PUBLIC "external" "include" "extension")
 
 
-install(TARGETS vmcore LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
-install(DIRECTORY "include" DESTINATION "include/VMutils")
+# install(TARGETS vmcore LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
+# install(DIRECTORY "include" DESTINATION "include/VMutils")
