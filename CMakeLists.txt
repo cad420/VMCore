@@ -11,7 +11,7 @@ option(VMUTILS_SHARED_LIBRARY OFF)	 # static linking
 
 #add_subdirectory(external/VMUtils)
 
-option(VMCORE_SHARED_LIBRARY "Set to ON to build using dynamic linking" ON)
+option(VMCORE_SHARED_LIBRARY "Set to ON to build using dynamic linking" OFF)
 if(VMCORE_SHARED_LIBRARY)
   #add_definitions(-DVMCORE_SHARED_LIBRARY)
   add_library(vmcore SHARED)
