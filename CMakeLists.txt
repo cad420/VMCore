@@ -1,38 +1,30 @@
-cmake_minimum_required(VERSION 3.12)
-set(CMAKE_CXX_STANDARD 17)  # for filesystem
+cmake_minimum_required(VERSION 3.9)
 project(vmcore)
-
 
 aux_source_directory(src/VMFoundation FOUNDATION_SRC)
 aux_source_directory(src/VMGraphics GRAPHICS_SRC)
 
-
-#option(VMUTILS_SHARED_LIBRARY OFF)	 # static linking
-
-#add_subdirectory(external/VMUtils)
-
 option(VMCORE_SHARED_LIBRARY "Set to ON to build using dynamic linking" ON)
-if(VMCORE_SHARED_LIBRARY)
+if (VMCORE_SHARED_LIBRARY)
   #add_definitions(-DVMCORE_SHARED_LIBRARY)
   add_library(vmcore SHARED)
   target_compile_definitions(vmcore PUBLIC -DVMCORE_SHARED_LIBRARY)
-else()
+else ()
   add_library(vmcore STATIC)
-endif()
-if(NOT MSVC)
+endif ()
+if (NOT MSVC)
   target_link_libraries(vmcore stdc++fs)
-endif()
+endif ()
 
 include(scripts/external.cmake)
 
-#add_dependencies(vmcore vmutils)
 vm_external_module(
-	GIT_REPOSITORY https://github.com/cad420/VMat.git
-	GIT_TAG master
+    GIT_REPOSITORY https://github.com/cad420/VMat.git
+    GIT_TAG master
 )
 vm_external_module(
-	GIT_REPOSITORY https://github.com/cad420/VMUtils.git
-	GIT_TAG master
+    GIT_REPOSITORY https://github.com/cad420/VMUtils.git
+    GIT_TAG master
 )
 
 vm_target_dependency(vmcore VMat PUBLIC)
@@ -40,14 +32,31 @@ vm_target_dependency(vmcore VMUtils PUBLIC)
 
 target_sources(vmcore PRIVATE ${GRAPHICS_SRC} ${FOUNDATION_SRC})
 target_link_libraries(vmcore PRIVATE)
-target_include_directories(vmcore PUBLIC "external" "include" "extension")
-
-
-install(TARGETS vmcore LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
-install(DIRECTORY "include" DESTINATION "include/VMutils")
-
+target_include_directories(vmcore
+  PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/extension>
+    $<INSTALL_INTERFACE:include>
+)
+target_compile_features(vmcore PUBLIC cxx_std_17)
 
 option(VMCORE_BUILD_TEST OFF)
-if(VMCORE_BUILD_TEST)
-add_subdirectory(test)
+if (VMCORE_BUILD_TEST)
+  add_subdirectory(test)
+endif ()
+
+option(VMCORE_INSTALL "install VMcore library & headers" ON)
+if (VMCORE_INSTALL)
+  install(
+      TARGETS vmcore
+      DESTINATION lib
+  )
+  install(
+      DIRECTORY
+        include/VMFoundation
+        include/VMGraphics
+        extension/VMCoreExtension
+      DESTINATION include
+  )
 endif()
