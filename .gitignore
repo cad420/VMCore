@@ -336,4 +336,6 @@ build
 /compile_commands.json
 /.SpaceVim.d
 .clangd
+.clangd/index
+.ccls-cache
 
