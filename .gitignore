@@ -333,3 +333,6 @@ __pycache__/
 build
 .vscode
 /out
+/compile_commands.json
+/.SpaceVim.d
+
