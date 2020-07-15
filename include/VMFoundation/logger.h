@@ -9,6 +9,12 @@
 
 VM_BEGIN_MODULE( vm )
 
+class Logger__pImpl;
+using namespace std;
+
+VM_EXPORT
+{
+
 enum LogLevel:uint32_t
 {
   FATAL,
@@ -16,15 +22,9 @@ enum LogLevel:uint32_t
   WARNING,
   INFO,
   DEBUG,
-  CUSTOM = DEBUG + 1,
-  LOG_LEVEL_MAX = (uint32_t)(-1)
+  LOG_LEVEL_MAX = (uint32_t)(10000)
 };
 
-using LogLevelFlags = uint32_t;
-
-class Logger__pImpl;
-
-using namespace std;
 
 struct LogContext
 {
@@ -34,23 +34,32 @@ struct LogContext
   const char * category = nullptr;
 };
 
-class LogStream
+class LogStream:NoCopy
 {
   ostringstream ss;
   LogLevel level;
-  LogContext*ctx = nullptr;
+  LogContext ctx;
   friend class Logger;
   public:
-  LogStream(LogLevel level):level(level){}
+  LogStream(LogLevel level,LogContext ctx):level(level),ctx(ctx){}
 
-
+  LogStream(LogStream && other)
+  {
+    ss = std::move(other.ss);
+    level = other.level;
+    ctx = other.ctx;
+  }
+  LogStream & operator=(LogStream && other)noexcept{
+    ss = std::move(other.ss);
+    level = other.level;
+    ctx = other.ctx;
+    return *this;
+  }
   template<typename T>
-  LogStream & operator<<(const T && val){ss<<val;return *this;}
+  LogStream & operator<<(const T & val){ss<<val;return *this;}
   ~LogStream();
 };
-
-
-using LogMsgHandler = std::function<void(LogLevel,const LogContext *,const std::string &)>;
+using LogMsgHandler = std::function<void(LogLevel,const LogContext *,const char *)>;
 
 class Logger: NoCopy,NoMove
 {
@@ -59,38 +68,40 @@ public:
 	Logger() = default;
   Logger(const char * file,int line , const char * func);
   LogStream Log(LogLevel level);
+  ~Logger();
   static LogMsgHandler InstallLogMsgHandler(LogMsgHandler handler);
   static void SetLogLevel(LogLevel level);
   static LogLevel GetLogLevel();
   static void SetLogFormat(const char * fmt);
+  static void EnableCriticalAsFatal(bool enable);
+  static bool IsCriticalAsFatal();
+  static void EnableWarningAsFatal(bool enable);
+  static bool IsWarningAsFatal();
+  static void EnableRawLog(bool enable);
 };
-
-VM_EXPORT
-{
-
 #define LOG_FATAL \
-  if(Logger::GetLogLevel() <= LogLevel::FATAL); \
-  else Logger(__FILE__,__LINE__,__FUNCTION__).Log(LogLevel::FATAL)
+  if(vm::Logger::GetLogLevel() < vm::LogLevel::FATAL); \
+  else vm::Logger(__FILE__,__LINE__,nullptr).Log(vm::LogLevel::FATAL)
 
 #define LOG_CRITICAL \
-  if(Logger::GetLogLevel() <= LogLevel::CRITICAL); \
-  else Logger(__FILE__,__LINE__,__FUNCTION__).Log(LogLevel::CRITICAL)
+  if(vm::Logger::GetLogLevel() < vm::LogLevel::CRITICAL); \
+  else vm::Logger(__FILE__,__LINE__,nullptr).Log(vm::LogLevel::CRITICAL)
 
 #define LOG_WARNING \
-  if(Logger::GetLogLevel() <= LogLevel::WARNING); \
-  else Logger(__FILE__,__LINE__,__FUNCTION__).Log(LogLevel::WARNING)
+  if(vm::Logger::GetLogLevel() < vm::LogLevel::WARNING); \
+  else vm::Logger(__FILE__,__LINE__,nullptr).Log(vm::LogLevel::WARNING)
 
 #define LOG_INFO \
-  if(Logger::GetLogLevel() <= LogLevel::INFO); \
-  else Logger(__FILE__,__LINE__,__FUNCTION__).Log(LogLevel::INFO)
+  if(vm::Logger::GetLogLevel() < vm::LogLevel::INFO); \
+  else vm::Logger(__FILE__,__LINE__,nullptr).Log(vm::LogLevel::INFO)
 
 #define LOG_DEBUG \
-  if(Logger::GetLogLevel() <= LogLevel::Debug); \
-  else Logger(__FILE__,__LINE__,__FUNCTION__).Log(LogLevel::Debug)
+  if(vm::Logger::GetLogLevel() < vm::LogLevel::DEBUG); \
+  else vm::Logger(__FILE__,__LINE__,nullptr).Log(vm::LogLevel::DEBUG)
 
 #define LOG_CUSTOM(CUSTOM_LEVEL) \
-  if(Logger::GetLogLevel() <= CUSTOM_LEVEL); \
-  esle Logger(__FILE__,__LINE__,__FUNCTION__).Log(CUSTOM_LEVEL)
+  if(vm::Logger::GetLogLevel() < CUSTOM_LEVEL); \
+  else vm::Logger(__FILE__,__LINE__,nullptr).Log(vm::LogLevel(CUSTOM_LEVEL))
 
 }
 
