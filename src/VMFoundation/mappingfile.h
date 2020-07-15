@@ -1,6 +1,5 @@
 #pragma once
 
-
 /*
  * Only for internal use
  */
@@ -47,7 +46,6 @@ class WindowsFileMappingFactory : public vm::IPluginFactory
 
 VM_REGISTER_PLUGIN_FACTORY_DECL( WindowsFileMappingFactory )
 
-
 //EXPORT_PLUGIN_FACTORY( WindowsFileMappingFactory )
 
 #else
@@ -85,5 +83,3 @@ public:
 VM_REGISTER_PLUGIN_FACTORY_DECL( LinuxFileMappingFactory )
 
 #endif
-
-

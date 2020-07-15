@@ -22,9 +22,4 @@ class ListBasedLRUCachePolicy__pImpl;
 protected:
 	void InitEvent( AbstrMemoryCache *cache ) override;
 };
-
-
-
-
-
 }  // namespace vm

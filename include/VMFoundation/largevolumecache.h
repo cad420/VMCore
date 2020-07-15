@@ -1,4 +1,3 @@
-
 #pragma once
 #include "lvdreader.h"
 #include <VMat/geometry.h>
@@ -13,7 +12,7 @@ namespace vm
 	 * \brief This class is an adapter for the LVDReader.
 	 */
 
-struct PhysicalMemoryBlockIndex  // DataBlock start in 3d texture
+struct PhysicalMemoryBlockIndex	 // DataBlock start in 3d texture
 {
 	using internal_type = int;
 	const internal_type x, y, z;
@@ -45,11 +44,11 @@ public:
 struct VirtualMemoryBlockIndex
 {
 	VirtualMemoryBlockIndex() = default;
-	VirtualMemoryBlockIndex( std::size_t linearId, int xb, int yb, int zb )
+	VirtualMemoryBlockIndex( std::size_t linearID, int xb, int yb, int zb )
 	{
-		z = linearId / ( xb * yb );
-		y = ( linearId - z * xb * yb ) / xb;
-		x = linearId - z * xb * yb - y * xb;
+		z = linearID / ( xb * yb );
+		y = ( linearID - z * xb * yb ) / xb;
+		x = linearID - z * xb * yb - y * xb;
 	}
 	VirtualMemoryBlockIndex( int x, int y, int z ) :
 	  x( x ),
@@ -79,12 +78,12 @@ public:
 	Size3 Get3DPageSize() const;
 	int Get3DPageSizeInLog() const;
 	Size3 Get3DPageCount() const;
-	void * GetRawData() override;
+	void *GetRawData() override;
 	~Disk3DPageAdapter();
+
 private:
 	void *GetPageStorage_Implement( size_t pageID ) override { return nullptr; }
 };
-
 
 class Block3DCache__pImpl;
 class VMFOUNDATION_EXPORTS Block3DCache : public AbstrMemoryCache
@@ -92,12 +91,11 @@ class VMFOUNDATION_EXPORTS Block3DCache : public AbstrMemoryCache
 	VM_DECL_IMPL( Block3DCache )
 
 	[[deprecated]] int blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock ) const;
-	void Create( I3DBlockFilePluginInterface * pageFile);
+	void Create( I3DBlockFilePluginInterface *pageFile );
+
 public:
-
-
-	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface * pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator );
-	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface * pageFile );
+	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator );
+	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile );
 
 	void SetDiskFileCache( I3DBlockFilePluginInterface *diskCache );
 
@@ -113,15 +111,16 @@ public:
 	size_t GetPhysicalPageCount() const override { return CacheBlockDim().Prod(); }
 	size_t GetVirtualPageCount() const override { return BlockDim().Prod(); }
 	size_t GetPageSize() const override { return BlockSize().Prod() * sizeof( char ); }
-	
+
 	const void *GetPage( int xBlock, int yBlock, int zBlock ) { return AbstrMemoryCache::GetPage( blockCoordinateToBlockId( xBlock, yBlock, zBlock ) ); }
 	const void *GetPage( const VirtualMemoryBlockIndex &index ) { return GetPage( index.x, index.y, index.z ); };
 
-	void * GetRawData() override;
+	void *GetRawData() override;
 
 	virtual ~Block3DCache();
+
 protected:
 	[[deprecated]] int GetLog() const;
 	void *GetPageStorage_Implement( size_t pageID ) override;
 };
-}  // namespace ysl
+}  // namespace vm

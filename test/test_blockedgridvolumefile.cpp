@@ -1,11 +1,11 @@
 
 #include <iostream>
-
+#include <gtest/gtest.h>
 #include <VMUtils/timer.hpp>
 #include <VMFoundation/pluginloader.h>
 #include "VMFoundation/largevolumecache.h"
 
-int main()
+TEST(test_blockedgridvolumefile,basic)
 {
 	using namespace vm;
 
@@ -33,5 +33,4 @@ int main()
 			//std::cout << vm::Dim( i, { blockDim.x, blockDim.y } ) << std::endl;
 		}
 	}
-	return 0;
 }

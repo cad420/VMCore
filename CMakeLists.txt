@@ -31,7 +31,11 @@ vm_target_dependency(vmcore VMat PUBLIC)
 vm_target_dependency(vmcore VMUtils PUBLIC)
 
 target_sources(vmcore PRIVATE ${GRAPHICS_SRC} ${FOUNDATION_SRC})
-target_link_libraries(vmcore PRIVATE)
+if(UNIX)
+target_link_libraries(vmcore dl) # for dlopen etc.
+else()
+target_link_libraries(vmcore)
+endif()
 target_include_directories(vmcore
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external>

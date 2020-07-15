@@ -1,11 +1,10 @@
-
-
+#include <gtest/gtest.h>
 #include <VMFoundation/rawreader.h>
 #include <VMUtils/log.hpp>
 #include <VMFoundation/dataarena.h>
 #include <fstream>
 
-int main()
+TEST(test_rawreader,basic)
 {
 	using namespace vm;
 
@@ -40,6 +39,4 @@ int main()
 		}
 		id++;
 	}
-
-	return 0;
 }

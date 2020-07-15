@@ -5,5 +5,4 @@ namespace vm
 struct IFile: IEverything
 {
 };
-
 }

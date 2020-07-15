@@ -1,20 +1,15 @@
-
 cmake_minimum_required(VERSION 3.12)
 
-project(test)
+file(GLOB_RECURSE VMCORE_TEST_SRC *.cpp)
+add_executable(vmcore_test_all)
+target_sources(vmcore_test_all PRIVATE ${VMCORE_TEST_SRC})
+target_link_libraries(vmcore_test_all vmcore)
+target_include_directories(vmcore_test_all PRIVATE "../include" "../extension")
 
+enable_testing()
+find_package(GTest CONFIG REQUIRED)
+target_link_libraries(vmcore_test_all GTest::gtest_main GTest::gtest GTest::gmock GTest::gmock_main)
 
-add_executable(test_rawreader)
-target_sources(test_rawreader PRIVATE "test_rawreader.cpp")
-target_link_libraries(test_rawreader vmcore)
-target_include_directories(test_rawreader PRIVATE "../include" "../extension")
-
-install(TARGETS test_rawreader LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
-
-add_executable(test_blockedgridvolumefile)
-target_sources(test_blockedgridvolumefile PRIVATE "test_blockedgridvolumefile.cpp")
-target_link_libraries(test_blockedgridvolumefile vmcore)
-target_include_directories(test_blockedgridvolumefile PRIVATE "../include" "../extension")
-
-
-install(TARGETS test_blockedgridvolumefile test_rawreader LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
+include(GoogleTest)
+gtest_add_tests(vmcore_test_all "" AUTO)
+install(TARGETS vmcore_test_all LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")

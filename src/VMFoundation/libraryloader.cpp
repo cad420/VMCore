@@ -1,4 +1,3 @@
-
 #include <VMFoundation/libraryloader.h>
 #include <VMUtils/log.hpp>
 #include <iostream>
@@ -7,8 +6,6 @@
 
 namespace vm
 {
-
-
 class LibraryReposity__pImpl
 {
 	VM_DECL_API( LibraryReposity )
@@ -31,21 +28,18 @@ LibraryReposity *LibraryReposity::GetLibraryRepo()
 void LibraryReposity::AddLibrary( const std::string &fileName )
 {
 	VM_IMPL( LibraryReposity )
-	const auto fullName = std::filesystem::path(fileName).filename().string();
-	if(fullName.empty())
-	{
-		vm::Log("{} is not a valid library filename.",fileName);
+	const auto fullName = std::filesystem::path( fileName ).filename().string();
+	if ( fullName.empty() ) {
+		vm::Log( "{} is not a valid library filename.", fileName );
 		return;
 	}
-	const auto libName = ValidateLibraryName(fullName);
-	if(libName.empty())
-	{
-		vm::Log("{} is not valid library.",fileName);
+	const auto libName = ValidateLibraryName( fullName );
+	if ( libName.empty() ) {
+		vm::Log( "{} is not valid library.", fileName );
 		return;
 	}
-	if ( _->repo.find( libName ) != _->repo.end() )
-	{
-		vm::Log("{} has been loaded",libName);
+	if ( _->repo.find( libName ) != _->repo.end() ) {
+		vm::Log( "{} has been loaded", libName );
 		return;
 	}
 
@@ -57,19 +51,17 @@ void LibraryReposity::AddLibrary( const std::string &fileName )
 	}
 }
 
-
-void LibraryReposity::AddLibrary(const std::string & directory,const std::string & libName)
+void LibraryReposity::AddLibrary( const std::string &directory, const std::string &libName )
 {
-	VM_IMPL(LibraryReposity)
+	VM_IMPL( LibraryReposity )
 	namespace fs = std::filesystem;
-	if(!fs::is_directory(directory) )
-	{
-		vm::Log("{} is not a valid directory. ({}, {} )",directory,__FILE__,__LINE__);
+	if ( !fs::is_directory( directory ) ) {
+		vm::Log( "{} is not a valid directory. ({}, {} )", directory, __FILE__, __LINE__ );
 		return;
 	}
-	const auto fullName = MakeValidLibraryName(libName);
-	const auto fileName = fs::path(directory).append(fullName);
-	AddLibrary(fileName.string());
+	const auto fullName = MakeValidLibraryName( libName );
+	const auto fileName = fs::path( directory ).append( fullName );
+	AddLibrary( fileName.string() );
 }
 
 void LibraryReposity::AddLibraries( const std::string &directory )
@@ -77,42 +69,39 @@ void LibraryReposity::AddLibraries( const std::string &directory )
 	VM_IMPL( LibraryReposity )
 	namespace fs = std::filesystem;
 
-	try{
+	try {
+		for ( auto &lib : fs::directory_iterator( directory ) ) {
+			const auto fullName = lib.path().filename().string();
 
-	for ( auto &lib : fs::directory_iterator( directory ) ) {
-		const auto fullName = lib.path().filename().string();
+			// 		std::regex reg;
+			// 		std::string libName = fullName.substr( 0, fullName.find_last_of( '.' ) );
+			// #ifdef _WIN32
+			// 		reg = std::regex( R"(.+\.dll$)" );
+			// 		if ( std::regex_match( fullName, reg ) == false ) continue;
+			// #elif defined( __MACOSX__ ) || defined( __APPLE__ )
+			// 		reg = std::regex( R"(^lib.+\.dylib$)" );
+			// 		if ( std::regex_match( fullName, reg ) == false ) continue;
+			// 		libName = libName.substr( 3, fullName.find_last_of( '.' ) - 3 );
+			// #elif defined( __linux__ )
+			// 		reg = std::regex( R"(^lib.+\.so$)" );
+			// 		if ( std::regex_match( fullName, reg ) == false ) continue;
+			// 		libName = libName.substr( 3, fullName.find_last_of( '.' ) - 3 );
+			// #endif /*defined(__MACOSX__) || defined(__APPLE__)*/
 
-// 		std::regex reg;
-// 		std::string libName = fullName.substr( 0, fullName.find_last_of( '.' ) );
-// #ifdef _WIN32
-// 		reg = std::regex( R"(.+\.dll$)" );
-// 		if ( std::regex_match( fullName, reg ) == false ) continue;
-// #elif defined( __MACOSX__ ) || defined( __APPLE__ )
-// 		reg = std::regex( R"(^lib.+\.dylib$)" );
-// 		if ( std::regex_match( fullName, reg ) == false ) continue;
-// 		libName = libName.substr( 3, fullName.find_last_of( '.' ) - 3 );
-// #elif defined( __linux__ )
-// 		reg = std::regex( R"(^lib.+\.so$)" );
-// 		if ( std::regex_match( fullName, reg ) == false ) continue;
-// 		libName = libName.substr( 3, fullName.find_last_of( '.' ) - 3 );
-// #endif /*defined(__MACOSX__) || defined(__APPLE__)*/
-
-		const auto libName = ValidateLibraryName(fullName);
-		if(libName.empty())
-		{
-			vm::Log("{} is not a valid library. ({}, {})",lib.path().string(),__FILE__,__LINE__);
-			continue;
+			const auto libName = ValidateLibraryName( fullName );
+			if ( libName.empty() ) {
+				vm::Log( "{} is not a valid library. ({}, {})", lib.path().string(), __FILE__, __LINE__ );
+				continue;
+			}
+			try {
+				auto rp = std::make_shared<Library>( lib.path().string() );
+				_->repo[ libName ] = rp;
+			} catch ( std::exception &e ) {
+				std::cerr << e.what() << std::endl;
+			}
 		}
-		try {
-			auto rp = std::make_shared<Library>( lib.path().string() );
-			_->repo[ libName ] = rp;
-		} catch ( std::exception &e ) {
-			std::cerr << e.what() << std::endl;
-		}
-	}
-	}
-	catch(const fs::filesystem_error& e){
-		vm::Log("No such directory: {}",directory);
+	} catch ( const fs::filesystem_error &e ) {
+		vm::Log( "No such directory: {}", directory );
 		return;
 	}
 }
@@ -139,7 +128,7 @@ void *LibraryReposity::GetSymbol( const std::string &libName, const std::string 
 
 void LibraryReposity::AddDefaultLibrary()
 {
-	vm::Log("This function has not been implemented.");
+	vm::Log( "This function has not been implemented." );
 }
 
 bool LibraryReposity::Exists( const std::string &name ) const
@@ -163,37 +152,39 @@ LibraryReposity::LibraryReposity() :
 {
 }
 
-std::string ValidateLibraryName(const std::string & fullName){
-		std::regex reg;
-		std::string libName = fullName.substr( 0, fullName.find_last_of( '.' ) );
-	#ifdef _WIN32
-			reg = std::regex( R"(.+\.dll$)" );
-			if(std::regex_match( fullName, reg ) == true)
-				return libName;
-	#elif defined( __MACOSX__ ) || defined( __APPLE__ )
-			reg = std::regex( R"(^lib.+\.dylib$)" );
-			if ( std::regex_match( fullName, reg ) == true){
-				return libName.substr( 3, fullName.find_last_of( '.' ) - 3 );
-			}
-	#elif defined( __linux__ )
-			reg = std::regex( R"(^lib.+\.so$)" );
-			if ( std::regex_match( fullName, reg ) == true){
-				return libName.substr( 3, fullName.find_last_of( '.' ) - 3 );
-			}
-	#endif /*defined(__MACOSX__) || defined(__APPLE__)*/
+std::string ValidateLibraryName( const std::string &fullName )
+{
+	std::regex reg;
+	std::string libName = fullName.substr( 0, fullName.find_last_of( '.' ) );
+#ifdef _WIN32
+	reg = std::regex( R"(.+\.dll$)" );
+	if ( std::regex_match( fullName, reg ) == true )
+		return libName;
+#elif defined( __MACOSX__ ) || defined( __APPLE__ )
+	reg = std::regex( R"(^lib.+\.dylib$)" );
+	if ( std::regex_match( fullName, reg ) == true ) {
+		return libName.substr( 3, fullName.find_last_of( '.' ) - 3 );
+	}
+#elif defined( __linux__ )
+	reg = std::regex( R"(^lib.+\.so$)" );
+	if ( std::regex_match( fullName, reg ) == true ) {
+		return libName.substr( 3, fullName.find_last_of( '.' ) - 3 );
+	}
+#endif /*defined(__MACOSX__) || defined(__APPLE__)*/
 	return "";
 }
 
-std::string MakeValidLibraryName(const std::string & name){
+std::string MakeValidLibraryName( const std::string &name )
+{
 	std::string fullName;
-	#ifdef _WIN32
-		fullName = name + ".dll";
-	#elif defined( __MACOSX__ ) || defined( __APPLE__ )
-		fullName = "lib" + name + ".dylib";  // mac extension
-	#elif defined( __linux__ )
-		fullName = "lib" + name + ".so";	 // linux extension
-	#endif
-		return fullName;
+#ifdef _WIN32
+	fullName = name + ".dll";
+#elif defined( __MACOSX__ ) || defined( __APPLE__ )
+	fullName = "lib" + name + ".dylib";	 // mac extension
+#elif defined( __linux__ )
+	fullName = "lib" + name + ".so";  // linux extension
+#endif
+	return fullName;
 }
 
 }  // namespace vm
