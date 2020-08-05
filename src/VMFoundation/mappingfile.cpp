@@ -2,34 +2,58 @@
 //#include <VMUtils/vmnew.hpp>
 #include <VMFoundation/pluginloader.h>
 #include "mappingfile.h"
+
+#include <unordered_set>
 #include <VMUtils/vmnew.hpp>
 
 #ifdef _WIN32
+
+#include <Windows.h>
 namespace vm
 {
-
-void WindowsFileMapping::PrintLastErrorMsg()
+class WindowsFileMapping__pImpl
 {
-	DWORD dw = GetLastError();
-	char msg[ 512 ];
-	//LPWSTR;
-	FormatMessage(
-	  FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-	  NULL,
-	  dw,
-	  MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
-	  msg,
-	  0, NULL );
-	printf( "Last Error Code: [%d]\n", dw, msg );
+	VM_DECL_API( WindowsFileMapping )
+public:
+	WindowsFileMapping__pImpl( WindowsFileMapping *api ) :
+	  q_ptr( api ) {}
+
+	HANDLE f = nullptr;
+	HANDLE mapping = nullptr;
+	FileAccess fileFlag;
+	MapAccess mapFlag;
+	void *addr = nullptr;
+	std::unordered_set<unsigned char *> mappedPointers;
+	void PrintLastErrorMsg()
+	{
+		DWORD dw = GetLastError();
+		char msg[ 512 ];
+		//LPWSTR;
+		FormatMessage(
+		  FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		  NULL,
+		  dw,
+		  MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
+		  msg,
+		  0, NULL );
+		printf( "Last Error Code: [%d]\n", dw, msg );
+	}
+};
+
+
+WindowsFileMapping::WindowsFileMapping( ::vm::IRefCnt *cnt ) :
+  EverythingBase<IMappingFile>( cnt )
+{
 }
 
 bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags,
 							   MapAccess mapFlags )
 {
+	VM_IMPL( WindowsFileMapping );
 	bool newCreated = false;
 	DWORD dwAttrib = GetFileAttributes( fileName.c_str() );
-	fileFlag = fileFlags;
-	mapFlag = mapFlags;
+	_->fileFlag = fileFlags;
+	_->mapFlag = mapFlags;
 	if ( !( dwAttrib != INVALID_FILE_ATTRIBUTES && 0 == ( FILE_ATTRIBUTE_DIRECTORY & dwAttrib ) ) ) {
 		newCreated = true;
 	}
@@ -53,7 +77,7 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 	if ( fileFlags == FileAccess::ReadWrite )
 		flags = GENERIC_READ | GENERIC_WRITE;
 
-	f = CreateFile( TEXT( fileName.c_str() ),
+	_->f = CreateFile( TEXT( fileName.c_str() ),
 					flags,
 					0,
 					NULL,
@@ -61,9 +85,9 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 					FILE_ATTRIBUTE_NORMAL,
 					NULL );
 
-	if ( f == INVALID_HANDLE_VALUE ) {
+	if ( _->f == INVALID_HANDLE_VALUE ) {
 		printf( "Create file failed:" );
-		PrintLastErrorMsg();
+		_->PrintLastErrorMsg();
 		return false;
 	}
 
@@ -73,10 +97,10 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 
 	if ( newCreated )  // Specified the file size for file mapping
 	{
-		SetFilePointer( f, fs.LowPart, &fs.HighPart, FILE_BEGIN );
-		if ( !SetEndOfFile( f ) ) {
+		SetFilePointer( _->f, fs.LowPart, &fs.HighPart, FILE_BEGIN );
+		if ( !SetEndOfFile( _->f ) ) {
 			printf( "Set end of file failed:" );
-			PrintLastErrorMsg();
+			_->PrintLastErrorMsg();
 			return false;
 		}
 	}
@@ -87,16 +111,16 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 	if ( mapFlags == MapAccess::ReadWrite )
 		mapflags = PAGE_READWRITE;
 
-	mapping = CreateFileMapping( f,
+	_->mapping = CreateFileMapping( _->f,
 								 NULL,
 								 mapflags,
 								 fs.HighPart,
 								 fs.LowPart,
 								 NULL );
 
-	if ( mapping == nullptr ) {
+	if (_->mapping == nullptr ) {
 		printf( "Create file mapping failed" );
-		PrintLastErrorMsg();
+		_->PrintLastErrorMsg();
 		return false;
 	}
 	return true;
@@ -104,16 +128,17 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 
 unsigned char *WindowsFileMapping::FileMemPointer( unsigned long long offset, std::size_t size )
 {
+	VM_IMPL( WindowsFileMapping );
 	LARGE_INTEGER os;
 	os.QuadPart = offset;
 
 	int flags = 0;
-	if ( mapFlag == MapAccess::ReadOnly )
+	if ( _->mapFlag == MapAccess::ReadOnly )
 		flags |= FILE_MAP_READ;
-	if ( mapFlag == MapAccess::ReadWrite )
+	if ( _->mapFlag == MapAccess::ReadWrite )
 		flags |= FILE_MAP_WRITE;
 
-	auto addr = (unsigned char *)MapViewOfFile( mapping,
+	auto addr = (unsigned char *)MapViewOfFile( _->mapping,
 												flags,
 												os.HighPart,
 												os.LowPart,
@@ -121,20 +146,21 @@ unsigned char *WindowsFileMapping::FileMemPointer( unsigned long long offset, st
 
 	if ( !addr ) {
 		printf( "MapViewOfFile failed " );
-		PrintLastErrorMsg();
+		_->PrintLastErrorMsg();
 		return nullptr;
 	}
 
-	mappedPointers.insert( addr );
+	_->mappedPointers.insert( addr );
 	return addr;
 }
 
 void WindowsFileMapping::DestroyFileMemPointer( unsigned char *addr )
 {
-	auto it = mappedPointers.find( addr );
-	if ( it != mappedPointers.end() ) {
+	VM_IMPL( WindowsFileMapping );
+	auto it = _->mappedPointers.find( addr );
+	if ( it != _->mappedPointers.end() ) {
 		UnmapViewOfFile( (LPVOID)addr );
-		mappedPointers.erase( it );
+		_->mappedPointers.erase( it );
 	}
 }
 
@@ -147,8 +173,9 @@ bool WindowsFileMapping::Close()
 {
 	//for (auto & addr : mappedPointers)
 	//	WindowsFileMapping::DestroyFileMemPointer(addr);
-	CloseHandle( f );
-	CloseHandle( mapping );
+	VM_IMPL( WindowsFileMapping )
+	CloseHandle( _->f );
+	CloseHandle( _->mapping );
 	return true;
 }
 
@@ -156,7 +183,7 @@ WindowsFileMapping::~WindowsFileMapping()
 {
 	WindowsFileMapping::Close();
 }
-}
+}  // namespace vm
 
 std::vector<std::string> WindowsFileMappingFactory::Keys() const
 {
@@ -172,7 +199,6 @@ VM_REGISTER_PLUGIN_FACTORY_IMPL( WindowsFileMappingFactory )
 VM_REGISTER_INTERNAL_PLUGIN_IMPL( WindowsFileMappingFactory )
 
 #else
-
 
 #include <set>
 #include <memory>
@@ -257,12 +283,11 @@ std::vector<std::string> LinuxFileMappingFactory::Keys() const
 	return { "linux" };
 }
 
-vm::IEverything * LinuxFileMappingFactory::Create( const std::string &key )
+vm::IEverything *LinuxFileMappingFactory::Create( const std::string &key )
 {
 	return VM_NEW<vm::LinuxFileMapping>();
 }
 VM_REGISTER_PLUGIN_FACTORY_IMPL( LinuxFileMappingFactory )
 VM_REGISTER_INTERNAL_PLUGIN_IMPL( LinuxFileMappingFactory )
-
 
 #endif

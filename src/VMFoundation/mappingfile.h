@@ -6,27 +6,17 @@
 
 #include <VMCoreExtension/ifilemappingplugininterface.h>
 #include <VMCoreExtension/plugin.h>
+#include <VMUtils/common.h>
 
 #ifdef _WIN32
-
-#include <Windows.h>
-#include <unordered_set>
-
 namespace vm
 {
-class WindowsFileMapping : public ::vm::EverythingBase<IMappingFile>
+class WindowsFileMapping__pImpl;
+class WindowsFileMapping : public EverythingBase<IMappingFile>
 {
-	HANDLE f = nullptr;
-	HANDLE mapping = nullptr;
-	FileAccess fileFlag;
-	MapAccess mapFlag;
-	void *addr = nullptr;
-	std::unordered_set<unsigned char *> mappedPointers;
-	void PrintLastErrorMsg();
-
+	VM_DECL_IMPL( WindowsFileMapping )
 public:
-	WindowsFileMapping( ::vm::IRefCnt *cnt ) :
-	  ::vm::EverythingBase<IMappingFile>( cnt ) {}
+	WindowsFileMapping( ::vm::IRefCnt *cnt );
 	bool Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags ) override;
 	unsigned char *FileMemPointer( unsigned long long offset, std::size_t size ) override;
 	void DestroyFileMemPointer( unsigned char *addr ) override;
@@ -40,8 +30,9 @@ public:
 class WindowsFileMappingFactory : public vm::IPluginFactory
 {
 	DECLARE_PLUGIN_FACTORY( "vmcore.imappingfile" )
+public:
 	std::vector<std::string> Keys() const override;
-	vm::IEverything *Create( const std::string &key ) override;
+	::vm::IEverything *Create( const std::string &key ) override;
 };
 
 VM_REGISTER_PLUGIN_FACTORY_DECL( WindowsFileMappingFactory )
