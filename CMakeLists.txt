@@ -14,7 +14,6 @@ else ()
 endif ()
 if (NOT MSVC)
   target_link_libraries(vmcore stdc++fs)
-  add_compile_options(-lpthread)
 endif ()
 
 include(scripts/external.cmake)
@@ -33,7 +32,9 @@ vm_target_dependency(vmcore VMUtils PUBLIC)
 
 target_sources(vmcore PRIVATE ${GRAPHICS_SRC} ${FOUNDATION_SRC})
 if(UNIX)
-target_link_libraries(vmcore dl) # for dlopen etc.
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(vmcore dl Threads::Threads) # for dlopen etc.
 else()
 target_link_libraries(vmcore)
 endif()
