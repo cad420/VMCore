@@ -14,6 +14,7 @@ else ()
 endif ()
 if (NOT MSVC)
   target_link_libraries(vmcore stdc++fs)
+  add_compile_options(-pthread)
 endif ()
 
 include(scripts/external.cmake)
