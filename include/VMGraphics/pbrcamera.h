@@ -47,7 +47,6 @@ class ProjectiveCamera : public Camera
 public:
 	ProjectiveCamera( const Transform &cameraToWorld, const Transform &cameraToScreen,const Bound2f & screenSize,Float shutterOpen,Float shutterClose,Float aperture,Float focalDistance,Film * film );
 
-protected:
 	Transform ScreenToRaster;  // Could be evaluated by the screen size and the file resolution directly
 	Transform RasterToScreen;  // Inverse of ScreenToRaster
 	Transform CameraToScreen;  // The P matrix in MVP transformation.  It depends on the projection style( perspective or orthognal)
