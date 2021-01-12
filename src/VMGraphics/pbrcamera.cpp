@@ -40,7 +40,7 @@ ProjectiveCamera::ProjectiveCamera( const Transform &cameraToWorld,
   FocalDistance(focal)
 {
 	ScreenToRaster = Scale( film->Resolution.x, film->Resolution.y, 1.0 ) *
-					 Scale( 1 / ( screenBound.max.x - screenBound.min.x ), 1 / ( screenBound.max.y - screenBound.min.y ), 1.0 ) *
+					 Scale( 1 / ( screenBound.max.x - screenBound.min.x ), 1 / ( screenBound.min.y - screenBound.max.y ), 1.0 ) *
 					 Translate( -screenBound.min.x, -screenBound.max.y, 0 );
 	RasterToScreen = ScreenToRaster.Inversed();
 	RasterToCamera = cameraToScreen.Inversed() * RasterToScreen;
