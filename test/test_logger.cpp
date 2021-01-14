@@ -11,7 +11,7 @@ string test()
 	string res;
 	vm::Logger::InstallLogMsgHandler( [ &res ]( LogLevel level, const LogContext *ctx, const char *msg ) {
 		stringstream ss;
-		ss << msg<<"\n";
+		ss << msg;
 		res += ss.str();
 	} );
 

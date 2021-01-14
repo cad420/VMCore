@@ -63,6 +63,7 @@ LogStream::~LogStream()
 	else {
 		log = ss.str();
 	}
+  log+="\n";
 	if ( msgHandler != nullptr ) {
 		msgHandler( level, &ctx, log.c_str() );
 	} else {
