@@ -16,6 +16,13 @@ public:
 				 */
 	virtual const void *GetPage( size_t pageID ) = 0;
 
+	virtual void Flush() = 0;
+
+	virtual void Write( const void *page, size_t pageID, bool flush ) = 0;
+
+	virtual void Flush( size_t pageID ) = 0;
+
+
 	/**
 		 * \brief Returns the page size by bytes
 		 */

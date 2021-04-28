@@ -48,6 +48,12 @@ public:
 	virtual const void *GetPage( size_t pageID );
 
 	virtual void * GetRawData() = 0;
+
+	void Flush() override;
+
+	void Write( const void *page, size_t pageID, bool flush ) override;
+
+	void Flush( size_t pageID ) override;
 	
 	virtual ~AbstrMemoryCache();
 
@@ -90,14 +96,15 @@ public:
 
 	const AbstrMemoryCache *GetOwnerCache() const;
 
-	const void *GetPage( size_t pageID ) override { return nullptr; }
+	const void *GetPage( size_t pageID ) override;
 
-	size_t GetPageSize() const override { return 0; }
+	size_t GetPageSize() const override;
 
-	size_t GetPhysicalPageCount() const override { return 0; }
+	size_t GetPhysicalPageCount() const override;
 
-	size_t GetVirtualPageCount() const override { return 0; }
+	size_t GetVirtualPageCount() const override;
 
+	
 	virtual ~AbstrCachePolicy();
 
 protected:

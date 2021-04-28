@@ -180,6 +180,18 @@ const void *BlockedGridVolumeFile::GetPage( size_t pageID )
 	return nullptr;
 }
 
+inline void BlockedGridVolumeFile::Flush()
+{
+}
+
+inline void BlockedGridVolumeFile::Write( const void *page, size_t pageID, bool flush )
+{
+}
+
+inline void BlockedGridVolumeFile::Flush( size_t pageID )
+{
+}
+
 Vec3i BlockedGridVolumeFile::GetDimension() const
 {
 	const auto _ = d_func();

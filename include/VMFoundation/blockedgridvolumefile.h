@@ -38,6 +38,12 @@ public:
 	size_t GetPageSize() const override;
 	const void *GetPage( size_t pageID ) override;
 
+	void Flush() override;
+
+	void Write( const void *page, size_t pageID, bool flush ) override;
+
+	void Flush( size_t pageID ) override;
+
 	Vec3i GetDimension() const;
 	size_t GetElementSize() const;
 	size_t ReadRegion( const Vec3i &start, const Size3 &size, unsigned char *buffer );

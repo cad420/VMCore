@@ -5,13 +5,12 @@
 
 namespace vm
 {
-
 class AbstrMemoryCache__pImpl
 {
 	//AbstrMemoryCache * const q_ptr = nullptr;
 	VM_DECL_API( AbstrMemoryCache )
 public:
-	AbstrMemoryCache__pImpl( AbstrMemoryCache *api ):
+	AbstrMemoryCache__pImpl( AbstrMemoryCache *api ) :
 	  q_ptr( api ) {}
 	Ref<IPageFile> nextLevel;
 	Ref<AbstrCachePolicy> cachePolicy;
@@ -23,12 +22,11 @@ class AbstrCachePolicy__pImpl
 public:
 	AbstrCachePolicy__pImpl( AbstrCachePolicy *api ) :
 	  q_ptr( api ) {}
-	AbstrMemoryCache * ownerCache = nullptr;
+	AbstrMemoryCache *ownerCache = nullptr;
 };
 
-
-AbstrMemoryCache::AbstrMemoryCache( IRefCnt *cnt ):
-	::vm::EverythingBase<IPageFile>( cnt ),d_ptr( new AbstrMemoryCache__pImpl(this) )
+AbstrMemoryCache::AbstrMemoryCache( IRefCnt *cnt ) :
+  ::vm::EverythingBase<IPageFile>( cnt ), d_ptr( new AbstrMemoryCache__pImpl( this ) )
 {
 }
 
@@ -42,7 +40,7 @@ void AbstrMemoryCache::SetNextLevelCache( IPageFile *cache )
 void AbstrMemoryCache::SetCachePolicy( AbstrCachePolicy *policy )
 {
 	VM_IMPL( AbstrMemoryCache );
-	
+
 	if ( !policy ) return;
 	if ( _->cachePolicy ) {
 		_->cachePolicy->SetOwnerCache( nullptr );
@@ -68,12 +66,11 @@ IPageFile *AbstrMemoryCache::GetNextLevelCache()
 	return _->nextLevel;
 }
 
-const IPageFile * AbstrMemoryCache::GetNextLevelCache() const
+const IPageFile *AbstrMemoryCache::GetNextLevelCache() const
 {
 	const auto _ = d_func();
 	return _->nextLevel;
 }
-
 
 const void *AbstrMemoryCache::GetPage( size_t pageID )
 {
@@ -93,15 +90,25 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 	}
 }
 
-	AbstrMemoryCache::~AbstrMemoryCache()
+void AbstrMemoryCache::Flush()
 {
-
 }
 
-AbstrCachePolicy::AbstrCachePolicy( ::vm::IRefCnt *cnt ):
-	AbstrMemoryCache( cnt ),d_ptr( new AbstrCachePolicy__pImpl(this) )
+void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 {
+}
 
+void AbstrMemoryCache::Flush( size_t pageID )
+{
+}
+
+AbstrMemoryCache::~AbstrMemoryCache()
+{
+}
+
+AbstrCachePolicy::AbstrCachePolicy( ::vm::IRefCnt *cnt ) :
+  AbstrMemoryCache( cnt ), d_ptr( new AbstrCachePolicy__pImpl( this ) )
+{
 }
 
 AbstrMemoryCache *AbstrCachePolicy::GetOwnerCache()
@@ -117,7 +124,27 @@ const AbstrMemoryCache *AbstrCachePolicy::GetOwnerCache() const
 	return _->ownerCache;
 }
 
-	AbstrCachePolicy::~AbstrCachePolicy()
+inline const void *AbstrCachePolicy::GetPage( size_t pageID )
+{
+	return nullptr;
+}
+
+inline size_t AbstrCachePolicy::GetPageSize() const
+{
+	return 0;
+}
+
+inline size_t AbstrCachePolicy::GetPhysicalPageCount() const
+{
+	return 0;
+}
+
+inline size_t AbstrCachePolicy::GetVirtualPageCount() const
+{
+	return 0;
+}
+
+AbstrCachePolicy::~AbstrCachePolicy()
 {
 }
 
@@ -127,4 +154,4 @@ void AbstrCachePolicy::SetOwnerCache( AbstrMemoryCache *cache )
 	_->ownerCache = cache;
 }
 
-}  // namespace ysl
+}  // namespace vm
