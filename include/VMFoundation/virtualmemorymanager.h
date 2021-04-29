@@ -92,6 +92,11 @@ public:
 	
 	virtual size_t QueryAndUpdate( size_t pageID ) = 0;
 
+	/**
+	* \breif Queires the page entry given by \a pageID. It includes the page flags state. The meaning dependes on implementation.
+	*/
+	virtual size_t QueryPageEntry( size_t pageID ) = 0;
+
 	AbstrMemoryCache *GetOwnerCache();
 
 	const AbstrMemoryCache *GetOwnerCache() const;
