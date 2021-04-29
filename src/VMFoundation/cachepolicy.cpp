@@ -130,8 +130,8 @@ public:
 	}
 
 
-	// THE CODE BELLOW IS MAINLY ORIGINAL FROM XV6, A OPERATING SYSTEM FOR TUTORIAL
-	// SEE https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf FOR MORE DETAILS
+	// THE CODE BELLOW IS MAINLY ORIGINAL FROM XV6 AN OPERATING SYSTEM FOR TUTORIAL WITH LIGHTLY MODIFICATION.
+	// FOR MORE DETAILS, SEE https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf 
 
 	using pagetable_t = uint64_t *;
 	using pte_t = uint64_t;
@@ -155,7 +155,6 @@ public:
 	static constexpr int PTE_FLAGS( uint64_t a ) { return a & FLAGMASK; }
 	static constexpr int PTE_V = 1L << 0;  // valid
 	static constexpr int PTE_D = 1L << 1;  // dirty
-
 
 	pagetable_t m_pagetable = nullptr;
 
