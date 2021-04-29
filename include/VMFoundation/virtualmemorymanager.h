@@ -1,7 +1,6 @@
 
 #pragma once
 
-
 #include <VMat/geometry.h>
 #include <VMFoundation/foundation_config.h>
 
@@ -11,7 +10,6 @@
 
 namespace vm
 {
-
 class AbstrCachePolicy;
 
 /**
@@ -24,7 +22,6 @@ class AbstrMemoryCache__pImpl;
 
 class VMFOUNDATION_EXPORTS AbstrMemoryCache : public ::vm::EverythingBase<IPageFile>
 {
-
 public:
 	AbstrMemoryCache( IRefCnt *cnt );
 
@@ -47,18 +44,19 @@ public:
 		 */
 	virtual const void *GetPage( size_t pageID );
 
-	virtual void * GetRawData() = 0;
+	virtual void *GetRawData() = 0;
 
 	void Flush() override;
 
 	void Write( const void *page, size_t pageID, bool flush ) override;
 
 	void Flush( size_t pageID ) override;
-	
+
 	virtual ~AbstrMemoryCache();
 
 protected:
 	virtual void *GetPageStorage_Implement( size_t pageID ) = 0;
+
 private:
 	/**
 		 * \brief 
@@ -75,27 +73,28 @@ class VMFOUNDATION_EXPORTS AbstrCachePolicy : public AbstrMemoryCache
 	VM_DECL_IMPL( AbstrCachePolicy )
 public:
 	AbstrCachePolicy( ::vm::IRefCnt *cnt );
-	/**
-		 * \brief Queries the page given by \a pageID if it exists in storage cache. Returns \a true if it exists or \a false if not
-	*/
-	virtual bool QueryPage( size_t pageID ) = 0;
 
 	/**
-		 * \brief Updates the fault page given by \a pageID. Returns the actually storage ID of the page. If the page exists, the function does nothing.
+	*   \brief Queries the page given by \a pageID if it exists in storage cache. Returns \a true if it exists or \a false if not
+	*/
+	virtual bool QueryPage( size_t pageID )const = 0;
+
+	/**
+	*   \brief Updates the fault page given by \a pageID. Returns the actually storage ID of the page. If the page exists, the function does nothing.
 	*/
 
 	virtual void UpdatePage( size_t pageID ) = 0;
-	
+
 	/**
-		 * \brief Queries and updates at the same time. It will always return a valid storage id.
-		 */
-	
+	* \brief Queries and updates at the same time. It will always return a valid storage id.
+	*/
+
 	virtual size_t QueryAndUpdate( size_t pageID ) = 0;
 
 	/**
-	* \breif Queires the page entry given by \a pageID. It includes the page flags state. The meaning dependes on implementation.
+	* \brief Queries the page entry given by \a pageID. It includes the page flags state. The meaning dependes on implementation.
 	*/
-	virtual size_t QueryPageEntry( size_t pageID ) = 0;
+	virtual size_t QueryPageEntry( size_t pageID )const = 0;
 
 	AbstrMemoryCache *GetOwnerCache();
 
@@ -109,7 +108,6 @@ public:
 
 	size_t GetVirtualPageCount() const override;
 
-	
 	virtual ~AbstrCachePolicy();
 
 protected:
@@ -121,7 +119,4 @@ private:
 	void SetOwnerCache( AbstrMemoryCache *cache );
 };
 
-
-
 }  // namespace vm
-

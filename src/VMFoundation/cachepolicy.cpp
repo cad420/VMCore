@@ -60,9 +60,9 @@ ListBasedLRUCachePolicy::ListBasedLRUCachePolicy( ::vm::IRefCnt *cnt ) :
 {
 }
 
-bool ListBasedLRUCachePolicy::QueryPage( size_t pageID )
+bool ListBasedLRUCachePolicy::QueryPage( size_t pageID )const
 {
-	VM_IMPL( ListBasedLRUCachePolicy )
+	const auto _ = d_func();
 	return _->m_blockIdInCache.find( pageID ) == _->m_blockIdInCache.end() ? false : true;
 }
 
@@ -96,7 +96,7 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 	}
 }
 
-size_t ListBasedLRUCachePolicy::QueryPageEntry( size_t pageID )
+size_t ListBasedLRUCachePolicy::QueryPageEntry( size_t pageID )const
 {
 	return 0;
 }
@@ -173,7 +173,7 @@ public:
 	/// <param name="page_id"> as if it is a virtual address in os virtual memory management</param>
 	/// <returns></returns>
 
-	pte_t *Walk( size_t page_id )
+	pte_t *Walk( size_t page_id )const
 	{
 		auto pagetable = m_pagetable;
 		for ( int level = NLEVEL - 1; level > 0; level-- ) {
@@ -188,6 +188,11 @@ public:
 			}
 		}
 		return &pagetable[ PX( 0, page_id ) ];
+	}
+
+	size_t Walkaddr( size_t page_id )const
+	{
+		return 0;
 	}
 
 	void Freewalk( pagetable_t pagetable )
@@ -211,15 +216,15 @@ public:
 	}
 };
 
-/// <summary>
-/// LRUCachePolicy
-/// </summary>
-/// <param name="pageID"></param>
-/// <returns></returns>
-
-bool LRUCachePolicy::QueryPage( size_t pageID )
+/**
+ * \brief Returns \a true if the page is in cache otherwise returns \a false
+ * 
+ * \note This function do nothing just 
+ */
+bool LRUCachePolicy::QueryPage( size_t pageID )const
 {
-	return false;
+	const auto pte = this->QueryPageEntry( pageID );
+	return pte & LRUCachePolicy__pImpl::PTE_V;
 }
 
 /// <summary>
@@ -228,37 +233,39 @@ bool LRUCachePolicy::QueryPage( size_t pageID )
 /// <param name="pageID"></param>
 void LRUCachePolicy::UpdatePage( size_t pageID )
 {
+
 }
 
-/// <summary>
-///
-/// </summary>
-/// <param name="pageID"></param>
-/// <returns></returns>
+/**
+ * \brief Look up and update the pagetable and returns address (block id ) the last level entry point to
+ */
 size_t LRUCachePolicy::QueryAndUpdate( size_t pageID )
 {
-	return size_t();
+	VM_IMPL( LRUCachePolicy );
+	return _->Walkaddr( pageID );
 }
 
-/// <summary>
-///
-/// </summary>
-/// <param name="pageID"></param>
-/// <returns></returns>
-size_t LRUCachePolicy::QueryPageEntry( size_t pageID )
+/**
+ * \brief. Returns the page entry info according to the \param pageID
+ */
+size_t LRUCachePolicy::QueryPageEntry( size_t pageID )const
 {
-	return 0;
+	auto _ = d_func();
+	return *_->Walk( pageID );
 }
 
-/// <summary>
-///
-/// </summary>
-/// <returns></returns>
+/**
+ * .\brief Reserved for further use. Maybe just returns the memory pool used by the page table allocation.
+ */
+
 void *LRUCachePolicy::GetRawData()
 {
 	return nullptr;
 }
 
+/**
+ * \brief
+ */
 vm::LRUCachePolicy::~LRUCachePolicy()
 {
 }

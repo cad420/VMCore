@@ -13,10 +13,10 @@ class VMFOUNDATION_EXPORTS ListBasedLRUCachePolicy : public AbstrCachePolicy
 	VM_DECL_IMPL( ListBasedLRUCachePolicy )
 public:
 	ListBasedLRUCachePolicy( vm::IRefCnt *cnt );
-	bool QueryPage( size_t pageID ) override;
+	bool QueryPage( size_t pageID )const override;
 	void UpdatePage( size_t pageID ) override;
 	size_t QueryAndUpdate( size_t pageID ) override;
-	size_t QueryPageEntry( size_t pageID ) override;
+	size_t QueryPageEntry( size_t pageID )const override;
 	void *GetRawData() override;
 	~ListBasedLRUCachePolicy();
 
@@ -37,10 +37,10 @@ class VMFOUNDATION_EXPORTS LRUCachePolicy : public AbstrCachePolicy
 	VM_DECL_IMPL( LRUCachePolicy )
 public:
 	LRUCachePolicy( vm::IRefCnt *cnt );
-	bool QueryPage( size_t pageID ) override;
+	bool QueryPage( size_t pageID )const override;
 	void UpdatePage( size_t pageID ) override;
 	size_t QueryAndUpdate( size_t pageID ) override;
-	size_t QueryPageEntry( size_t pageID ) override;
+	size_t QueryPageEntry( size_t pageID )const override;
 	void *GetRawData() override;
 	~LRUCachePolicy();
 };

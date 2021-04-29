@@ -145,7 +145,7 @@ inline size_t AbstrCachePolicy::GetVirtualPageCount() const
 }
 
 
-size_t AbstrCachePolicy::QueryPageEntry( size_t pageID )
+size_t AbstrCachePolicy::QueryPageEntry( size_t pageID )const
 {
 	return 0;
 }
