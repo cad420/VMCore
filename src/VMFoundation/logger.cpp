@@ -5,12 +5,30 @@
 #include <cstdio>
 #include <thread>
 
-VM_BEGIN_MODULE( vm )
+namespace vm
+{
+
+using namespace std;
+
 static LogLevel g_level = LogLevel::LOG_LEVEL_MAX;
 static bool g_criticalAsFatal = false;
 static bool g_warningAsFatal = false;
 static const char *g_fmtStr = nullptr;
 static bool g_rawLog = false;
+
+class Logger__pImpl
+{
+	VM_DECL_API( Logger )
+public:
+	Logger__pImpl( Logger *api ) :
+	  q_ptr( api )
+	{
+	}
+	LogContext ctx;
+	~Logger__pImpl()
+	{
+	}
+};
 
 static string GetMsgTypeLabelStr( LogLevel level )
 {
@@ -54,7 +72,6 @@ static LogMsgHandler defaultMsgHandler = []( LogLevel level, const LogContext *c
 	fprintf( stderr, msg );
 };
 
-using namespace std;
 LogStream::~LogStream()
 {
 	string log;
@@ -63,7 +80,7 @@ LogStream::~LogStream()
 	else {
 		log = ss.str();
 	}
-  log+="\n";
+	log += "\n";
 	if ( msgHandler != nullptr ) {
 		msgHandler( level, &ctx, log.c_str() );
 	} else {
@@ -74,16 +91,9 @@ LogStream::~LogStream()
 	}
 }
 
-class Logger__pImpl
+Logger::Logger()
 {
-	VM_DECL_API( Logger )
-public:
-	Logger__pImpl( Logger *api ) :
-	  q_ptr( api )
-	{
-	}
-	LogContext ctx;
-};
+}
 
 Logger::Logger( const char *file, int line, const char *func ) :
   d_ptr( new Logger__pImpl( this ) )
@@ -141,8 +151,10 @@ void Logger::EnableRawLog( bool enable )
 {
 	g_rawLog = enable;
 }
+
 Logger::~Logger()
 {
+
 }
 
-VM_END_MODULE()
+}  // namespace vm

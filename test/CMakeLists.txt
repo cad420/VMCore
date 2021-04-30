@@ -8,6 +8,7 @@ target_include_directories(vmcore_test_all PRIVATE "../include" "../extension")
 
 enable_testing()
 find_package(GTest CONFIG REQUIRED)
+message(STATUS "GTest is found: ${VMCORE_TEST_SRC}")
 target_link_libraries(vmcore_test_all GTest::gtest_main GTest::gtest GTest::gmock GTest::gmock_main)
 
 include(GoogleTest)

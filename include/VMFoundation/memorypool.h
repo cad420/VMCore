@@ -14,6 +14,7 @@ public:
 	MemoryPool( size_t maxSize );
 
 	void *Alloc(size_t size);
+	void *AlignAlloc( size_t size, size_t align );
 	void Free( void *ptr );
 
 	bool IsFull() const;

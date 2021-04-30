@@ -30,7 +30,7 @@ vm_external_module(
 vm_target_dependency(vmcore VMat PUBLIC)
 vm_target_dependency(vmcore VMUtils PUBLIC)
 
-target_sources(vmcore PRIVATE ${GRAPHICS_SRC} ${FOUNDATION_SRC})
+target_sources(vmcore PRIVATE ${GRAPHICS_SRC} ${FOUNDATION_SRC} "test/test_memory.cpp")
 if(UNIX)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)

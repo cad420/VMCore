@@ -4,9 +4,22 @@
 #include <list>
 #include <map>
 #include <VMFoundation/logger.h>
+#include <VMFoundation/memorypool.h>
 
 namespace vm
 {
+struct LRUListCell;
+using LRUList = std::list<LRUListCell>;
+using LRUHash = std::map<int, std::list<LRUListCell>::iterator>;
+struct LRUListCell
+{
+	size_t storageID;
+	LRUHash::iterator hashIter;
+	LRUListCell( size_t index, LRUHash::iterator itr ) :
+	  storageID{ index },
+	  hashIter{ itr } {}
+};
+
 class ListBasedLRUCachePolicy__pImpl
 {
 	VM_DECL_API( ListBasedLRUCachePolicy )
@@ -15,17 +28,6 @@ public:
 	ListBasedLRUCachePolicy__pImpl( ListBasedLRUCachePolicy *api ) :
 	  q_ptr( api ) {}
 
-	struct LRUListCell;
-	using LRUList = std::list<LRUListCell>;
-	using LRUHash = std::map<int, std::list<LRUListCell>::iterator>;
-	struct LRUListCell
-	{
-		size_t storageID;
-		LRUHash::iterator hashIter;
-		LRUListCell( size_t index, LRUHash::iterator itr ) :
-		  storageID{ index },
-		  hashIter{ itr } {}
-	};
 	LRUList m_lruList;
 	LRUHash m_blockIdInCache;  // blockId---> (blockIndex,the position of blockIndex in list)
 };
@@ -36,12 +38,17 @@ ListBasedLRUCachePolicy::ListBasedLRUCachePolicy( ::vm::IRefCnt *cnt ) :
 {
 }
 
-bool ListBasedLRUCachePolicy::QueryPage( size_t pageID )const
+bool ListBasedLRUCachePolicy::QueryPage( size_t pageID ) const
 {
 	const auto _ = d_func();
 	return _->m_blockIdInCache.find( pageID ) == _->m_blockIdInCache.end() ? false : true;
 }
 
+/**
+ * \brief Update the policy internal state by the given \a pageID.
+ * 
+ * For example, If it is a lru policy, after calling the function, it will update the LRU records.
+ */
 void ListBasedLRUCachePolicy::UpdatePage( size_t pageID )
 {
 	VM_IMPL( ListBasedLRUCachePolicy )
@@ -72,7 +79,7 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 	}
 }
 
-size_t ListBasedLRUCachePolicy::QueryPageEntry( size_t pageID )const
+size_t ListBasedLRUCachePolicy::QueryPageEntry( size_t pageID ) const
 {
 	return 0;
 }
@@ -90,9 +97,9 @@ void ListBasedLRUCachePolicy::InitEvent( AbstrMemoryCache *cache )
 {
 	VM_IMPL( ListBasedLRUCachePolicy )
 	assert( cache );
-	ListBasedLRUCachePolicy__pImpl::LRUList().swap( _->m_lruList );
+	LRUList().swap( _->m_lruList );
 	for ( auto i = std::size_t( 0 ); i < cache->GetPhysicalPageCount(); i++ )
-		_->m_lruList.push_front( ListBasedLRUCachePolicy__pImpl::LRUListCell( i, _->m_blockIdInCache.end() ) );
+		_->m_lruList.push_front( LRUListCell( i, _->m_blockIdInCache.end() ) );
 }
 ////////////////////////////////////
 
@@ -101,13 +108,13 @@ class LRUCachePolicy__pImpl
 	VM_DECL_API( LRUCachePolicy )
 public:
 	LRUCachePolicy__pImpl( LRUCachePolicy *api ) :
-	  q_ptr( api ) {
+	  q_ptr( api ), m_memory(10000)
+	{
 		m_pagetable = (pagetable_t)malloc( LEVELSIZE );
 	}
 
-
 	// THE CODE BELLOW IS MAINLY ORIGINAL FROM XV6 AN OPERATING SYSTEM FOR TUTORIAL WITH LIGHTLY MODIFICATION.
-	// FOR MORE DETAILS, SEE https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf 
+	// FOR MORE DETAILS, SEE https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf
 
 	using pagetable_t = uint64_t *;
 	using pte_t = uint64_t;
@@ -123,71 +130,81 @@ public:
 	static constexpr int NLEVELBIT = NBIT / NLEVEL;
 	static constexpr int NLEVELSIZE = ( 1 << NLEVELBIT );
 
-	static constexpr int PXSHIFT( int level ) { return PGSHIFT + LEVELSIZE * level; }
+	static constexpr int PXSHIFT( int level ) { return PGSHIFT + NLEVELBIT * level; }
 	static constexpr int PX( int level, int va ) { return ( va >> PXSHIFT( level ) ) & PXMASK; }
 
-	static constexpr uint64_t PTE2PA( pte_t pte ) { return ( ( pte ) >> NFLAGBIT ) << PGSHIFT; }
-	static constexpr uint64_t PA2PTE( uint64_t pa ) { return ( ( pa ) >> PGSHIFT ) << NFLAGBIT; }
+	static constexpr uint64_t PTE2VA( pte_t pte ) { return ( ( pte ) >> NFLAGBIT ) << PGSHIFT; }
+	static constexpr uint64_t VA2PTE( uint64_t pa ) { return ( ( pa ) >> PGSHIFT ) << NFLAGBIT; }
 	static constexpr int PTE_FLAGS( uint64_t a ) { return a & FLAGMASK; }
 	static constexpr int PTE_V = 1L << 0;  // valid
 	static constexpr int PTE_D = 1L << 1;  // dirty
 
 	pagetable_t m_pagetable = nullptr;
-
+	MemoryPool m_memory;
 	/// <summary>
-	/// Return the address of the PTE in page table pagetable
-	/// that corresponds to virtual address page_id.
-	/// create any required page-table pages.
-	///
-	/// A 64-bit virtual address is split into five fields:
-	///   48..63 -- 16 bits of level-3 index.
-	///   32..47 -- 16 bits of level-2 index.
-	///   16..31 -- 16 bits of level-1 index.
-	///    0..15 -- 16 bits of level-0 index.
-	///    0..0 -- 0 bits of byte offset within the page.
 	/// </summary>
 	/// <param name="page_id"> as if it is a virtual address in os virtual memory management</param>
 	/// <returns></returns>
 
-	pte_t *Walk( size_t page_id )const
+
+	/**
+	* \brief Return a entry item which records the page given by \a page_id state in cache.
+	*
+	* \note 
+	*   A 64-bit virtual address is split into five fields:
+	*   48..63 -- 16 bits of level-3 index.
+	*   32..47 -- 16 bits of level-2 index.
+	*   16..31 -- 16 bits of level-1 index.
+	*    0..15 -- 16 bits of level-0 index.
+	*    0..0 -- 0 bits of byte offset within the page.
+	*/
+
+	pte_t *Walk( size_t page_id ) const
 	{
 		auto pagetable = m_pagetable;
 		for ( int level = NLEVEL - 1; level > 0; level-- ) {
 			pte_t *pte = &pagetable[ PX( level, page_id ) ];
 			if ( *pte & PTE_V ) {
-				pagetable = (pagetable_t)PTE2PA( *pte );
+				pagetable = (pagetable_t)PTE2VA( *pte );
 			} else {
 				if ( ( pagetable = (pte_t *)malloc( NLEVELSIZE ) ) == 0 )
-					return 0;
+					return nullptr;
 				memset( pagetable, 0, NLEVELSIZE );
-				*pte = PA2PTE( (uint64_t)pagetable ) | PTE_V;
+				*pte = VA2PTE( (uint64_t)pagetable ) | PTE_V;
 			}
 		}
 		return &pagetable[ PX( 0, page_id ) ];
 	}
 
-	size_t Walkaddr( size_t page_id )const
+	/**
+	*  \brief Return the page actual index (physical index) of the given \a page_id (virtual index)
+	*/
+	size_t Walkaddr( size_t page_id ) const
 	{
 		return 0;
 	}
 
+	/**
+	* Frees the entire pagetable which records the mapping between virtual index and the actual index.
+	*/
 	void Freewalk( pagetable_t pagetable )
 	{
 		for ( int i = 0; i < LEVELSIZE; i++ ) {
 			pte_t pte = pagetable[ i ];
 			if ( ( pte & PTE_V ) == 0 ) {
 				// this PTE points to a lower-level page table.
-				auto child = PTE2PA( pte );
+				auto child = PTE2VA( pte );
 				Freewalk( (pagetable_t)child );
 				pagetable[ i ] = 0;
 			} else if ( pte & PTE_V ) {
-				LOG_FATAL<<"Freewalk";
+				LOG_FATAL << "Freewalk";
 			}
 		}
 		free( (void *)pagetable );
 	}
 
-	~LRUCachePolicy__pImpl() {
+	~LRUCachePolicy__pImpl()
+	{
 		Freewalk( m_pagetable );
 	}
 };
@@ -197,19 +214,19 @@ public:
  * 
  * \note This function do nothing just 
  */
-bool LRUCachePolicy::QueryPage( size_t pageID )const
+bool LRUCachePolicy::QueryPage( size_t pageID ) const
 {
 	const auto pte = this->QueryPageEntry( pageID );
 	return pte & LRUCachePolicy__pImpl::PTE_V;
 }
 
-/// <summary>
-///
-/// </summary>
-/// <param name="pageID"></param>
+/**
+ * \brief Update the policy internal state by the given \a pageID.
+ * 
+ * For example, If it is a lru policy, after calling the function, it will update the LRU records.
+ */
 void LRUCachePolicy::UpdatePage( size_t pageID )
 {
-
 }
 
 /**
@@ -224,7 +241,7 @@ size_t LRUCachePolicy::QueryAndUpdate( size_t pageID )
 /**
  * \brief. Returns the page entry info according to the \param pageID
  */
-size_t LRUCachePolicy::QueryPageEntry( size_t pageID )const
+size_t LRUCachePolicy::QueryPageEntry( size_t pageID ) const
 {
 	auto _ = d_func();
 	return *_->Walk( pageID );

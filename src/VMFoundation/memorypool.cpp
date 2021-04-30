@@ -33,12 +33,24 @@ void * MemoryPool::Alloc( size_t size )
 	return _->ptr.get() + sizeof(Allocation);
 }
 
+void *MemoryPool::AlignAlloc( size_t size, size_t align )
+{
+	VM_IMPL( MemoryPool )
+	const auto pos = _->tracker.Allocate( size + sizeof( Allocation ), align );
+	if ( !pos.IsValid() ) 
+		return nullptr;
+	auto &posAlloc = *( reinterpret_cast<Allocation *>( _->ptr.get() + pos.UnalignedOffset ) );
+	posAlloc = pos;
+	return _->ptr.get() + sizeof(Allocation);
+}
+
 void MemoryPool::Free( void *ptr )
 {
 	VM_IMPL( MemoryPool )
 	auto &posAlloc = *( reinterpret_cast<Allocation *>( (uint8_t*)ptr - sizeof( Allocation ) ) );
 	_->tracker.Free(std::move(posAlloc));
 }
+
 
 bool MemoryPool::IsFull() const
 {

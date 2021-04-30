@@ -1,7 +1,6 @@
-#include <VMFoundation/logger.h>
 #include <gtest/gtest-death-test.h>
 #include <gtest/gtest.h>
-
+#include <VMFoundation/logger.h>
 using namespace vm;
 using namespace std;
 
