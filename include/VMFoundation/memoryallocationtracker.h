@@ -3,6 +3,7 @@
 #include "foundation_config.h"
 #include <VMUtils/concepts.hpp>
 #include <VMUtils/common.h>
+#include <iostream>
 
 namespace vm
 {
@@ -30,6 +31,12 @@ struct Allocation
 	size_t UnalignedOffset = InvalidOffset;
 	size_t Size = 0;
 };
+
+inline 
+std::ostream & operator<<(std::ostream & os, const Allocation & allocation){
+  os<<"[ Size: "<<allocation.Size<<", UnalignedOffset: "<<allocation.UnalignedOffset<<" ]\n";
+  return os;
+}
 
 class MemoryAllocationTracker__pImpl;
 
