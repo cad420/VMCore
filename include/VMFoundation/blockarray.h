@@ -184,10 +184,14 @@ public:
 		return m_nyBlocks;
 	}
 
-	int BlockDepth()
+	int BlockDepth()const
 	{
 		return m_nzBlocks;
 	}
+
+    size_t BlockCount()const{
+      return size_t(BlockWidth()) * BlockHeight() * BlockDepth();
+    }
 
 	/**
 		 * \brief  Returns the multiple of BlockSize()

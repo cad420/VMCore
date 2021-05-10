@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VMCoreExtension/ipagefile.h"
 #include "blockarray.h"
 
 namespace vm
@@ -15,7 +16,8 @@ struct IBlock3DArrayAdapter
 };
 
 template <typename T, int log>
-class GenericBlockCache : public vm::Block3DArray<T, log>, public IBlock3DArrayAdapter
+class GenericBlockCache : public vm::Block3DArray<T, log>, 
+  public IBlock3DArrayAdapter
 {
 public:
 	//GenericBlockCache( int w, int h, int d, T *data ) :
@@ -23,7 +25,31 @@ public:
 	GenericBlockCache( int xb, int yb, int zb, T *data ) :
 	  Block3DArray<T, log>( xb * ( 1 << log ), yb * ( 1 << log ), zb * ( 1 << log ), data ) {}
 	void *GetBlockData( size_t blockID ) override { return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( blockID ) ); }
+
 	void *GetRawData() override { return Block3DArray<T, log>::Data(); }
+
+};
+
+template <typename T, int log>
+class GenericBlockPageFileAdapter : public vm::Block3DArray<T, log>, public EverythingBase<IPageFile>
+{
+public:
+	GenericBlockPageFileAdapter( int xb, int yb, int zb, T *data ) :
+	  Block3DArray<T, log>( xb * ( 1 << log ), yb * ( 1 << log ), zb * ( 1 << log ), data ) {}
+
+	const void *GetPage( size_t pageID )override{ return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( pageID ) ); }
+
+	void Flush() override{}
+
+	void Write( const void *page, size_t pageID, bool flush )override{}
+
+	void Flush( size_t pageID )override{}
+
+	size_t GetPageSize()const override {return (1L<<log) * (1L<<log) * (1L<<log) * sizeof(T);}
+
+	size_t GetPhysicalPageCount() const override{return Block3DArray<T,log>::BlockCount();}
+
+	size_t GetVirtualPageCount() const override{return GetPhysicalPageCount();}
 };
 
 
