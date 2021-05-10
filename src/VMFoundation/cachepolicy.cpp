@@ -29,7 +29,7 @@ public:
 	  q_ptr( api ) {}
 
 	LRUList m_lruList;
-	LRUHash m_blockIdInCache;  // blockId---> (blockIndex,the position of blockIndex in list)
+	LRUHash m_blockIdInCache;  // blockId---> (blockIndex, the position of blockIndex in list)
 };
 
 ListBasedLRUCachePolicy::ListBasedLRUCachePolicy( ::vm::IRefCnt *cnt ) :
@@ -102,32 +102,38 @@ void ListBasedLRUCachePolicy::InitEvent( AbstrMemoryCache *cache )
 		_->m_lruList.push_front( LRUListCell( i, _->m_blockIdInCache.end() ) );
 }
 ////////////////////////////////////
+//
+
+
 
 class LRUCachePolicy__pImpl
 {
 	VM_DECL_API( LRUCachePolicy )
 public:
 	LRUCachePolicy__pImpl( LRUCachePolicy *api ) :
-	  q_ptr( api ), m_memory(10000)
+	  q_ptr( api )
 	{
 		m_pagetable = (pagetable_t)malloc( LEVELSIZE );
 	}
+
 
 	// THE CODE BELLOW IS MAINLY ORIGINAL FROM XV6 AN OPERATING SYSTEM FOR TUTORIAL WITH LIGHTLY MODIFICATION.
 	// FOR MORE DETAILS, SEE https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf
 
 	using pagetable_t = uint64_t *;
 	using pte_t = uint64_t;
-	static constexpr int NBIT = 64;
+	static constexpr int NBIT = 64;        
+  static constexpr int NMAXVABIT = 48;   // This value is OS-dependent, 48 is proper for most OS
 	static constexpr int NLEVEL = 4;
 	static constexpr int LEVELSIZE = ( 1L << ( NBIT / NLEVEL ) );
 	static constexpr int PXMASK = 0xFFFFFF;	 // NBIT/NEVEL bits
 
-	static constexpr int NFLAGBIT = 10;
+	static constexpr int NFLAGBIT = 16;
 	static constexpr int FLAGMASK = 0x3FF;	// NFLAGBIT bits
 
 	static constexpr int PGSHIFT = 0;  // we have no page offset in page id (address)
 	static constexpr int NLEVELBIT = NBIT / NLEVEL;
+    static constexpr uint64_t NMAXVA = 1L << NMAXVABIT;
 	static constexpr int NLEVELSIZE = ( 1 << NLEVELBIT );
 
 	static constexpr int PXSHIFT( int level ) { return PGSHIFT + NLEVELBIT * level; }
@@ -140,7 +146,16 @@ public:
 	static constexpr int PTE_D = 1L << 1;  // dirty
 
 	pagetable_t m_pagetable = nullptr;
-	MemoryPool m_memory;
+
+  struct LRUEntry{
+    LRUEntry(size_t storageID, pte_t * pte):storageID(storageID),pte(pte){}
+    size_t storageID;
+    pte_t * pte = nullptr;  // null indicates unused entry
+  };
+  using LRU_Recorder = std::list<LRUEntry>;
+
+  LRU_Recorder m_recorder;
+
 	/// <summary>
 	/// </summary>
 	/// <param name="page_id"> as if it is a virtual address in os virtual memory management</param>
@@ -176,13 +191,39 @@ public:
 		return &pagetable[ PX( 0, page_id ) ];
 	}
 
+  /**
+   * \brief This function is called when allocating a LRU Entry corresponding to the given pte.
+   * It records the actual page index (or physical address in terms of OS Memory Management) and 
+   * reference the given pte itself. The function acts like allocating a physical page.
+   * */
+  inline LRUEntry * GetOrAllocLRUEntry(pte_t * pte){
+    //TODO:: Append an entry to the list and returns its pointer
+    assert(pte && "pte pointer is null in GetOrAllocLRUEntry");
+    if(pte != nullptr){
+      auto flags = PTE_FLAGS(*pte);
+      if(flags & PTE_D){
+      }else{
+      }
+
+      return 0;
+    }else{
+      m_recorder.emplace_front(10, pte);
+      return &(*m_recorder.begin());
+    }
+  }
+
 	/**
 	*  \brief Return the page actual index (physical index) of the given \a page_id (virtual index)
 	*/
 	size_t Walkaddr( size_t page_id ) const
 	{
-		return 0;
-	}
+    //
+    auto pte = Walk(page_id);
+    if(PTE_FLAGS(*pte) & PTE_V){
+      //TODO:: Returns the corresponding storageID in LRU_Recorder
+      return 0;
+    }
+  }
 
 	/**
 	* Frees the entire pagetable which records the mapping between virtual index and the actual index.
@@ -254,6 +295,14 @@ size_t LRUCachePolicy::QueryPageEntry( size_t pageID ) const
 void *LRUCachePolicy::GetRawData()
 {
 	return nullptr;
+}
+
+void LRUCachePolicy::InitEvent( AbstrMemoryCache *cache ){
+	VM_IMPL( LRUCachePolicy )
+	assert( cache );
+  LRUCachePolicy__pImpl::LRU_Recorder().swap( _->m_recorder );
+	for ( auto i = std::size_t( 0 ); i < cache->GetPhysicalPageCount(); i++ )
+		_->m_recorder.push_front( LRUCachePolicy__pImpl::LRUEntry( i, nullptr ) );
 }
 
 /**

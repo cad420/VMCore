@@ -2,6 +2,7 @@
 #include <cstring>
 #include <VMFoundation/virtualmemorymanager.h>
 #include <VMUtils/ref.hpp>
+#include <VMFoundation/logger.h>
 
 namespace vm
 {
@@ -14,6 +15,7 @@ public:
 	  q_ptr( api ) {}
 	Ref<IPageFile> nextLevel;
 	Ref<AbstrCachePolicy> cachePolicy;
+  std::vector<size_t> dirtyPageID;
 };
 
 class AbstrCachePolicy__pImpl
@@ -92,14 +94,25 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 
 void AbstrMemoryCache::Flush()
 {
+  //TODO: Flush all dirty page and reset dirty
+	VM_IMPL( AbstrMemoryCache )
 }
 
 void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 {
+
+	VM_IMPL( AbstrMemoryCache )
+  //TODO: set dirty flag
+  if(flush){
+    this->Flush(pageID);
+  }else{
+    _->dirtyPageID.push_back(pageID);
+  }
 }
 
 void AbstrMemoryCache::Flush( size_t pageID )
 {
+  //TODO :: write to the next level cache and flush
 }
 
 AbstrMemoryCache::~AbstrMemoryCache()

@@ -43,6 +43,8 @@ public:
 	size_t QueryPageEntry( size_t pageID )const override;
 	void *GetRawData() override;
 	~LRUCachePolicy();
+protected:
+	void InitEvent( AbstrMemoryCache *cache ) override;
 };
 
 }  // namespace vm
