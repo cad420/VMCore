@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VMCoreExtension/ipagefile.h"
+#include "VMUtils/ieverything.hpp"
 #include "blockarray.h"
 
 namespace vm
@@ -34,8 +35,8 @@ template <typename T, int log>
 class GenericBlockPageFileAdapter : public vm::Block3DArray<T, log>, public EverythingBase<IPageFile>
 {
 public:
-	GenericBlockPageFileAdapter( int xb, int yb, int zb, T *data ) :
-	  Block3DArray<T, log>( xb * ( 1 << log ), yb * ( 1 << log ), zb * ( 1 << log ), data ) {}
+	GenericBlockPageFileAdapter(IRefCnt* cnt, int xb, int yb, int zb, T *data ) :
+	  Block3DArray<T, log>( xb * ( 1 << log ), yb * ( 1 << log ), zb * ( 1 << log ), data ),EverythingBase<IPageFile>(cnt) {}
 
 	const void *GetPage( size_t pageID )override{ return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( pageID ) ); }
 

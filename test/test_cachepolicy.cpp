@@ -1,3 +1,4 @@
+#include "VMCoreExtension/ipagefile.h"
 #include "VMFoundation/blockarray.h"
 #include "VMUtils/fmt.hpp"
 #include "VMUtils/vmnew.hpp"
@@ -7,6 +8,7 @@
 #include <gtest/gtest-death-test.h>
 #include <gtest/gtest.h>
 #include <VMFoundation/logger.h>
+#include <VMFoundation/genericcache.h>
 
 #include <VMFoundation/blockedgridvolumefile.h>
 #include <VMFoundation/cachepolicy.h>
@@ -64,15 +66,16 @@ vector<Ref<Block3DCache>> SetupVolumeData(
 }
 
 template<int nLogBlockSize, typename T, typename std::enable_if<sizeof(T)==1, char>::type = 0>
-Block3DArray<T, nLogBlockSize> CreateTestBlock3DArray(const Size3 & blockDim, int padding){
-  auto array = Block3DArray<T, nLogBlockSize>(blockDim.x, blockDim.y, blockDim.z);
+IPageFile * CreateTestBlock3DArray(const Size3 & blockDim, int padding){
+  auto array = VM_NEW<GenericBlockPageFileAdapter<T, nLogBlockSize>>(blockDim.x, blockDim.y,blockDim.z,nullptr);
   const auto blockCount = blockDim.Prod();
   constexpr auto blockSize = (1L<<nLogBlockSize);
   const auto blockBytes = blockSize * blockSize * blockSize;
   std::unique_ptr<T[]> blockBuffer(new T[blockBytes]);
   for(int i = 0;i < blockCount;i++){
     std::memset(blockBuffer.get(), i % 256, blockBytes);
-    array.SetBlockData(i, blockBuffer.get());
+    array->SetBlockData(i, blockBuffer.get());
+    std::cout<<blockBuffer[0]<<" "<<i<<std::endl;
   }
   return array;
 }
@@ -87,8 +90,11 @@ void CreateBRVFile(const std::string & fileName, const Block3DArray<T, nLogBlock
 
 TEST( test_cachepolicy, listbasedlrucachepolicy )
 {
-
   auto & pluginLoader = *PluginLoader::GetPluginLoader();
   auto policy = VM_NEW<ListBasedLRUCachePolicy>();
   auto cache = VM_NEW<BlockedGridVolumeFile>();
+  auto data = CreateTestBlock3DArray<5, char>({2,2,2}, 0);
+  for(int i = 0;i<8;i++){
+    LOG_INFO<<((int8_t*)data->GetPage(i))[0];
+  }
 }
