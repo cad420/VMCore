@@ -32,11 +32,11 @@ public:
 };
 
 template <typename T, int log>
-class GenericBlockPageFileAdapter : public vm::Block3DArray<T, log>, public EverythingBase<IPageFile>
+class GenericBlockPageFileAdapter : public vm::Block3DArray<T, log>, public EverythingBase<I3DBlockDataInterface>
 {
 public:
 	GenericBlockPageFileAdapter(IRefCnt* cnt, int xb, int yb, int zb, T *data ) :
-	  Block3DArray<T, log>( xb * ( 1 << log ), yb * ( 1 << log ), zb * ( 1 << log ), data ),EverythingBase<IPageFile>(cnt) {}
+	  Block3DArray<T, log>( xb * ( 1 << log ), yb * ( 1 << log ), zb * ( 1 << log ), data ),EverythingBase<I3DBlockDataInterface>(cnt) {}
 
 	const void *GetPage( size_t pageID )override{ return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( pageID ) ); }
 
@@ -51,6 +51,21 @@ public:
 	size_t GetPhysicalPageCount() const override{return Block3DArray<T,log>::BlockCount();}
 
 	size_t GetVirtualPageCount() const override{return GetPhysicalPageCount();}
+
+	int GetPadding() const override { return 0; }
+	vm::Size3 GetDataSizeWithoutPadding() const override
+	{
+		return { 0, 0, 0 };
+	}
+	vm::Size3 Get3DPageSize() const override
+	{
+		return { 0, 0, 0 };
+	}
+	int Get3DPageSizeInLog() const override { return 2; }
+	vm::Size3 Get3DPageCount() const override
+	{
+		return { 0, 0, 0 };
+	}
 };
 
 

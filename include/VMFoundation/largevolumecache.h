@@ -91,13 +91,13 @@ class VMFOUNDATION_EXPORTS Block3DCache : public AbstrMemoryCache
 	VM_DECL_IMPL( Block3DCache )
 
 	[[deprecated]] int blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock ) const;
-	void Create( I3DBlockFilePluginInterface *pageFile );
+	void Create( I3DBlockDataInterface *pageFile );
 
 public:
-	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator );
-	Block3DCache( IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile );
+	Block3DCache( IRefCnt *cnt, I3DBlockDataInterface *pageFile, std::function<Size3( I3DBlockDataInterface * )> evaluator );
+	Block3DCache( IRefCnt *cnt, I3DBlockDataInterface *pageFile );
 
-	void SetDiskFileCache( I3DBlockFilePluginInterface *diskCache );
+	void SetDiskFileCache( I3DBlockDataInterface *diskCache );
 
 	Size3 CPUCacheBlockSize() const;
 	vm::Size3 CPUCacheSize() const;

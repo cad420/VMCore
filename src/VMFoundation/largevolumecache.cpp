@@ -27,7 +27,7 @@ public:
 	  q_ptr( api ) {}
 	Size3 cacheDim;
 	std::unique_ptr<IBlock3DArrayAdapter> m_volumeCache;
-	Ref<I3DBlockFilePluginInterface> adapter;
+	Ref<I3DBlockDataInterface> adapter;
 };
 
 class Disk3DPageAdapter__pImpl
@@ -119,7 +119,7 @@ int Block3DCache::blockCoordinateToBlockId( int xBlock, int yBlock, int zBlock )
 	return zBlock * x * y + yBlock * x + xBlock;
 }
 
-void Block3DCache::Create( I3DBlockFilePluginInterface *pageFile )
+void Block3DCache::Create( I3DBlockDataInterface *pageFile )
 {
 	//const auto p = dynamic_cast<I3DBlockFilePluginInterface *>( GetNextLevelCache() );
 	VM_IMPL( Block3DCache )
@@ -154,7 +154,7 @@ Block3DCache::~Block3DCache()
 
 int Block3DCache::GetLog() const
 {
-	const auto p = dynamic_cast<const I3DBlockFilePluginInterface *>( GetNextLevelCache() );
+	const auto p = dynamic_cast<const I3DBlockDataInterface *>( GetNextLevelCache() );
 	assert( p );
 	const int log = p->Get3DPageSizeInLog();
 	return log;
@@ -166,7 +166,7 @@ void *Block3DCache::GetPageStorage_Implement( size_t pageID )
 	return _->m_volumeCache->GetBlockData( pageID );
 }
 
-Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile, std::function<Size3( I3DBlockFilePluginInterface * )> evaluator ) :
+Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockDataInterface *pageFile, std::function<Size3( I3DBlockDataInterface * )> evaluator ) :
   AbstrMemoryCache( cnt ),
   d_ptr( new Block3DCache__pImpl( this ) )
 {
@@ -176,8 +176,8 @@ Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pag
 	SetCachePolicy( VM_NEW<ListBasedLRUCachePolicy>() );
 }
 
-Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pageFile ) :
-  Block3DCache( cnt, pageFile, []( I3DBlockFilePluginInterface *pageFile ) {
+Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockDataInterface *pageFile ) :
+  Block3DCache( cnt, pageFile, []( I3DBlockDataInterface *pageFile ) {
 	  const auto ps = pageFile->GetPageSize();
 	  constexpr size_t maxMemory = 1024 * 1024 * 1024;  // 1GB
 	  const auto d = maxMemory / ps;
@@ -186,7 +186,7 @@ Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockFilePluginInterface *pag
 {
 }
 
-void Block3DCache::SetDiskFileCache( I3DBlockFilePluginInterface *diskCache )
+void Block3DCache::SetDiskFileCache( I3DBlockDataInterface *diskCache )
 {
 	VM_IMPL( Block3DCache )
 	SetNextLevelCache( diskCache );

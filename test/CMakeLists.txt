@@ -14,3 +14,4 @@ target_link_libraries(vmcore_test_all GTest::gtest_main GTest::gtest GTest::gmoc
 include(GoogleTest)
 gtest_add_tests(vmcore_test_all "" AUTO)
 install(TARGETS vmcore_test_all LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
+install(TARGETS vmcore LIBRARY DESTINATION "lib" RUNTIME DESTINATION "bin" ARCHIVE DESTINATION "lib")
