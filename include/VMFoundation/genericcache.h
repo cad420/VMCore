@@ -26,6 +26,7 @@ public:
 	void *GetRawData() override { return Block3DArray<T, log>::Data(); }
 };
 
+
 template <typename T>
 using GenericBlock16Cache = GenericBlockCache<T, 4>;
 template <typename T>
