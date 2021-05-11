@@ -18,14 +18,6 @@ public:
 	std::vector<size_t> dirtyPageID;
 };
 
-class AbstrCachePolicy__pImpl
-{
-	VM_DECL_API( AbstrCachePolicy )
-public:
-	AbstrCachePolicy__pImpl( AbstrCachePolicy *api ) :
-	  q_ptr( api ) {}
-	AbstrMemoryCache *ownerCache = nullptr;
-};
 
 AbstrMemoryCache::AbstrMemoryCache( IRefCnt *cnt ) :
   ::vm::EverythingBase<IPageFile>( cnt ), d_ptr( new AbstrMemoryCache__pImpl( this ) )
@@ -125,6 +117,15 @@ AbstrMemoryCache::~AbstrMemoryCache()
 {
 }
 
+class AbstrCachePolicy__pImpl
+{
+	VM_DECL_API( AbstrCachePolicy )
+public:
+	AbstrCachePolicy__pImpl( AbstrCachePolicy *api ) :
+	  q_ptr( api ) {}
+	WeakRef<AbstrMemoryCache> ownerCache = nullptr;
+};
+
 AbstrCachePolicy::AbstrCachePolicy( ::vm::IRefCnt *cnt ) :
   AbstrMemoryCache( cnt ), d_ptr( new AbstrCachePolicy__pImpl( this ) )
 {
@@ -133,14 +134,7 @@ AbstrCachePolicy::AbstrCachePolicy( ::vm::IRefCnt *cnt ) :
 AbstrMemoryCache *AbstrCachePolicy::GetOwnerCache()
 {
 	VM_IMPL( AbstrCachePolicy )
-	return _->ownerCache;
-}
-
-const AbstrMemoryCache *AbstrCachePolicy::GetOwnerCache() const
-{
-	//VM_IMPL( AbstrCachePolicy )
-	const auto _ = d_func();
-	return _->ownerCache;
+	return _->ownerCache.Lock();
 }
 
 inline const void *AbstrCachePolicy::GetPage( size_t pageID )

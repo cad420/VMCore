@@ -29,10 +29,10 @@ using LRUHash = std::map<size_t, PTE>;
 struct LRUListItem
 {
 	size_t storageID;
-	LRUHash::iterator hashIter;
+	LRUHash::iterator pte;
 	LRUListItem( size_t index, LRUHash::iterator itr ) :
 	  storageID{ index },
-	  hashIter{ itr } {}
+	  pte{ itr } {}
 };
 
 class VMFOUNDATION_EXPORTS ListBasedLRUCachePolicy : public AbstrCachePolicy
@@ -52,6 +52,7 @@ public:
 
 protected:
 	void InitEvent( AbstrMemoryCache *cache ) override;
+	void Replace_Event( size_t evictPageID ) override;
 };
 
 //

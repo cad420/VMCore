@@ -4,6 +4,7 @@
 #include <VMUtils/fmt.hpp>
 #include <VMFoundation/logger.h>
 #include <VMFoundation/memorypool.h>
+#include <VMUtils/ref.hpp>
 #include <cstddef>
 
 namespace vm
@@ -54,16 +55,24 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 		// Replaces the least recently used block (the last one) if cache miss
 		// Before replacing, it's necessary to check if the cache is dirty and write back
 
+
 		auto &eviction = _->m_lruList.back();
 		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, --_->m_lruList.end() );  // move from rear to head
 
 		int pteFlags = PTE::PTE_V;
 		const auto newItr = _->m_blockIdInCache.insert( std::make_pair( pageID, PTE{ _->m_lruList.begin(), pteFlags } ) );
-		if ( eviction.hashIter != _->m_blockIdInCache.end() ) {
+		if ( eviction.pte != _->m_blockIdInCache.end() ) {
 			// Unmapped old if the virtual address associate an old one
-			_->m_blockIdInCache.erase( eviction.hashIter );	 // Another way is to set and invalid flag to pte to indicate this cache is invalid
+			_->m_blockIdInCache.erase( eviction.pte );	 // Another way is to set and invalid flag to pte to indicate this cache is invalid
+
+			Ref<AbstrMemoryCache> cache = GetOwnerCache();
+			if (cache) {
+				const auto evictPageID = eviction.pte->first;
+				/// TODO::
+				// cache->Replace_Event(evictPageID);
+			}
 		}
-		eviction.hashIter = newItr.first;  // Mapping new
+		eviction.pte = newItr.first;  // Mapping new
 		return eviction.storageID;
 	} else {
 		// cache hit
@@ -113,6 +122,9 @@ void ListBasedLRUCachePolicy::InitEvent( AbstrMemoryCache *cache )
 	LRUList().swap( _->m_lruList );
 	for ( auto i = std::size_t( 0 ); i < cache->GetPhysicalPageCount(); i++ )
 		_->m_lruList.push_front( LRUListItem( i, _->m_blockIdInCache.end() ) );
+}
+void ListBasedLRUCachePolicy::Replace_Event( size_t evictPageID )
+{
 }
 ////////////////////////////////////
 //

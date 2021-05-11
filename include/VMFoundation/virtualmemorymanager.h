@@ -56,6 +56,7 @@ public:
 
 protected:
 	virtual void *GetPageStorage_Implement( size_t pageID ) = 0;
+	virtual void Replace_Event(size_t evictPageID) = 0;
 
 private:
 	/**
@@ -98,8 +99,6 @@ public:
 	virtual void* QueryPageEntry( size_t pageID )const = 0;
 
 	AbstrMemoryCache *GetOwnerCache();
-
-	const AbstrMemoryCache *GetOwnerCache() const;
 
 	const void *GetPage( size_t pageID ) override;
 
