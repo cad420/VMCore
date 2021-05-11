@@ -1,3 +1,4 @@
+#include "VMCoreExtension/i3dblockfileplugininterface.h"
 #include "VMCoreExtension/ipagefile.h"
 #include "VMFoundation/blockarray.h"
 #include "VMUtils/fmt.hpp"
@@ -75,7 +76,6 @@ I3DBlockDataInterface * CreateTestBlock3DArray(const Size3 & blockDim, int paddi
   for(int i = 0;i < blockCount;i++){
 	std::memset(blockBuffer.get(), i % 256, blockBytes);
 	array->SetBlockData(i, blockBuffer.get());
-	std::cout<<blockBuffer[0]<<" "<<i<<std::endl;
   }
   return array;
 }
@@ -88,15 +88,24 @@ void CreateBRVFile(const std::string & fileName, const Block3DArray<T, nLogBlock
 
 }
 
-
 TEST( test_cachepolicy, listbasedlrucachepolicy )
 {
   auto & pluginLoader = *PluginLoader::GetPluginLoader();
-  auto data = CreateTestBlock3DArray<5, char>({2,2,2}, 0);
-  auto cache = VM_NEW<Block3DCache>(data);
+  const Size3 psize{1,1,1};
+  const Size3 vsize{2,2,2};
+  auto data = CreateTestBlock3DArray<5, char>(vsize, 0);
+  auto cache = VM_NEW<Block3DCache>(data, [&psize](I3DBlockDataInterface* data){return psize;});
+
+  ASSERT_EQ(cache->GetPhysicalPageCount(), psize.Prod());
+  ASSERT_EQ(cache->GetVirtualPageCount(), vsize.Prod());
+
+  LOG_INFO<<fmt("Physical cache block count: {}, virtual cache block count: {}",cache->GetPhysicalPageCount(), cache->GetVirtualPageCount());
+
   for(int i = 0;i<8;i++){
-	VirtualMemoryBlockIndex index{size_t(i), 2, 2,2};
+	VirtualMemoryBlockIndex index{size_t(i), 2, 2, 2};
 	auto p= (const char*)cache->GetPage(index);
 	ASSERT_EQ(i, (int)p[0]);
   }
+
+
 }
