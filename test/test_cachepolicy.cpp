@@ -37,7 +37,7 @@ vector<Ref<Block3DCache>> SetupVolumeData(
 			const auto cap = fileNames[ i ].substr( fileNames[ i ].find_last_of( '.' ) );
 			auto p = pluginLoader.CreatePlugin<I3DBlockFilePluginInterface>( cap );
 			if ( !p ) {
-                LOG_CRITICAL<<fmt( "Failed to load plugin to read {} file", cap );
+				LOG_CRITICAL<<fmt( "Failed to load plugin to read {} file", cap );
 				exit( -1 );
 			}
 			p->Open( fileNames[ i ] );
@@ -60,22 +60,22 @@ vector<Ref<Block3DCache>> SetupVolumeData(
 		}
 		return volumeData;
 	} catch ( std::runtime_error &e ) {
-        LOG_CRITICAL<<e.what();
+		LOG_CRITICAL<<e.what();
 		return {};
 	}
 }
 
 template<int nLogBlockSize, typename T, typename std::enable_if<sizeof(T)==1, char>::type = 0>
 I3DBlockDataInterface * CreateTestBlock3DArray(const Size3 & blockDim, int padding){
-  auto array = VM_NEW<GenericBlockPageFileAdapter<T, nLogBlockSize>>(blockDim.x, blockDim.y,blockDim.z,nullptr);
+  auto array = VM_NEW<GenericBlockPageFileAdapter<T, nLogBlockSize>>(blockDim.x, blockDim.y,blockDim.z,padding,nullptr);
   const auto blockCount = blockDim.Prod();
   constexpr auto blockSize = (1L<<nLogBlockSize);
   const auto blockBytes = blockSize * blockSize * blockSize;
   std::unique_ptr<T[]> blockBuffer(new T[blockBytes]);
   for(int i = 0;i < blockCount;i++){
-    std::memset(blockBuffer.get(), i % 256, blockBytes);
-    array->SetBlockData(i, blockBuffer.get());
-    std::cout<<blockBuffer[0]<<" "<<i<<std::endl;
+	std::memset(blockBuffer.get(), i % 256, blockBytes);
+	array->SetBlockData(i, blockBuffer.get());
+	std::cout<<blockBuffer[0]<<" "<<i<<std::endl;
   }
   return array;
 }
@@ -95,7 +95,8 @@ TEST( test_cachepolicy, listbasedlrucachepolicy )
   auto data = CreateTestBlock3DArray<5, char>({2,2,2}, 0);
   auto cache = VM_NEW<Block3DCache>(data);
   for(int i = 0;i<8;i++){
-    LOG_INFO<<((int8_t*)data->GetPage(i))[0];
+	VirtualMemoryBlockIndex index{size_t(i), 2, 2,2};
+	auto p= (const char*)cache->GetPage(index);
+	ASSERT_EQ(i, (int)p[0]);
   }
-
 }

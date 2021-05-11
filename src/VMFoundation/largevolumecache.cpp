@@ -1,6 +1,6 @@
 
 #include <VMFoundation/largevolumecache.h>
-#include <VMUtils/log.hpp>
+#include <VMFoundation/logger.h>
 #include <VMFoundation/cachepolicy.h>
 #include <VMFoundation/pluginloader.h>
 #include <VMUtils/vmnew.hpp>
@@ -133,12 +133,11 @@ void Block3DCache::Create( I3DBlockDataInterface *pageFile )
 	case 9: _->m_volumeCache = std::make_unique<Int8Block512Cache>( _->cacheDim.x, _->cacheDim.y, _->cacheDim.z, nullptr ); break;
 	case 10: _->m_volumeCache = std::make_unique<Int8Block1024Cache>( _->cacheDim.x, _->cacheDim.y, _->cacheDim.z, nullptr ); break;
 	default:
-		Warning( "Unsupported Cache block Size\n" );
+		LOG_WARNING<<"Unsupported Cache block Size";
 		break;
 	}
 	if ( !_->m_volumeCache ) {
-		std::cerr << "Can not allocate memory for cache\n";
-		exit( 0 );
+		LOG_CRITICAL<<"Can not allocate memory for cache\n";
 	}
 }
 

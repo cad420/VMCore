@@ -2,6 +2,7 @@
 
 #include "VMCoreExtension/ipagefile.h"
 #include "VMUtils/ieverything.hpp"
+#include <VMCoreExtension/i3dblockfileplugininterface.h>
 #include "blockarray.h"
 
 namespace vm
@@ -34,8 +35,9 @@ public:
 template <typename T, int log>
 class GenericBlockPageFileAdapter : public vm::Block3DArray<T, log>, public EverythingBase<I3DBlockDataInterface>
 {
+  int m_padding = 0;
 public:
-	GenericBlockPageFileAdapter(IRefCnt* cnt, int xb, int yb, int zb, T *data ) :
+	GenericBlockPageFileAdapter(IRefCnt* cnt, int xb, int yb, int zb, int padding, T *data) :m_padding(padding),
 	  Block3DArray<T, log>( xb * ( 1 << log ), yb * ( 1 << log ), zb * ( 1 << log ), data ),EverythingBase<I3DBlockDataInterface>(cnt) {}
 
 	const void *GetPage( size_t pageID )override{ return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( pageID ) ); }
@@ -52,19 +54,22 @@ public:
 
 	size_t GetVirtualPageCount() const override{return GetPhysicalPageCount();}
 
-	int GetPadding() const override { return 0; }
-	vm::Size3 GetDataSizeWithoutPadding() const override
+	int GetPadding() const override { return m_padding; }
+	Size3 GetDataSizeWithoutPadding() const override
 	{
-		return { 0, 0, 0 };
+		const auto pageSize = Get3DPageSize();
+		const size_t padding = GetPadding();
+		return pageSize-Size3{padding,padding,padding};
 	}
-	vm::Size3 Get3DPageSize() const override
+	Size3 Get3DPageSize() const override
 	{
-		return { 0, 0, 0 };
+	  const auto s = 1L<<Get3DPageSizeInLog();
+		return { s, s, s };
 	}
-	int Get3DPageSizeInLog() const override { return 2; }
-	vm::Size3 Get3DPageCount() const override
+	int Get3DPageSizeInLog() const override { return static_cast<int>(log); }
+	Size3 Get3DPageCount() const override
 	{
-		return { 0, 0, 0 };
+		return { Block3DArray<T,log>::BlockWidth(), Block3DArray<T,log>::BlockHeight(), Block3DArray<T,log>::BlockDepth()};
 	}
 };
 

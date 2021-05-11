@@ -42,7 +42,7 @@ public:
 		 * \note The page data pointed by the  pointer returned by the function is only valid at current call.
 		 * It could be invalid when next call because its data has been swapped out.
 		 */
-	virtual const void *GetPage( size_t pageID );
+	const void *GetPage( size_t pageID )override;
 
 	virtual void *GetRawData() = 0;
 
