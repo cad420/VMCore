@@ -4,6 +4,7 @@
 #include "VMUtils/ieverything.hpp"
 #include <VMCoreExtension/i3dblockfileplugininterface.h>
 #include "blockarray.h"
+#include <VMFoundation/logger.h>
 
 namespace vm
 {
@@ -42,11 +43,14 @@ public:
 
 	const void *GetPage( size_t pageID )override{ return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( pageID ) ); }
 
-	void Flush() override{}
+	void Flush() override{LOG_CRITICAL << "Not implemented";}
 
-	void Write( const void *page, size_t pageID, bool flush )override{}
+	void Write( const void *page, size_t pageID, bool flush )override
+	{
+		Block3DArray<T, log>::SetBlockData( pageID, (const T*)page );
+	}
 
-	void Flush( size_t pageID )override{}
+	void Flush( size_t pageID ) override { LOG_CRITICAL << "Not implemented"; }
 
 	size_t GetPageSize()const override {return (1L<<log) * (1L<<log) * (1L<<log) * sizeof(T);}
 
@@ -63,13 +67,13 @@ public:
 	}
 	Size3 Get3DPageSize() const override
 	{
-	  const auto s = 1L<<Get3DPageSizeInLog();
+	  const auto s = 1ULL<<Get3DPageSizeInLog();
 		return { s, s, s };
 	}
 	int Get3DPageSizeInLog() const override { return static_cast<int>(log); }
 	Size3 Get3DPageCount() const override
 	{
-		return { Block3DArray<T,log>::BlockWidth(), Block3DArray<T,log>::BlockHeight(), Block3DArray<T,log>::BlockDepth()};
+		return Size3{ (size_t)Block3DArray<T,log>::BlockWidth(), (size_t)Block3DArray<T,log>::BlockHeight(), (size_t)Block3DArray<T,log>::BlockDepth()};
 	}
 };
 

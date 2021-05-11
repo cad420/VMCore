@@ -103,13 +103,13 @@ TEST( test_cachepolicy, listbasedlrucachepolicy_write )
   LOG_INFO<<fmt("Physical cache block count: {}, virtual cache block count: {}",cache->GetPhysicalPageCount(), cache->GetVirtualPageCount());
 
   for(int i = 0;i<vsize.Prod();i++){
-	VirtualMemoryBlockIndex index{size_t(i), vsize.x, vsize.y, vsize.z};
+	VirtualMemoryBlockIndex index{size_t(i), (int)vsize.x, (int)vsize.y, (int)vsize.z};
 	auto p = (const char*)cache->GetPage(index);
 	ASSERT_EQ(i, (int)p[0]);
   }
 
   std::default_random_engine e;
-  std::uniform_int_distribution<int> u(0, vsize.Prod());
+  std::uniform_int_distribution<int> u(0, vsize.Prod() - 1);
 
   std::unique_ptr<char[]> page(new char[data->GetPageSize()]);
 
@@ -117,7 +117,7 @@ TEST( test_cachepolicy, listbasedlrucachepolicy_write )
 	for(int j=0;j<10;j++){
 	  // random access cache 10 times
 	  size_t rnd = u(e);
-	  VirtualMemoryBlockIndex index{rnd, vsize.x, vsize.y, vsize.z};
+	  VirtualMemoryBlockIndex index{rnd, (int)vsize.x, (int)vsize.y, (int)vsize.z};
 	  cache->GetPage(index);
 	}
 	// write cache
@@ -125,7 +125,7 @@ TEST( test_cachepolicy, listbasedlrucachepolicy_write )
 	char write_val = u(e);
 
 	std::memset(page.get(), write_val, data->GetPageSize());
-	VirtualMemoryBlockIndex write_index{write_addr, vsize.x, vsize.y, vsize.z};
+	VirtualMemoryBlockIndex write_index{write_addr, (int)vsize.x, (int)vsize.y, (int)vsize.z};
 	// write through
 	cache->Write(page.get(), write_addr, true);
 
