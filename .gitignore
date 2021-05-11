@@ -339,3 +339,4 @@ build
 .clangd/index
 .ccls-cache
 .cache
+.vimspector.json
