@@ -108,6 +108,10 @@ public:
 
 	size_t GetVirtualPageCount() const override;
 
+  void Invoke_Replace_Event(size_t evictPageID){
+    Replace_Event(evictPageID);
+  }
+
 	virtual ~AbstrCachePolicy();
 
 protected:

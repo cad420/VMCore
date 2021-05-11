@@ -56,27 +56,35 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 		// Before replacing, it's necessary to check if the cache is dirty and write back
 
 
-		auto &eviction = _->m_lruList.back();
+
+    ////////
+    // Update policy state
 		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, --_->m_lruList.end() );  // move from rear to head
+    ////////
 
 		int pteFlags = PTE::PTE_V;
 		const auto newItr = _->m_blockIdInCache.insert( std::make_pair( pageID, PTE{ _->m_lruList.begin(), pteFlags } ) );
+
+		auto &eviction = _->m_lruList.back();
 		if ( eviction.pte != _->m_blockIdInCache.end() ) {
 			// Unmapped old if the virtual address associate an old one
-			_->m_blockIdInCache.erase( eviction.pte );	 // Another way is to set and invalid flag to pte to indicate this cache is invalid
+			_->m_blockIdInCache.erase( eviction.pte );	 // Another way is to set invalid flag to pte to indicate this cache is invalid
 
 			Ref<AbstrMemoryCache> cache = GetOwnerCache();
 			if (cache) {
 				const auto evictPageID = eviction.pte->first;
 				/// TODO::
-				// cache->Replace_Event(evictPageID);
+				Invoke_Replace_Event(evictPageID);
 			}
 		}
 		eviction.pte = newItr.first;  // Mapping new
 		return eviction.storageID;
 	} else {
 		// cache hit
+    ////////
+    // Update policy state
 		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa );  // move the node that it->second.pa points to the head.
+    ////////
 		return it->second.pa->storageID;
 	}
 }

@@ -233,4 +233,7 @@ Size3 Block3DCache::BlockDim() const
 	return _->adapter->Get3DPageCount();
 }
 
+	void Block3DCache::Replace_Event( size_t evictPageID ){
+  }
+
 }  // namespace vm
