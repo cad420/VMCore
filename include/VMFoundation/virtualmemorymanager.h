@@ -93,8 +93,9 @@ public:
 
 	/**
 	* \brief Queries the page entry given by \a pageID. It includes the page flags state. The meaning dependes on implementation.
+	* Returns null pointer if the page does not exists in cache
 	*/
-	virtual size_t QueryPageEntry( size_t pageID )const = 0;
+	virtual void* QueryPageEntry( size_t pageID )const = 0;
 
 	AbstrMemoryCache *GetOwnerCache();
 

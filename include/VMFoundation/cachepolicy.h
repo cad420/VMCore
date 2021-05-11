@@ -1,12 +1,29 @@
-
 #pragma once
-
 #include <VMFoundation/foundation_config.h>
 #include <VMFoundation/virtualmemorymanager.h>
+#include <list>
+#include <map>
 
 namespace vm
 {
 class ListBasedLRUCachePolicy__pImpl;
+
+struct LRUListCell;
+using LRUList = std::list<LRUListCell>;
+struct PTE{
+  std::list<LRUListCell>::iterator pa_itr;
+  int flags;
+  PTE(std::list<LRUListCell>::iterator itr, int f):pa_itr(itr),flags(f){}
+};
+using LRUHash = std::map<size_t, PTE>;
+struct LRUListCell
+{
+	size_t storageID;
+	LRUHash::iterator hashIter;
+	LRUListCell( size_t index, LRUHash::iterator itr ) :
+	  storageID{ index },
+	  hashIter{ itr } {}
+};
 
 class VMFOUNDATION_EXPORTS ListBasedLRUCachePolicy : public AbstrCachePolicy
 {
@@ -16,9 +33,12 @@ public:
 	bool QueryPage( size_t pageID )const override;
 	void UpdatePage( size_t pageID ) override;
 	size_t QueryAndUpdate( size_t pageID ) override;
-	size_t QueryPageEntry( size_t pageID )const override;
+	void *QueryPageEntry( size_t pageID )const override;
 	void *GetRawData() override;
 	~ListBasedLRUCachePolicy();
+
+	LRUList & GetLRUList();
+	LRUHash & GetLRUHash();
 
 protected:
 	void InitEvent( AbstrMemoryCache *cache ) override;
@@ -40,8 +60,8 @@ public:
 	bool QueryPage( size_t pageID )const override;
 	void UpdatePage( size_t pageID ) override;
 	size_t QueryAndUpdate( size_t pageID ) override;
-	size_t QueryPageEntry( size_t pageID )const override;
-	void *GetRawData() override;
+	void* QueryPageEntry( size_t pageID )const override;
+	void* GetRawData() override;
 	~LRUCachePolicy();
 protected:
 	void InitEvent( AbstrMemoryCache *cache ) override;

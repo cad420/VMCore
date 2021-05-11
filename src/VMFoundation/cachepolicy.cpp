@@ -1,24 +1,13 @@
-
+#include "VMUtils/common.h"
 #include <VMFoundation/cachepolicy.h>
 #include <cassert>
-#include <list>
-#include <map>
+#include <VMUtils/fmt.hpp>
 #include <VMFoundation/logger.h>
 #include <VMFoundation/memorypool.h>
+#include <cstddef>
 
 namespace vm
 {
-struct LRUListCell;
-using LRUList = std::list<LRUListCell>;
-using LRUHash = std::map<int, std::list<LRUListCell>::iterator>;
-struct LRUListCell
-{
-	size_t storageID;
-	LRUHash::iterator hashIter;
-	LRUListCell( size_t index, LRUHash::iterator itr ) :
-	  storageID{ index },
-	  hashIter{ itr } {}
-};
 
 class ListBasedLRUCachePolicy__pImpl
 {
@@ -54,7 +43,7 @@ void ListBasedLRUCachePolicy::UpdatePage( size_t pageID )
 	VM_IMPL( ListBasedLRUCachePolicy )
 	const auto it = _->m_blockIdInCache.find( pageID );
 	if ( it == _->m_blockIdInCache.end() ) {
-		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second );	// move the node that it->second points to the head.
+		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa_itr );	// move the node that it->second points to the head.
 	}
 }
 
@@ -67,26 +56,44 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 		auto &lastCell = _->m_lruList.back();
 		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, --_->m_lruList.end() );  // move last to head
 
-		const auto newItr = _->m_blockIdInCache.insert( std::make_pair( pageID, _->m_lruList.begin() ) );
+		const auto newItr = _->m_blockIdInCache.insert( std::make_pair( pageID, PTE{_->m_lruList.begin(),0} ) );
 		if ( lastCell.hashIter != _->m_blockIdInCache.end() ) {
 			_->m_blockIdInCache.erase( lastCell.hashIter );	 // Unmapped old
 		}
 		lastCell.hashIter = newItr.first;  // Mapping new
 		return lastCell.storageID;
 	} else {
-		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second );	// move the node that it->second points to the head.
-		return it->second->storageID;
+		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa_itr );	// move the node that it->second points to the head.
+		return it->second.pa_itr->storageID;
 	}
 }
 
-size_t ListBasedLRUCachePolicy::QueryPageEntry( size_t pageID ) const
+/**
+ * \brief Returns the pte with respect to the virtual address \a pageID
+ *
+ * */
+void* ListBasedLRUCachePolicy::QueryPageEntry( size_t pageID ) const
 {
-	return 0;
+	const auto _ = d_func();
+	const auto it = _->m_blockIdInCache.find( pageID );
+	if ( it == _->m_blockIdInCache.end() ) {
+	  return nullptr;
+	}
+	return (void*)&(it->second);
 }
 
 void *ListBasedLRUCachePolicy::GetRawData()
 {
 	return nullptr;
+}
+
+LRUList & ListBasedLRUCachePolicy::GetLRUList(){
+	  VM_IMPL( ListBasedLRUCachePolicy )
+	  return _->m_lruList;
+}
+LRUHash & ListBasedLRUCachePolicy::GetLRUHash(){
+	  VM_IMPL( ListBasedLRUCachePolicy )
+	  return _->m_blockIdInCache;
 }
 
 ListBasedLRUCachePolicy::~ListBasedLRUCachePolicy()
@@ -257,8 +264,8 @@ public:
  */
 bool LRUCachePolicy::QueryPage( size_t pageID ) const
 {
-	const auto pte = this->QueryPageEntry( pageID );
-	return pte & LRUCachePolicy__pImpl::PTE_V;
+	auto pte = (const size_t *)this->QueryPageEntry( pageID );
+	return (*pte) & LRUCachePolicy__pImpl::PTE_V;
 }
 
 /**
@@ -282,10 +289,10 @@ size_t LRUCachePolicy::QueryAndUpdate( size_t pageID )
 /**
  * \brief. Returns the page entry info according to the \param pageID
  */
-size_t LRUCachePolicy::QueryPageEntry( size_t pageID ) const
+void* LRUCachePolicy::QueryPageEntry( size_t pageID ) const
 {
 	auto _ = d_func();
-	return *_->Walk( pageID );
+	return _->Walk( pageID );
 }
 
 /**

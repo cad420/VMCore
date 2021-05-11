@@ -100,19 +100,24 @@ void AbstrMemoryCache::Flush()
 
 void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 {
-
-	VM_IMPL( AbstrMemoryCache )
-  //TODO: set dirty flag
+  VM_IMPL( AbstrMemoryCache )
+  // Only suport write through now
   if(flush){
-    this->Flush(pageID);
+	//read, update and write
+	auto cachedPage = const_cast<void*>(GetPage(pageID));
+	memcpy( cachedPage, page, GetPageSize() );
+	_->nextLevel->Write(page, pageID, flush); // update next level cache
   }else{
-    _->dirtyPageID.push_back(pageID);
+	LOG_WARNING<<"Only support write through only";
+	//TODO: set dirty flag
+    // _->dirtyPageID.push_back(pageID);
   }
 }
 
 void AbstrMemoryCache::Flush( size_t pageID )
 {
   //TODO :: write to the next level cache and flush
+  LOG_WARNING<<"Not implemented yet";
 }
 
 AbstrMemoryCache::~AbstrMemoryCache()
@@ -158,9 +163,9 @@ inline size_t AbstrCachePolicy::GetVirtualPageCount() const
 }
 
 
-size_t AbstrCachePolicy::QueryPageEntry( size_t pageID )const
+void* AbstrCachePolicy::QueryPageEntry( size_t pageID )const
 {
-	return 0;
+	return nullptr;
 }
 
 AbstrCachePolicy::~AbstrCachePolicy()
