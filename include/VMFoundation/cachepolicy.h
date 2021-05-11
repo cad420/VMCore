@@ -8,19 +8,29 @@ namespace vm
 {
 class ListBasedLRUCachePolicy__pImpl;
 
-struct LRUListCell;
-using LRUList = std::list<LRUListCell>;
-struct PTE{
-  std::list<LRUListCell>::iterator pa_itr;
-  int flags;
-  PTE(std::list<LRUListCell>::iterator itr, int f):pa_itr(itr),flags(f){}
+struct LRUListItem;
+using LRUList = std::list<LRUListItem>;
+
+
+/**
+* PageTableEntry struct
+*/
+struct PTE
+{
+	PTE( std::list<LRUListItem>::iterator itr, int f ) :
+	  pa( itr ), flags( f ) {}
+
+	std::list<LRUListItem>::iterator pa;                          // point to an item in lru list which stores the phyiscal address
+	int flags = 0;                                                // invalid
+	static constexpr int PTE_V = 1L << 0;                         // valid
+	static constexpr int PTE_D = 1L << 1;                         // dirty
 };
 using LRUHash = std::map<size_t, PTE>;
-struct LRUListCell
+struct LRUListItem
 {
 	size_t storageID;
 	LRUHash::iterator hashIter;
-	LRUListCell( size_t index, LRUHash::iterator itr ) :
+	LRUListItem( size_t index, LRUHash::iterator itr ) :
 	  storageID{ index },
 	  hashIter{ itr } {}
 };
@@ -30,20 +40,19 @@ class VMFOUNDATION_EXPORTS ListBasedLRUCachePolicy : public AbstrCachePolicy
 	VM_DECL_IMPL( ListBasedLRUCachePolicy )
 public:
 	ListBasedLRUCachePolicy( vm::IRefCnt *cnt );
-	bool QueryPage( size_t pageID )const override;
+	bool QueryPage( size_t pageID ) const override;
 	void UpdatePage( size_t pageID ) override;
 	size_t QueryAndUpdate( size_t pageID ) override;
-	void *QueryPageEntry( size_t pageID )const override;
+	void *QueryPageEntry( size_t pageID ) const override;
 	void *GetRawData() override;
 	~ListBasedLRUCachePolicy();
 
-	LRUList & GetLRUList();
-	LRUHash & GetLRUHash();
+	LRUList &GetLRUList();
+	LRUHash &GetLRUHash();
 
 protected:
 	void InitEvent( AbstrMemoryCache *cache ) override;
 };
-
 
 //
 // This policy acts as the address translation of virtual memory on OS,
@@ -57,12 +66,13 @@ class VMFOUNDATION_EXPORTS LRUCachePolicy : public AbstrCachePolicy
 	VM_DECL_IMPL( LRUCachePolicy )
 public:
 	LRUCachePolicy( vm::IRefCnt *cnt );
-	bool QueryPage( size_t pageID )const override;
+	bool QueryPage( size_t pageID ) const override;
 	void UpdatePage( size_t pageID ) override;
 	size_t QueryAndUpdate( size_t pageID ) override;
-	void* QueryPageEntry( size_t pageID )const override;
-	void* GetRawData() override;
+	void *QueryPageEntry( size_t pageID ) const override;
+	void *GetRawData() override;
 	~LRUCachePolicy();
+
 protected:
 	void InitEvent( AbstrMemoryCache *cache ) override;
 };

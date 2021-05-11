@@ -15,7 +15,7 @@ public:
 	  q_ptr( api ) {}
 	Ref<IPageFile> nextLevel;
 	Ref<AbstrCachePolicy> cachePolicy;
-  std::vector<size_t> dirtyPageID;
+	std::vector<size_t> dirtyPageID;
 };
 
 class AbstrCachePolicy__pImpl
@@ -81,6 +81,7 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 	const bool e = _->cachePolicy->QueryPage( pageID );
 	if ( !e ) {
 		const auto storageID = _->cachePolicy->QueryAndUpdate( pageID );
+
 		// Read block from next level to the storage cache
 		const auto storage = GetPageStorage_Implement( storageID );
 
@@ -94,30 +95,30 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 
 void AbstrMemoryCache::Flush()
 {
-  //TODO: Flush all dirty page and reset dirty
+	//TODO: Flush all dirty page and reset dirty
 	VM_IMPL( AbstrMemoryCache )
 }
 
 void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 {
-  VM_IMPL( AbstrMemoryCache )
-  // Only suport write through now
-  if(flush){
-	//read, update and write
-	auto cachedPage = const_cast<void*>(GetPage(pageID));
-	memcpy( cachedPage, page, GetPageSize() );
-	_->nextLevel->Write(page, pageID, flush); // update next level cache
-  }else{
-	LOG_WARNING<<"Only support write through only";
-	//TODO: set dirty flag
-    // _->dirtyPageID.push_back(pageID);
-  }
+	VM_IMPL( AbstrMemoryCache )
+	// Only suport write through now
+	if ( flush ) {
+		//read, update and write
+		auto cachedPage = const_cast<void *>( GetPage( pageID ) );
+		memcpy( cachedPage, page, GetPageSize() );
+		_->nextLevel->Write( page, pageID, flush );	 // update next level cache
+	} else {
+		LOG_WARNING << "Only support write through only";
+		//TODO: set dirty flag
+		// _->dirtyPageID.push_back(pageID);
+	}
 }
 
 void AbstrMemoryCache::Flush( size_t pageID )
 {
-  //TODO :: write to the next level cache and flush
-  LOG_WARNING<<"Not implemented yet";
+	//TODO :: write to the next level cache and flush
+	LOG_WARNING << "Not implemented yet";
 }
 
 AbstrMemoryCache::~AbstrMemoryCache()
@@ -162,8 +163,7 @@ inline size_t AbstrCachePolicy::GetVirtualPageCount() const
 	return 0;
 }
 
-
-void* AbstrCachePolicy::QueryPageEntry( size_t pageID )const
+void *AbstrCachePolicy::QueryPageEntry( size_t pageID ) const
 {
 	return nullptr;
 }

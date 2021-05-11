@@ -8,7 +8,6 @@
 
 namespace vm
 {
-
 class ListBasedLRUCachePolicy__pImpl
 {
 	VM_DECL_API( ListBasedLRUCachePolicy )
@@ -43,7 +42,7 @@ void ListBasedLRUCachePolicy::UpdatePage( size_t pageID )
 	VM_IMPL( ListBasedLRUCachePolicy )
 	const auto it = _->m_blockIdInCache.find( pageID );
 	if ( it == _->m_blockIdInCache.end() ) {
-		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa_itr );	// move the node that it->second points to the head.
+		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa );  // move the node that it->second points to the head.
 	}
 }
 
@@ -52,19 +51,24 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 	VM_IMPL( ListBasedLRUCachePolicy )
 	const auto it = _->m_blockIdInCache.find( pageID );
 	if ( it == _->m_blockIdInCache.end() ) {
-		// replace the last block in cache
-		auto &lastCell = _->m_lruList.back();
-		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, --_->m_lruList.end() );  // move last to head
+		// Replaces the least recently used block (the last one) if cache miss
+		// Before replacing, it's necessary to check if the cache is dirty and write back
 
-		const auto newItr = _->m_blockIdInCache.insert( std::make_pair( pageID, PTE{_->m_lruList.begin(),0} ) );
-		if ( lastCell.hashIter != _->m_blockIdInCache.end() ) {
-			_->m_blockIdInCache.erase( lastCell.hashIter );	 // Unmapped old
+		auto &eviction = _->m_lruList.back();
+		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, --_->m_lruList.end() );  // move from rear to head
+
+		int pteFlags = PTE::PTE_V;
+		const auto newItr = _->m_blockIdInCache.insert( std::make_pair( pageID, PTE{ _->m_lruList.begin(), pteFlags } ) );
+		if ( eviction.hashIter != _->m_blockIdInCache.end() ) {
+			// Unmapped old if the virtual address associate an old one
+			_->m_blockIdInCache.erase( eviction.hashIter );	 // Another way is to set and invalid flag to pte to indicate this cache is invalid
 		}
-		lastCell.hashIter = newItr.first;  // Mapping new
-		return lastCell.storageID;
+		eviction.hashIter = newItr.first;  // Mapping new
+		return eviction.storageID;
 	} else {
-		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa_itr );	// move the node that it->second points to the head.
-		return it->second.pa_itr->storageID;
+		// cache hit
+		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa );  // move the node that it->second.pa points to the head.
+		return it->second.pa->storageID;
 	}
 }
 
@@ -72,14 +76,14 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
  * \brief Returns the pte with respect to the virtual address \a pageID
  *
  * */
-void* ListBasedLRUCachePolicy::QueryPageEntry( size_t pageID ) const
+void *ListBasedLRUCachePolicy::QueryPageEntry( size_t pageID ) const
 {
 	const auto _ = d_func();
 	const auto it = _->m_blockIdInCache.find( pageID );
 	if ( it == _->m_blockIdInCache.end() ) {
-	  return nullptr;
+		return nullptr;
 	}
-	return (void*)&(it->second);
+	return (void *)&( it->second );
 }
 
 void *ListBasedLRUCachePolicy::GetRawData()
@@ -87,13 +91,15 @@ void *ListBasedLRUCachePolicy::GetRawData()
 	return nullptr;
 }
 
-LRUList & ListBasedLRUCachePolicy::GetLRUList(){
-	  VM_IMPL( ListBasedLRUCachePolicy )
-	  return _->m_lruList;
+LRUList &ListBasedLRUCachePolicy::GetLRUList()
+{
+	VM_IMPL( ListBasedLRUCachePolicy )
+	return _->m_lruList;
 }
-LRUHash & ListBasedLRUCachePolicy::GetLRUHash(){
-	  VM_IMPL( ListBasedLRUCachePolicy )
-	  return _->m_blockIdInCache;
+LRUHash &ListBasedLRUCachePolicy::GetLRUHash()
+{
+	VM_IMPL( ListBasedLRUCachePolicy )
+	return _->m_blockIdInCache;
 }
 
 ListBasedLRUCachePolicy::~ListBasedLRUCachePolicy()
@@ -106,12 +112,10 @@ void ListBasedLRUCachePolicy::InitEvent( AbstrMemoryCache *cache )
 	assert( cache );
 	LRUList().swap( _->m_lruList );
 	for ( auto i = std::size_t( 0 ); i < cache->GetPhysicalPageCount(); i++ )
-		_->m_lruList.push_front( LRUListCell( i, _->m_blockIdInCache.end() ) );
+		_->m_lruList.push_front( LRUListItem( i, _->m_blockIdInCache.end() ) );
 }
 ////////////////////////////////////
 //
-
-
 
 class LRUCachePolicy__pImpl
 {
@@ -123,14 +127,13 @@ public:
 		m_pagetable = (pagetable_t)malloc( LEVELSIZE );
 	}
 
-
 	// THE CODE BELLOW IS MAINLY ORIGINAL FROM XV6 AN OPERATING SYSTEM FOR TUTORIAL WITH LIGHTLY MODIFICATION.
 	// FOR MORE DETAILS, SEE https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf
 
 	using pagetable_t = uint64_t *;
 	using pte_t = uint64_t;
-	static constexpr int NBIT = 64;        
-  static constexpr int NMAXVABIT = 48;   // This value is OS-dependent, 48 is proper for most OS
+	static constexpr int NBIT = 64;
+	static constexpr int NMAXVABIT = 48;  // This value is OS-dependent, 48 is proper for most OS
 	static constexpr int NLEVEL = 4;
 	static constexpr int LEVELSIZE = ( 1L << ( NBIT / NLEVEL ) );
 	static constexpr int PXMASK = 0xFFFFFF;	 // NBIT/NEVEL bits
@@ -140,7 +143,7 @@ public:
 
 	static constexpr int PGSHIFT = 0;  // we have no page offset in page id (address)
 	static constexpr int NLEVELBIT = NBIT / NLEVEL;
-    static constexpr uint64_t NMAXVA = 1L << NMAXVABIT;
+	static constexpr uint64_t NMAXVA = 1L << NMAXVABIT;
 	static constexpr int NLEVELSIZE = ( 1 << NLEVELBIT );
 
 	static constexpr int PXSHIFT( int level ) { return PGSHIFT + NLEVELBIT * level; }
@@ -154,20 +157,21 @@ public:
 
 	pagetable_t m_pagetable = nullptr;
 
-  struct LRUEntry{
-    LRUEntry(size_t storageID, pte_t * pte):storageID(storageID),pte(pte){}
-    size_t storageID;
-    pte_t * pte = nullptr;  // null indicates unused entry
-  };
-  using LRU_Recorder = std::list<LRUEntry>;
+	struct LRUEntry
+	{
+		LRUEntry( size_t storageID, pte_t *pte ) :
+		  storageID( storageID ), pte( pte ) {}
+		size_t storageID;
+		pte_t *pte = nullptr;  // null indicates unused entry
+	};
+	using LRU_Recorder = std::list<LRUEntry>;
 
-  LRU_Recorder m_recorder;
+	LRU_Recorder m_recorder;
 
 	/// <summary>
 	/// </summary>
 	/// <param name="page_id"> as if it is a virtual address in os virtual memory management</param>
 	/// <returns></returns>
-
 
 	/**
 	* \brief Return a entry item which records the page given by \a page_id state in cache.
@@ -198,39 +202,40 @@ public:
 		return &pagetable[ PX( 0, page_id ) ];
 	}
 
-  /**
+	/**
    * \brief This function is called when allocating a LRU Entry corresponding to the given pte.
    * It records the actual page index (or physical address in terms of OS Memory Management) and 
    * reference the given pte itself. The function acts like allocating a physical page.
    * */
-  inline LRUEntry * GetOrAllocLRUEntry(pte_t * pte){
-    //TODO:: Append an entry to the list and returns its pointer
-    assert(pte && "pte pointer is null in GetOrAllocLRUEntry");
-    if(pte != nullptr){
-      auto flags = PTE_FLAGS(*pte);
-      if(flags & PTE_D){
-      }else{
-      }
+	inline LRUEntry *GetOrAllocLRUEntry( pte_t *pte )
+	{
+		//TODO:: Append an entry to the list and returns its pointer
+		assert( pte && "pte pointer is null in GetOrAllocLRUEntry" );
+		if ( pte != nullptr ) {
+			auto flags = PTE_FLAGS( *pte );
+			if ( flags & PTE_D ) {
+			} else {
+			}
 
-      return 0;
-    }else{
-      m_recorder.emplace_front(10, pte);
-      return &(*m_recorder.begin());
-    }
-  }
+			return 0;
+		} else {
+			m_recorder.emplace_front( 10, pte );
+			return &( *m_recorder.begin() );
+		}
+	}
 
 	/**
 	*  \brief Return the page actual index (physical index) of the given \a page_id (virtual index)
 	*/
 	size_t Walkaddr( size_t page_id ) const
 	{
-    //
-    auto pte = Walk(page_id);
-    if(PTE_FLAGS(*pte) & PTE_V){
-      //TODO:: Returns the corresponding storageID in LRU_Recorder
-      return 0;
-    }
-  }
+		//
+		auto pte = Walk( page_id );
+		if ( PTE_FLAGS( *pte ) & PTE_V ) {
+			//TODO:: Returns the corresponding storageID in LRU_Recorder
+			return 0;
+		}
+	}
 
 	/**
 	* Frees the entire pagetable which records the mapping between virtual index and the actual index.
@@ -265,7 +270,7 @@ public:
 bool LRUCachePolicy::QueryPage( size_t pageID ) const
 {
 	auto pte = (const size_t *)this->QueryPageEntry( pageID );
-	return (*pte) & LRUCachePolicy__pImpl::PTE_V;
+	return ( *pte ) & LRUCachePolicy__pImpl::PTE_V;
 }
 
 /**
@@ -289,7 +294,7 @@ size_t LRUCachePolicy::QueryAndUpdate( size_t pageID )
 /**
  * \brief. Returns the page entry info according to the \param pageID
  */
-void* LRUCachePolicy::QueryPageEntry( size_t pageID ) const
+void *LRUCachePolicy::QueryPageEntry( size_t pageID ) const
 {
 	auto _ = d_func();
 	return _->Walk( pageID );
@@ -304,10 +309,11 @@ void *LRUCachePolicy::GetRawData()
 	return nullptr;
 }
 
-void LRUCachePolicy::InitEvent( AbstrMemoryCache *cache ){
+void LRUCachePolicy::InitEvent( AbstrMemoryCache *cache )
+{
 	VM_IMPL( LRUCachePolicy )
 	assert( cache );
-  LRUCachePolicy__pImpl::LRU_Recorder().swap( _->m_recorder );
+	LRUCachePolicy__pImpl::LRU_Recorder().swap( _->m_recorder );
 	for ( auto i = std::size_t( 0 ); i < cache->GetPhysicalPageCount(); i++ )
 		_->m_recorder.push_front( LRUCachePolicy__pImpl::LRUEntry( i, nullptr ) );
 }
