@@ -3,6 +3,7 @@
 #include <VMFoundation/virtualmemorymanager.h>
 #include <VMUtils/ref.hpp>
 #include <VMFoundation/logger.h>
+#include <unordered_set>
 
 namespace vm
 {
@@ -15,7 +16,7 @@ public:
 	  q_ptr( api ) {}
 	Ref<IPageFile> nextLevel;
 	Ref<AbstrCachePolicy> cachePolicy;
-	std::vector<size_t> dirtyPageID;
+	std::unordered_set<size_t> dirtyPageID;
 };
 
 
@@ -72,7 +73,9 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 	assert( _->cachePolicy );
 	const bool e = _->cachePolicy->QueryPage( pageID );
 	if ( !e ) {
-		const auto storageID = _->cachePolicy->QueryAndUpdate( pageID );
+		//const auto storageID = _->cachePolicy->QueryAndUpdate( pageID );
+		size_t storageID, evictedPageID;
+		_->cachePolicy->QueryAndUpdate( pageID, &storageID, &evictedPageID );
 
 		// Read block from next level to the storage cache
 		const auto storage = GetPageStorage_Implement( storageID );
@@ -80,7 +83,9 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 		memcpy( storage, _->nextLevel->GetPage( pageID ), GetPageSize() );
 		return storage;
 	} else {
-		const auto storageID = _->cachePolicy->QueryAndUpdate( pageID );
+		size_t storageID, evictedPageID;
+		_->cachePolicy->QueryAndUpdate( pageID, &storageID, &evictedPageID );
+		//const auto storageID = _->cachePolicy->QueryAndUpdate( pageID );
 		return GetPageStorage_Implement( storageID );
 	}
 }
@@ -103,7 +108,7 @@ void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 	} else {
 		LOG_WARNING << "Only support write through only";
 		//TODO: set dirty flag
-		// _->dirtyPageID.push_back(pageID);
+		_->dirtyPageID.insert(pageID);
 	}
 }
 
@@ -117,13 +122,18 @@ AbstrMemoryCache::~AbstrMemoryCache()
 {
 }
 
+void AbstrMemoryCache::Replace_Event( size_t evictPageID )
+{
+
+}
+
 class AbstrCachePolicy__pImpl
 {
 	VM_DECL_API( AbstrCachePolicy )
 public:
 	AbstrCachePolicy__pImpl( AbstrCachePolicy *api ) :
 	  q_ptr( api ) {}
-	WeakRef<AbstrMemoryCache> ownerCache = nullptr;
+	AbstrMemoryCache* ownerCache = nullptr;
 };
 
 AbstrCachePolicy::AbstrCachePolicy( ::vm::IRefCnt *cnt ) :
@@ -134,7 +144,7 @@ AbstrCachePolicy::AbstrCachePolicy( ::vm::IRefCnt *cnt ) :
 AbstrMemoryCache *AbstrCachePolicy::GetOwnerCache()
 {
 	VM_IMPL( AbstrCachePolicy )
-	return _->ownerCache.Lock();
+	return _->ownerCache;
 }
 
 inline const void *AbstrCachePolicy::GetPage( size_t pageID )
@@ -157,10 +167,6 @@ inline size_t AbstrCachePolicy::GetVirtualPageCount() const
 	return 0;
 }
 
-void *AbstrCachePolicy::QueryPageEntry( size_t pageID ) const
-{
-	return nullptr;
-}
 
 AbstrCachePolicy::~AbstrCachePolicy()
 {
@@ -174,7 +180,7 @@ void AbstrCachePolicy::SetOwnerCache( AbstrMemoryCache *cache )
 void AbstrCachePolicy::Invoke_Replace_Event( size_t evictPageID )
 {
 	VM_IMPL( AbstrCachePolicy )
-    auto cache = _->ownerCache.Lock();
+    auto cache = _->ownerCache;
     if(cache){
       cache->Replace_Event( evictPageID );
     }

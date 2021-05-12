@@ -94,8 +94,6 @@ TEST( test_cachepolicy, listbasedlrucachepolicy_write )
 	auto data = CreateTestBlock3DArray<5, char>( vsize, 0 );
 	Ref<Block3DCache> cache = VM_NEW<Block3DCache>( data, [ &psize ]( I3DBlockDataInterface *data ) { return psize; } );
 
-	Ref<ListBasedLRUCachePolicy> policy = VM_NEW<ListBasedLRUCachePolicy>();
-	cache->SetCachePolicy( policy );
 
 	ASSERT_EQ( cache->GetPhysicalPageCount(), psize.Prod() );
 	ASSERT_EQ( cache->GetVirtualPageCount(), vsize.Prod() );

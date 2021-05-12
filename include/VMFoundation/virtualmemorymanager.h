@@ -70,6 +70,16 @@ private:
 
 class AbstrCachePolicy__pImpl;
 
+
+using PageFlag = int;
+
+enum PageFlagBits
+{
+	PAGE_FAULT = 0,
+	PAGE_V = 1L << 0,  // valid
+	PAGE_D = 1L << 1   // dirty
+};
+
 class VMFOUNDATION_EXPORTS AbstrCachePolicy : public AbstrMemoryCache
 {
 	VM_DECL_IMPL( AbstrCachePolicy )
@@ -93,11 +103,15 @@ public:
 
 	virtual size_t QueryAndUpdate( size_t pageID ) = 0;
 
+
+	virtual void QueryAndUpdate( size_t pageID, size_t *storageID, size_t *evictedPageID ) = 0;
+
 	/**
 	* \brief Queries the page entry given by \a pageID. It includes the page flags state. The meaning dependes on implementation.
 	* Returns null pointer if the page does not exists in cache
 	*/
-	virtual void *QueryPageEntry( size_t pageID ) const = 0;
+	virtual void QueryPageFlag( size_t pageID, PageFlag * pf ) const = 0;
+
 
 	AbstrMemoryCache *GetOwnerCache();
 

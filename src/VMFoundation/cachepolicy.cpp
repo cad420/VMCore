@@ -86,18 +86,59 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 	}
 }
 
+void ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID, size_t *storageID, size_t *evictedPageID )
+{
+	VM_ASSERT(storageID)
+	VM_ASSERT(evictedPageID)
+	VM_IMPL( ListBasedLRUCachePolicy )
+	const auto it = _->m_blockIdInCache.find( pageID );
+	if ( it == _->m_blockIdInCache.end() ) {
+		// Replaces the least recently used block (the last one) if cache miss
+		// Before replacing, it's necessary to check if the cache is dirty and write back
+		auto &eviction = _->m_lruList.back();
+		////////
+		// Update policy state
+		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, --_->m_lruList.end() );  // move from rear to head
+
+		int pteFlags = PTE::PTE_V;
+		const auto newItr = _->m_blockIdInCache.insert( std::make_pair( pageID, PTE{ _->m_lruList.begin(), pteFlags } ) );
+
+		if ( eviction.pte != _->m_blockIdInCache.end() ) {
+			// Unmapped old if the virtual address associate an old one
+
+			Ref<AbstrMemoryCache> cache = GetOwnerCache();
+
+			if ( cache != nullptr) {
+				*evictedPageID = eviction.pte->first;
+			}
+
+			_->m_blockIdInCache.erase( eviction.pte );	// Another way is to set invalid flag to pte to indicate this cache is invalid
+		}
+		eviction.pte = newItr.first;  // Mapping new
+		*storageID = eviction.storageID;
+	} else {
+		// cache hit
+		////////
+		// Update policy state
+		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa );  // move the node that it->second.pa points to the head.
+		*storageID = it->second.pa->storageID;
+	}
+}
+
 /**
  * \brief Returns the pte with respect to the virtual address \a pageID
  *
  * */
-void *ListBasedLRUCachePolicy::QueryPageEntry( size_t pageID ) const
+void ListBasedLRUCachePolicy::QueryPageFlag( size_t pageID, PageFlag * pf) const
 {
+	VM_ASSERT(pf)
 	const auto _ = d_func();
 	const auto it = _->m_blockIdInCache.find( pageID );
 	if ( it == _->m_blockIdInCache.end() ) {
-		return nullptr;
+		*pf = PAGE_FAULT;
+	} else {
+		*pf = ( it->second.flags );
 	}
-	return (void *)&( it->second );
 }
 
 void *ListBasedLRUCachePolicy::GetRawData()
@@ -286,8 +327,9 @@ public:
  */
 bool LRUCachePolicy::QueryPage( size_t pageID ) const
 {
-	auto pte = (const size_t *)this->QueryPageEntry( pageID );
-	return ( *pte ) & LRUCachePolicy__pImpl::PTE_V;
+	PageFlag flags;
+	this->QueryPageFlag( pageID , &flags);
+	return ( flags ) & LRUCachePolicy__pImpl::PTE_V;
 }
 
 /**
@@ -308,13 +350,22 @@ size_t LRUCachePolicy::QueryAndUpdate( size_t pageID )
 	return _->Walkaddr( pageID );
 }
 
+void vm::LRUCachePolicy::QueryAndUpdate( size_t pageID, size_t *storageID, size_t *evcitedPageID )
+{
+}
+
 /**
  * \brief. Returns the page entry info according to the \param pageID
  */
-void *LRUCachePolicy::QueryPageEntry( size_t pageID ) const
+void LRUCachePolicy::QueryPageFlag( size_t pageID, PageFlag * pf ) const
 {
 	auto _ = d_func();
-	return _->Walk( pageID );
+	auto pte = (_->Walk( pageID ));
+	if (pte) {
+		*pf = LRUCachePolicy__pImpl::PTE_FLAGS( *pte );
+	} else {
+		*pf = PAGE_FAULT;
+	}
 }
 
 /**

@@ -43,7 +43,8 @@ public:
 	bool QueryPage( size_t pageID ) const override;
 	void UpdatePage( size_t pageID ) override;
 	size_t QueryAndUpdate( size_t pageID ) override;
-	void *QueryPageEntry( size_t pageID ) const override;
+	void QueryAndUpdate( size_t pageID, size_t *storageID, size_t *evcitedPageID ) override;
+	void QueryPageFlag( size_t pageID, PageFlag * pte) const override;
 	void *GetRawData() override;
 	~ListBasedLRUCachePolicy();
 
@@ -70,7 +71,9 @@ public:
 	bool QueryPage( size_t pageID ) const override;
 	void UpdatePage( size_t pageID ) override;
 	size_t QueryAndUpdate( size_t pageID ) override;
-	void *QueryPageEntry( size_t pageID ) const override;
+	void QueryAndUpdate( size_t pageID, size_t *storageID, size_t *evcitedPageID ) override;
+
+	void QueryPageFlag( size_t pageID, PageFlag * pte) const override;
 	void *GetRawData() override;
 	~LRUCachePolicy();
 
