@@ -171,5 +171,13 @@ void AbstrCachePolicy::SetOwnerCache( AbstrMemoryCache *cache )
 	VM_IMPL( AbstrCachePolicy )
 	_->ownerCache = cache;
 }
+void AbstrCachePolicy::Invoke_Replace_Event( size_t evictPageID )
+{
+	VM_IMPL( AbstrCachePolicy )
+    auto cache = _->ownerCache.Lock();
+    if(cache){
+      cache->Replace_Event( evictPageID );
+    }
+}
 
 }  // namespace vm

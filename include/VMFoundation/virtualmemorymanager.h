@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <VMat/geometry.h>
@@ -42,7 +41,7 @@ public:
 		 * \note The page data pointed by the  pointer returned by the function is only valid at current call.
 		 * It could be invalid when next call because its data has been swapped out.
 		 */
-	const void *GetPage( size_t pageID )override;
+	const void *GetPage( size_t pageID ) override;
 
 	virtual void *GetRawData() = 0;
 
@@ -56,7 +55,7 @@ public:
 
 protected:
 	virtual void *GetPageStorage_Implement( size_t pageID ) = 0;
-	virtual void Replace_Event(size_t evictPageID) = 0;
+	virtual void Replace_Event( size_t evictPageID ) = 0;
 
 private:
 	/**
@@ -65,6 +64,8 @@ private:
 		 * \return 
 	*/
 	VM_DECL_IMPL( AbstrMemoryCache )
+
+	friend class AbstrCachePolicy;
 };
 
 class AbstrCachePolicy__pImpl;
@@ -78,7 +79,7 @@ public:
 	/**
 	*   \brief Queries the page given by \a pageID if it exists in storage cache. Returns \a true if it exists or \a false if not
 	*/
-	virtual bool QueryPage( size_t pageID )const = 0;
+	virtual bool QueryPage( size_t pageID ) const = 0;
 
 	/**
 	*   \brief Updates the fault page given by \a pageID. Returns the actually storage ID of the page. If the page exists, the function does nothing.
@@ -96,7 +97,7 @@ public:
 	* \brief Queries the page entry given by \a pageID. It includes the page flags state. The meaning dependes on implementation.
 	* Returns null pointer if the page does not exists in cache
 	*/
-	virtual void* QueryPageEntry( size_t pageID )const = 0;
+	virtual void *QueryPageEntry( size_t pageID ) const = 0;
 
 	AbstrMemoryCache *GetOwnerCache();
 
@@ -108,9 +109,7 @@ public:
 
 	size_t GetVirtualPageCount() const override;
 
-  void Invoke_Replace_Event(size_t evictPageID){
-    Replace_Event(evictPageID);
-  }
+	void Invoke_Replace_Event( size_t evictPageID );
 
 	virtual ~AbstrCachePolicy();
 

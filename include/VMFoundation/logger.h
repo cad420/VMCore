@@ -82,6 +82,8 @@ namespace vm
 		static void EnableRawLog( bool enable );
 		~Logger();
 	};
+
+
 #define LOG_FATAL                                          \
 	if ( vm::Logger::GetLogLevel() < vm::LogLevel::FATAL ) \
 		;                                                  \
@@ -117,4 +119,10 @@ namespace vm
 		;                                           \
 	else                                            \
 		vm::Logger( __FILE__, __LINE__, nullptr ).Log( vm::LogLevel( CUSTOM_LEVEL ) )
+
+#define VM_ASSERT( expr )               \
+    if (false == expr)                  \
+    {                                   \
+        LOG_CRITICAL<<#expr;            \
+    }
 }

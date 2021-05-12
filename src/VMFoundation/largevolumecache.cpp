@@ -1,9 +1,9 @@
-
 #include <VMFoundation/largevolumecache.h>
 #include <VMFoundation/logger.h>
 #include <VMFoundation/cachepolicy.h>
 #include <VMFoundation/pluginloader.h>
 #include <VMUtils/vmnew.hpp>
+#include <VMUtils/fmt.hpp>
 
 #include <3rdparty/rapidjson/document.h>
 #include <iostream>
@@ -133,11 +133,11 @@ void Block3DCache::Create( I3DBlockDataInterface *pageFile )
 	case 9: _->m_volumeCache = std::make_unique<Int8Block512Cache>( _->cacheDim.x, _->cacheDim.y, _->cacheDim.z, nullptr ); break;
 	case 10: _->m_volumeCache = std::make_unique<Int8Block1024Cache>( _->cacheDim.x, _->cacheDim.y, _->cacheDim.z, nullptr ); break;
 	default:
-		LOG_WARNING<<"Unsupported Cache block Size";
+		LOG_WARNING << "Unsupported Cache block Size";
 		break;
 	}
 	if ( !_->m_volumeCache ) {
-		LOG_CRITICAL<<"Can not allocate memory for cache\n";
+		LOG_CRITICAL << "Can not allocate memory for cache\n";
 	}
 }
 
@@ -178,7 +178,7 @@ Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockDataInterface *pageFile,
 Block3DCache::Block3DCache( ::vm::IRefCnt *cnt, I3DBlockDataInterface *pageFile ) :
   Block3DCache( cnt, pageFile, []( I3DBlockDataInterface *pageFile ) {
 	  const auto ps = pageFile->GetPageSize();
-	  constexpr size_t maxMemory = 1024 * 1024 * 1024;  // 1GB
+	  constexpr size_t maxMemory = 1024 * 1024 * 1024;	// 1GB
 	  const auto d = maxMemory / ps;
 	  return Size3{ d, 1, 1 };
   } )
@@ -233,7 +233,9 @@ Size3 Block3DCache::BlockDim() const
 	return _->adapter->Get3DPageCount();
 }
 
-	void Block3DCache::Replace_Event( size_t evictPageID ){
-  }
+void Block3DCache::Replace_Event( size_t evictPageID )
+{
+  LOG_INFO<<fmt("Block3DCache::Replace_Event: {}",evictPageID);
+}
 
 }  // namespace vm

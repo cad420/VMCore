@@ -67,7 +67,8 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 			_->m_blockIdInCache.erase( eviction.pte );	// Another way is to set invalid flag to pte to indicate this cache is invalid
 
 			Ref<AbstrMemoryCache> cache = GetOwnerCache();
-			if ( cache ) {
+
+			if ( cache != nullptr) {
 				const auto evictPageID = eviction.pte->first;
 				/// TODO::
 				Invoke_Replace_Event( evictPageID );
@@ -80,7 +81,6 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 		////////
 		// Update policy state
 		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa );  // move the node that it->second.pa points to the head.
-																				   ////////
 		return it->second.pa->storageID;
 	}
 }
