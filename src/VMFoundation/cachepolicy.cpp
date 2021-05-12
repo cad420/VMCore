@@ -64,7 +64,6 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 
 		if ( eviction.pte != _->m_blockIdInCache.end() ) {
 			// Unmapped old if the virtual address associate an old one
-			_->m_blockIdInCache.erase( eviction.pte );	// Another way is to set invalid flag to pte to indicate this cache is invalid
 
 			Ref<AbstrMemoryCache> cache = GetOwnerCache();
 
@@ -73,6 +72,8 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 				/// TODO::
 				Invoke_Replace_Event( evictPageID );
 			}
+
+			_->m_blockIdInCache.erase( eviction.pte );	// Another way is to set invalid flag to pte to indicate this cache is invalid
 		}
 		eviction.pte = newItr.first;  // Mapping new
 		return eviction.storageID;

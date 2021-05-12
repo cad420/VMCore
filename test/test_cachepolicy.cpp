@@ -92,7 +92,7 @@ TEST( test_cachepolicy, listbasedlrucachepolicy_write )
 	const Size3 psize{ 8, 1, 1 };
 	const Size3 vsize{ 4, 4, 4 };
 	auto data = CreateTestBlock3DArray<5, char>( vsize, 0 );
-	auto cache = VM_NEW<Block3DCache>( data, [ &psize ]( I3DBlockDataInterface *data ) { return psize; } );
+	Ref<Block3DCache> cache = VM_NEW<Block3DCache>( data, [ &psize ]( I3DBlockDataInterface *data ) { return psize; } );
 
 	Ref<ListBasedLRUCachePolicy> policy = VM_NEW<ListBasedLRUCachePolicy>();
 	cache->SetCachePolicy( policy );
