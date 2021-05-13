@@ -1,4 +1,4 @@
-
+#include "VMUtils/ieverything.hpp"
 #include <cstring>
 #include <VMFoundation/virtualmemorymanager.h>
 #include <VMUtils/ref.hpp>
@@ -18,7 +18,6 @@ public:
 	Ref<AbstrCachePolicy> cachePolicy;
 	std::unordered_set<size_t> dirtyPageID;
 };
-
 
 AbstrMemoryCache::AbstrMemoryCache( IRefCnt *cnt ) :
   ::vm::EverythingBase<IPageFile>( cnt ), d_ptr( new AbstrMemoryCache__pImpl( this ) )
@@ -75,7 +74,8 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 	if ( !e ) {
 		//const auto storageID = _->cachePolicy->QueryAndUpdate( pageID );
 		size_t storageID, evictedPageID;
-		_->cachePolicy->QueryAndUpdate( pageID, &storageID, &evictedPageID );
+        bool hit, evicted;
+		_->cachePolicy->QueryAndUpdate( pageID,hit, &storageID,evicted, &evictedPageID );
 
 		// Read block from next level to the storage cache
 		const auto storage = GetPageStorage_Implement( storageID );
@@ -84,7 +84,8 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 		return storage;
 	} else {
 		size_t storageID, evictedPageID;
-		_->cachePolicy->QueryAndUpdate( pageID, &storageID, &evictedPageID );
+        bool hit, evicted;
+		_->cachePolicy->QueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
 		//const auto storageID = _->cachePolicy->QueryAndUpdate( pageID );
 		return GetPageStorage_Implement( storageID );
 	}
@@ -106,9 +107,32 @@ void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 		memcpy( cachedPage, page, GetPageSize() );
 		_->nextLevel->Write( page, pageID, flush );	 // update next level cache
 	} else {
-		LOG_WARNING << "Only support write through only";
-		//TODO: set dirty flag
-		_->dirtyPageID.insert(pageID);
+		_->dirtyPageID.insert( pageID );
+		// For lazy writing, we need to access the page cache anyway.
+		// But note that the evicted page need to be carefully handled
+		// because of the probable replacing when we access the page.
+        bool hit, evicted;
+		size_t storageID, evictedPageID;
+
+		_->cachePolicy->QueryAndUpdate( pageID,hit, &storageID, evicted, &evictedPageID );
+		if ( hit ) {
+			// Read block from next level to the storage cache
+			const auto storage = GetPageStorage_Implement( storageID );
+			memcpy( storage, page, GetPageSize() );
+		} else {
+
+          const auto storage = GetPageStorage_Implement( storageID );
+
+          memcpy( storage, _->nextLevel->GetPage( pageID ), GetPageSize() );
+          if(evicted){
+            // check flags 
+            // 1. dirty -> write back
+            // 2. clean
+          }
+		}
+
+		PageFlag *flags;
+		_->cachePolicy->QueryPageFlag( pageID, &flags );
 	}
 }
 
@@ -124,7 +148,6 @@ AbstrMemoryCache::~AbstrMemoryCache()
 
 void AbstrMemoryCache::Replace_Event( size_t evictPageID )
 {
-
 }
 
 class AbstrCachePolicy__pImpl
@@ -133,7 +156,7 @@ class AbstrCachePolicy__pImpl
 public:
 	AbstrCachePolicy__pImpl( AbstrCachePolicy *api ) :
 	  q_ptr( api ) {}
-	AbstrMemoryCache* ownerCache = nullptr;
+	AbstrMemoryCache *ownerCache = nullptr;
 };
 
 AbstrCachePolicy::AbstrCachePolicy( ::vm::IRefCnt *cnt ) :
@@ -167,7 +190,6 @@ inline size_t AbstrCachePolicy::GetVirtualPageCount() const
 	return 0;
 }
 
-
 AbstrCachePolicy::~AbstrCachePolicy()
 {
 }
@@ -180,10 +202,10 @@ void AbstrCachePolicy::SetOwnerCache( AbstrMemoryCache *cache )
 void AbstrCachePolicy::Invoke_Replace_Event( size_t evictPageID )
 {
 	VM_IMPL( AbstrCachePolicy )
-    auto cache = _->ownerCache;
-    if(cache){
-      cache->Replace_Event( evictPageID );
-    }
+	auto cache = _->ownerCache;
+	if ( cache ) {
+		cache->Replace_Event( evictPageID );
+	}
 }
 
 }  // namespace vm

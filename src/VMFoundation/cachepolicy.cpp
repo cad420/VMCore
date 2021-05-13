@@ -1,3 +1,4 @@
+#include "VMFoundation/virtualmemorymanager.h"
 #include "VMUtils/common.h"
 #include <VMFoundation/cachepolicy.h>
 #include <cassert>
@@ -64,15 +65,6 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 
 		if ( eviction.pte != _->m_blockIdInCache.end() ) {
 			// Unmapped old if the virtual address associate an old one
-
-			Ref<AbstrMemoryCache> cache = GetOwnerCache();
-
-			if ( cache != nullptr) {
-				const auto evictPageID = eviction.pte->first;
-				/// TODO::
-				Invoke_Replace_Event( evictPageID );
-			}
-
 			_->m_blockIdInCache.erase( eviction.pte );	// Another way is to set invalid flag to pte to indicate this cache is invalid
 		}
 		eviction.pte = newItr.first;  // Mapping new
@@ -86,12 +78,13 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 	}
 }
 
-void ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID, size_t *storageID, size_t *evictedPageID )
+void ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID )
 {
-	VM_ASSERT(storageID)
-	VM_ASSERT(evictedPageID)
+	VM_ASSERT( storageID )
+	VM_ASSERT( evictedPageID )
 	VM_IMPL( ListBasedLRUCachePolicy )
 	const auto it = _->m_blockIdInCache.find( pageID );
+    evicted = false;
 	if ( it == _->m_blockIdInCache.end() ) {
 		// Replaces the least recently used block (the last one) if cache miss
 		// Before replacing, it's necessary to check if the cache is dirty and write back
@@ -108,18 +101,20 @@ void ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID, size_t *storageID, 
 
 			Ref<AbstrMemoryCache> cache = GetOwnerCache();
 
-			if ( cache != nullptr) {
+			if ( cache != nullptr ) {
 				*evictedPageID = eviction.pte->first;
 			}
-
 			_->m_blockIdInCache.erase( eviction.pte );	// Another way is to set invalid flag to pte to indicate this cache is invalid
+            evicted = true;
 		}
 		eviction.pte = newItr.first;  // Mapping new
 		*storageID = eviction.storageID;
+        hit = false;
 	} else {
 		// cache hit
 		////////
 		// Update policy state
+        hit = true;
 		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa );  // move the node that it->second.pa points to the head.
 		*storageID = it->second.pa->storageID;
 	}
@@ -129,15 +124,15 @@ void ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID, size_t *storageID, 
  * \brief Returns the pte with respect to the virtual address \a pageID
  *
  * */
-void ListBasedLRUCachePolicy::QueryPageFlag( size_t pageID, PageFlag * pf) const
+void ListBasedLRUCachePolicy::QueryPageFlag( size_t pageID, PageFlag **pf )
 {
-	VM_ASSERT(pf)
+	VM_ASSERT( pf != nullptr )
 	const auto _ = d_func();
-	const auto it = _->m_blockIdInCache.find( pageID );
+	auto it = _->m_blockIdInCache.find( pageID );
 	if ( it == _->m_blockIdInCache.end() ) {
-		*pf = PAGE_FAULT;
+		*pf = nullptr;
 	} else {
-		*pf = ( it->second.flags );
+		*pf = reinterpret_cast<PageFlag *>( &( it->second.flags ) );
 	}
 }
 
@@ -327,9 +322,10 @@ public:
  */
 bool LRUCachePolicy::QueryPage( size_t pageID ) const
 {
-	PageFlag flags;
-	this->QueryPageFlag( pageID , &flags);
-	return ( flags ) & LRUCachePolicy__pImpl::PTE_V;
+	PageFlag *flags;
+	auto mutable_this = const_cast<LRUCachePolicy *>( this );
+	mutable_this->QueryPageFlag( pageID, &flags );
+	return flags && ( *flags ) & LRUCachePolicy__pImpl::PTE_V;
 }
 
 /**
@@ -350,22 +346,18 @@ size_t LRUCachePolicy::QueryAndUpdate( size_t pageID )
 	return _->Walkaddr( pageID );
 }
 
-void vm::LRUCachePolicy::QueryAndUpdate( size_t pageID, size_t *storageID, size_t *evcitedPageID )
+void vm::LRUCachePolicy::QueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID )
 {
 }
 
 /**
  * \brief. Returns the page entry info according to the \param pageID
  */
-void LRUCachePolicy::QueryPageFlag( size_t pageID, PageFlag * pf ) const
+void LRUCachePolicy::QueryPageFlag( size_t pageID, PageFlag **pf )
 {
 	auto _ = d_func();
-	auto pte = (_->Walk( pageID ));
-	if (pte) {
-		*pf = LRUCachePolicy__pImpl::PTE_FLAGS( *pte );
-	} else {
-		*pf = PAGE_FAULT;
-	}
+	auto pte = ( _->Walk( pageID ) );
+	*pf = reinterpret_cast<PageFlag *>( pte );
 }
 
 /**
