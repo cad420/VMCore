@@ -100,9 +100,11 @@ public:
 	* \brief Queries and updates at the same time. It will always return a valid storage id.
 	*/
 
-	virtual size_t QueryAndUpdate( size_t pageID ) = 0;
+	virtual size_t EndQueryAndUpdate( size_t pageID ) = 0;
 
-	virtual void QueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) = 0;
+	virtual void EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) = 0;
+
+	virtual void BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID ) = 0;
 
 	/**
 	* \brief Queries the page entry given by \a pageID. It includes the page flags state. The meaning dependes on implementation.

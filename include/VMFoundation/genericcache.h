@@ -43,14 +43,14 @@ public:
 
 	const void *GetPage( size_t pageID )override{ return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( pageID ) ); }
 
-	void Flush() override{LOG_CRITICAL << "Not implemented";}
+	void Flush() override{}
 
 	void Write( const void *page, size_t pageID, bool flush )override
 	{
 		Block3DArray<T, log>::SetBlockData( pageID, (const T*)page );
 	}
 
-	void Flush( size_t pageID ) override { LOG_CRITICAL << "Not implemented"; }
+	void Flush( size_t pageID ) override {  }
 
 	size_t GetPageSize()const override {return (1L<<log) * (1L<<log) * (1L<<log) * sizeof(T);}
 

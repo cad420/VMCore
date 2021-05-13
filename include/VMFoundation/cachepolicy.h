@@ -42,8 +42,9 @@ public:
 	ListBasedLRUCachePolicy( vm::IRefCnt *cnt );
 	bool QueryPage( size_t pageID ) const override;
 	void UpdatePage( size_t pageID ) override;
-	size_t QueryAndUpdate( size_t pageID ) override;
-	void QueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) override;
+	size_t EndQueryAndUpdate( size_t pageID ) override;
+	void EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) override;
+	void BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID ) override;
 	void QueryPageFlag( size_t pageID, PageFlag ** pf) override;
 	void *GetRawData() override;
 	~ListBasedLRUCachePolicy();
@@ -70,9 +71,9 @@ public:
 	LRUCachePolicy( vm::IRefCnt *cnt );
 	bool QueryPage( size_t pageID ) const override;
 	void UpdatePage( size_t pageID ) override;
-	size_t QueryAndUpdate( size_t pageID ) override;
-	void QueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) override;
-
+	size_t EndQueryAndUpdate( size_t pageID ) override;
+	void EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) override;
+	void BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID ) override;
 	void QueryPageFlag( size_t pageID, PageFlag ** pf) override;
 	void *GetRawData() override;
 	~LRUCachePolicy();

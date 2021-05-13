@@ -20,6 +20,8 @@
 using namespace vm;
 using namespace std;
 
+int custom_log_level = 10;
+
 /**
  * Volume data reading handler
  */
@@ -86,14 +88,14 @@ void CreateBRVFile( const std::string &fileName, const Block3DArray<T, nLogBlock
 {
 }
 
-TEST( test_cachepolicy, listbasedlrucachepolicy_write )
+TEST( test_cachepolicy, listbasedlrucachepolicy_write_basic )
 {
+	Logger::SetLogLevel( LogLevel( custom_log_level - 1 ) );
 	auto &pluginLoader = *PluginLoader::GetPluginLoader();
 	const Size3 psize{ 8, 1, 1 };
 	const Size3 vsize{ 4, 4, 4 };
 	auto data = CreateTestBlock3DArray<5, char>( vsize, 0 );
 	Ref<Block3DCache> cache = VM_NEW<Block3DCache>( data, [ &psize ]( I3DBlockDataInterface *data ) { return psize; } );
-
 
 	ASSERT_EQ( cache->GetPhysicalPageCount(), psize.Prod() );
 	ASSERT_EQ( cache->GetVirtualPageCount(), vsize.Prod() );
@@ -111,12 +113,54 @@ TEST( test_cachepolicy, listbasedlrucachepolicy_write )
 
 	std::unique_ptr<char[]> page( new char[ data->GetPageSize() ] );
 
-	for ( int i = 0; i < 10; i++ ) {
-		for ( int j = 0; j < 10; j++ ) {
+	const auto naccess = 10;
+	const auto nwrtie = 10;
+
+	for ( int i = 0; i < nwrtie; i++ ) {
+		for ( int j = 0; j < naccess; j++ ) {
 			// random access cache 10 times
 			size_t rnd = u( e );
 			VirtualMemoryBlockIndex index{ rnd, (int)vsize.x, (int)vsize.y, (int)vsize.z };
 			cache->GetPage( index );
+		}
+	}
+}
+
+TEST( test_cachepolicy, listbasedlrucachepolicy_write_through )
+{
+	Logger::SetLogLevel( LogLevel( custom_log_level - 1 ) );
+	auto &pluginLoader = *PluginLoader::GetPluginLoader();
+	const Size3 psize{ 8, 1, 1 };
+	const Size3 vsize{ 4, 4, 4 };
+	auto data = CreateTestBlock3DArray<5, char>( vsize, 0 );
+	Ref<Block3DCache> cache = VM_NEW<Block3DCache>( data, [ &psize ]( I3DBlockDataInterface *data ) { return psize; } );
+
+	ASSERT_EQ( cache->GetPhysicalPageCount(), psize.Prod() );
+	ASSERT_EQ( cache->GetVirtualPageCount(), vsize.Prod() );
+
+	LOG_INFO << fmt( "Physical cache block count: {}, virtual cache block count: {}", cache->GetPhysicalPageCount(), cache->GetVirtualPageCount() );
+
+	for ( int i = 0; i < vsize.Prod(); i++ ) {
+		VirtualMemoryBlockIndex index{ size_t( i ), (int)vsize.x, (int)vsize.y, (int)vsize.z };
+		auto p = (const char *)cache->GetPage( index );
+		ASSERT_EQ( i, (int)p[ 0 ] );
+	}
+
+	std::default_random_engine e;
+	std::uniform_int_distribution<int> u( 0, vsize.Prod() - 1 );
+
+	std::unique_ptr<char[]> page( new char[ data->GetPageSize() ] );
+
+	const auto naccess = 10;
+	const auto nwrtie = 10;
+
+	for ( int i = 0; i < nwrtie; i++ ) {
+		for ( int j = 0; j < naccess; j++ ) {
+			// random access cache 10 times
+			size_t rnd = u( e );
+			VirtualMemoryBlockIndex index{ rnd, (int)vsize.x, (int)vsize.y, (int)vsize.z };
+			cache->GetPage( index );
+			LOG_CUSTOM( custom_log_level ) << "Access " << j << "th of " << naccess;
 		}
 		// write cache
 		size_t write_addr = u( e );
@@ -125,11 +169,73 @@ TEST( test_cachepolicy, listbasedlrucachepolicy_write )
 		std::memset( page.get(), write_val, data->GetPageSize() );
 		VirtualMemoryBlockIndex write_index{ write_addr, (int)vsize.x, (int)vsize.y, (int)vsize.z };
 		// write through
-		cache->Write( page.get(), write_addr, true );
+		LOG_CUSTOM( custom_log_level ) << "Writting: " << i << " of " << nwrtie;
 
-		auto val1 = (char *)cache->GetPage( write_index );
-		auto val2 = (char *)data->GetPage( write_addr );
-		LOG_INFO << fmt( "Writing value: {}, va: {}", int( write_val ), write_addr );
-		ASSERT_EQ( (int)val1[ 0 ], (int)val2[ 0 ] );
+		LOG_CUSTOM( custom_log_level ) << fmt( "Writing value: {}, va: {}", int( write_val ), write_addr );
+		cache->Write( page.get(), write_addr, true );
+		auto cache_value = (const char *)cache->GetPage( write_index );
+		auto data_value = (const char *)data->GetPage( write_addr );
+		ASSERT_EQ( (int)cache_value[ 0 ], (int)data_value[ 0 ] );
+	}
+}
+
+TEST( test_cachepolicy, listbasedlrucachepolicy_write_back )
+{
+	auto &pluginLoader = *PluginLoader::GetPluginLoader();
+	const Size3 psize{ 8, 1, 1 };
+	const Size3 vsize{ 4, 4, 4 };
+	auto data = CreateTestBlock3DArray<5, char>( vsize, 0 );
+	Ref<Block3DCache> cache = VM_NEW<Block3DCache>( data, [ &psize ]( I3DBlockDataInterface *data ) { return psize; } );
+
+	ASSERT_EQ( cache->GetPhysicalPageCount(), psize.Prod() );
+	ASSERT_EQ( cache->GetVirtualPageCount(), vsize.Prod() );
+
+	LOG_INFO << fmt( "Physical cache block count: {}, virtual cache block count: {}", cache->GetPhysicalPageCount(), cache->GetVirtualPageCount() );
+
+	for ( int i = 0; i < vsize.Prod(); i++ ) {
+		VirtualMemoryBlockIndex index{ size_t( i ), (int)vsize.x, (int)vsize.y, (int)vsize.z };
+		auto p = (const char *)cache->GetPage( index );
+		ASSERT_EQ( i, (int)p[ 0 ] );
+	}
+
+	std::default_random_engine e;
+	std::uniform_int_distribution<int> u( 0, vsize.Prod() - 1 );
+
+	std::unique_ptr<char[]> page( new char[ data->GetPageSize() ] );
+
+	const auto naccess = 100;
+	const auto nwrtie = 100;
+
+	for ( int i = 0; i < nwrtie; i++ ) {
+		for ( int j = 0; j < naccess; j++ ) {
+			// random access cache 10 times
+			size_t rnd = u( e );
+			VirtualMemoryBlockIndex index{ rnd, (int)vsize.x, (int)vsize.y, (int)vsize.z };
+			cache->GetPage( index );
+			LOG_CUSTOM( custom_log_level ) << "Access " << j << "th of " << naccess;
+		}
+		// write cache
+		size_t write_addr = u( e );
+		char write_val = u( e );
+
+		std::memset( page.get(), write_val, data->GetPageSize() );
+		VirtualMemoryBlockIndex write_index{ write_addr, (int)vsize.x, (int)vsize.y, (int)vsize.z };
+		// write through
+		LOG_CUSTOM( custom_log_level ) << "Writting: " << i << " of " << nwrtie;
+		cache->Write( page.get(), write_addr, false );
+
+		LOG_CUSTOM( custom_log_level ) << fmt( "Writing value: {}, va: {}", int( write_val ), write_addr );
+		cache->Flush( write_addr );
+	}
+
+	cache->Flush();
+	for ( int i = 0; i < vsize.Prod(); i++ ) {
+		size_t write_addr = i;
+		VirtualMemoryBlockIndex write_index{ write_addr, (int)vsize.x, (int)vsize.y, (int)vsize.z };
+
+		auto cache_value = (const char *)cache->GetPage( write_index );
+		auto data_value = (const char *)data->GetPage( write_addr );
+
+		ASSERT_EQ( (int)cache_value[ 0 ], (int)data_value[ 0 ] );
 	}
 }

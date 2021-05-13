@@ -48,7 +48,7 @@ void ListBasedLRUCachePolicy::UpdatePage( size_t pageID )
 	}
 }
 
-size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
+size_t ListBasedLRUCachePolicy::EndQueryAndUpdate( size_t pageID )
 {
 	VM_IMPL( ListBasedLRUCachePolicy )
 	const auto it = _->m_blockIdInCache.find( pageID );
@@ -78,13 +78,16 @@ size_t ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID )
 	}
 }
 
-void ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID )
+void ListBasedLRUCachePolicy::EndQueryAndUpdate( size_t pageID,
+												 bool &hit,
+												 size_t *storageID,
+												 bool &evicted,
+												 size_t *evictedPageID )
 {
 	VM_ASSERT( storageID )
-	VM_ASSERT( evictedPageID )
 	VM_IMPL( ListBasedLRUCachePolicy )
 	const auto it = _->m_blockIdInCache.find( pageID );
-    evicted = false;
+	evicted = false;
 	if ( it == _->m_blockIdInCache.end() ) {
 		// Replaces the least recently used block (the last one) if cache miss
 		// Before replacing, it's necessary to check if the cache is dirty and write back
@@ -98,25 +101,45 @@ void ListBasedLRUCachePolicy::QueryAndUpdate( size_t pageID, bool &hit, size_t *
 
 		if ( eviction.pte != _->m_blockIdInCache.end() ) {
 			// Unmapped old if the virtual address associate an old one
-
-			Ref<AbstrMemoryCache> cache = GetOwnerCache();
-
-			if ( cache != nullptr ) {
-				*evictedPageID = eviction.pte->first;
-			}
+			VM_ASSERT( evictedPageID )
+			*evictedPageID = eviction.pte->first;
 			_->m_blockIdInCache.erase( eviction.pte );	// Another way is to set invalid flag to pte to indicate this cache is invalid
-            evicted = true;
+			evicted = true;
 		}
 		eviction.pte = newItr.first;  // Mapping new
 		*storageID = eviction.storageID;
-        hit = false;
+		hit = false;
 	} else {
 		// cache hit
 		////////
 		// Update policy state
-        hit = true;
+		hit = true;
 		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa );  // move the node that it->second.pa points to the head.
 		*storageID = it->second.pa->storageID;
+	}
+}
+
+void ListBasedLRUCachePolicy::BeginQuery( size_t pageID,
+										  bool &hit,
+										  bool &evicted,
+										  size_t &storageID,
+										  size_t &evictedPageID )
+{
+	VM_IMPL( ListBasedLRUCachePolicy )
+	const auto it = _->m_blockIdInCache.find( pageID );
+	evicted = false;
+	if ( it == _->m_blockIdInCache.end() ) {
+		hit = false;
+		auto &eviction = _->m_lruList.back();
+		if ( eviction.pte != _->m_blockIdInCache.end() ) {
+			evictedPageID = eviction.pte->first;
+			evicted = true;
+			//LOG_DEBUG << "evicted page id: " << evictedPageID;
+		}
+		storageID = eviction.storageID;
+	} else {
+		hit = true;
+		storageID = it->second.pa->storageID;
 	}
 }
 
@@ -340,13 +363,17 @@ void LRUCachePolicy::UpdatePage( size_t pageID )
 /**
  * \brief Look up and update the pagetable and returns address (block id ) the last level entry point to
  */
-size_t LRUCachePolicy::QueryAndUpdate( size_t pageID )
+size_t LRUCachePolicy::EndQueryAndUpdate( size_t pageID )
 {
 	VM_IMPL( LRUCachePolicy );
 	return _->Walkaddr( pageID );
 }
 
-void vm::LRUCachePolicy::QueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID )
+void vm::LRUCachePolicy::EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID )
+{
+}
+
+void vm::LRUCachePolicy::BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID )
 {
 }
 

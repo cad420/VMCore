@@ -121,7 +121,7 @@ namespace vm
 		vm::Logger( __FILE__, __LINE__, nullptr ).Log( vm::LogLevel( CUSTOM_LEVEL ) )
 
 #define VM_ASSERT( expr )               \
-    if ((expr))                  \
+    if (!(expr))                  \
     {                                   \
         LOG_CRITICAL<<#expr;            \
     }
