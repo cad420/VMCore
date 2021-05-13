@@ -88,7 +88,7 @@ void CreateBRVFile( const std::string &fileName, const Block3DArray<T, nLogBlock
 {
 }
 
-TEST( test_cachepolicy, listbasedlrucachepolicy_write_basic )
+TEST( test_cachepolicy, listbasedlrucachepolicy_read_basic )
 {
 	Logger::SetLogLevel( LogLevel( custom_log_level - 1 ) );
 	auto &pluginLoader = *PluginLoader::GetPluginLoader();
@@ -121,7 +121,8 @@ TEST( test_cachepolicy, listbasedlrucachepolicy_write_basic )
 			// random access cache 10 times
 			size_t rnd = u( e );
 			VirtualMemoryBlockIndex index{ rnd, (int)vsize.x, (int)vsize.y, (int)vsize.z };
-			cache->GetPage( index );
+			auto val = (const char *)cache->GetPage( index );
+			ASSERT_EQ( val[ 0 ], rnd );
 		}
 	}
 }
