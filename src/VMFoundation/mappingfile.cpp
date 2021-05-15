@@ -42,7 +42,7 @@ public:
 
 
 WindowsFileMapping::WindowsFileMapping( ::vm::IRefCnt *cnt ) :
-  EverythingBase<IMappingFile>( cnt )
+  EverythingBase<IMappingFile>( cnt ), d_ptr( new WindowsFileMapping__pImpl(this) )
 {
 }
 
