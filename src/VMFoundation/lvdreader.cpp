@@ -81,9 +81,9 @@ LVDReader::LVDReader( const std::string &fileName ) :
 	const std::size_t bytes = std::size_t( vx ) * vy * vz + LVD_HEADER_SIZE;
 	// Load Library
 
-	auto repo = LibraryReposity::GetLibraryRepo();
-	assert( repo );
-	repo->AddLibrary( "ioplugin" );
+	//auto repo = LibraryReposity::GetLibraryRepo();
+	//assert( repo );
+	//repo->AddLibrary( "ioplugin" );
 
 	//lvdIO = Object::CreateObject<ysl::IFileMappingPluginInterface>("common.filemapio");
 #ifdef _WIN32
@@ -138,6 +138,12 @@ bool LVDReader::Flush()
 {
 	LOG_CRITICAL << "LVDReader::Flush() -- Not implement yet";
 	return false;
+}
+
+void LVDReader::Close()
+{
+	lvdIO->DestroyFileMemPointer( lvdPtr ); // It's necessary 
+	lvdIO = nullptr;
 }
 
 unsigned char *LVDReader::ReadBlock( int blockId, int lod )

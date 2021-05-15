@@ -187,9 +187,16 @@ bool WindowsFileMapping::Close()
 	//for (auto & addr : mappedPointers)
 	//	WindowsFileMapping::DestroyFileMemPointer(addr);
 	VM_IMPL( WindowsFileMapping )
-	CloseHandle( _->f );
-	CloseHandle( _->mapping );
-	return true;
+	auto res1 = CloseHandle( _->f );
+	if (res1 == false) {
+		_->PrintLastErrorMsg();
+	}
+
+	auto res2 = CloseHandle( _->mapping );
+	if (res2 == false) {
+		_->PrintLastErrorMsg();
+	}
+	return res1 && res2;
 }
 
 WindowsFileMapping::~WindowsFileMapping()

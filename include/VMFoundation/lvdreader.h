@@ -10,6 +10,11 @@
 #include <VMUtils/ref.hpp>
 #include <VMCoreExtension/ifilemappingplugininterface.h>
 
+
+/**
+ * This class is deprecated because of its ugly api, just for test
+ */
+
 namespace vm
 {
 class VMFOUNDATION_EXPORTS LVDReader
@@ -57,6 +62,7 @@ public:
 	void WriteBlock( const char *src, int blockId, int lod );
 	bool Flush( int blockId, int lod );
 	bool Flush();
+	void Close();
 	unsigned char *ReadBlock( int blockId, int lod = 0 );
 	const LVDHeader &GetHeader() const { return header; }
 	~LVDReader();
