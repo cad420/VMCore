@@ -5,7 +5,7 @@
 #include "mappingfile.h"
 
 
-#include <unordered_set>
+#include <unordered_map>
 #include <VMUtils/vmnew.hpp>
 #include <VMFoundation/logger.h>
 
@@ -26,7 +26,7 @@ public:
 	FileAccess fileFlag;
 	MapAccess mapFlag;
 	void *addr = nullptr;
-	std::unordered_set<unsigned char *> mappedPointers;
+	std::unordered_map<unsigned char *,size_t> mappedPointers;
 	void PrintLastErrorMsg()
 	{
 		DWORD dw = GetLastError();
@@ -39,7 +39,7 @@ public:
 		  MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
 		  msg,
 		  0, NULL );
-		printf( "Last Error Code: [%d]\n", dw, msg );
+		printf( "Last Error Code: [%d] %s\n", dw, msg );
 	}
 };
 
@@ -61,17 +61,6 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 		newCreated = true;
 	}
 
-	//enum class FileAccess
-	//{
-	//	Read = GENERIC_READ,
-	//	Write = GENERIC_WRITE,
-	//};
-	//enum class MapAccess
-	//{
-	//	ReadOnly = PAGE_READONLY,
-	//	ReadWrite = PAGE_READWRITE
-	//};
-
 	int flags = 0;
 	if ( fileFlags == FileAccess::Read )
 		flags = GENERIC_READ;
@@ -89,7 +78,7 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 					NULL );
 
 	if ( _->f == INVALID_HANDLE_VALUE ) {
-		printf( "Create file failed:" );
+		LOG_DEBUG << "Create file failed";
 		_->PrintLastErrorMsg();
 		return false;
 	}
@@ -102,7 +91,7 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 	{
 		SetFilePointer( _->f, fs.LowPart, &fs.HighPart, FILE_BEGIN );
 		if ( !SetEndOfFile( _->f ) ) {
-			printf( "Set end of file failed:" );
+			LOG_DEBUG << "Set end of file failed";
 			_->PrintLastErrorMsg();
 			return false;
 		}
@@ -122,14 +111,14 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 								 NULL );
 
 	if (_->mapping == nullptr ) {
-		printf( "Create file mapping failed" );
+		LOG_DEBUG << "Create file mapping failed";
 		_->PrintLastErrorMsg();
 		return false;
 	}
 	return true;
 }
 
-unsigned char *WindowsFileMapping::FileMemPointer( unsigned long long offset, std::size_t size )
+unsigned char *WindowsFileMapping::MemoryMap( unsigned long long offset, std::size_t size )
 {
 	VM_IMPL( WindowsFileMapping );
 	LARGE_INTEGER os;
@@ -148,16 +137,16 @@ unsigned char *WindowsFileMapping::FileMemPointer( unsigned long long offset, st
 												static_cast<SIZE_T>( size ) );
 
 	if ( !addr ) {
-		printf( "MapViewOfFile failed " );
+		LOG_DEBUG << "MapViewOfFile failed";
 		_->PrintLastErrorMsg();
 		return nullptr;
 	}
 
-	_->mappedPointers.insert( addr );
+	_->mappedPointers.insert( {addr,size} );
 	return addr;
 }
 
-void WindowsFileMapping::DestroyFileMemPointer( unsigned char *addr )
+void WindowsFileMapping::MemoryUnmap( unsigned char *addr )
 {
 	VM_IMPL( WindowsFileMapping );
 	auto it = _->mappedPointers.find( addr );
@@ -169,8 +158,12 @@ void WindowsFileMapping::DestroyFileMemPointer( unsigned char *addr )
 
 bool WindowsFileMapping::Flush()
 {
-	LOG_CRITICAL<<"WindowsFileMapping::Flush | Not implement yet.";
-	return false;
+	VM_IMPL( WindowsFileMapping );
+	bool ok = true;
+	for (auto& it : _->mappedPointers) {
+		ok = ok && FlushViewOfFile( (LPVOID)it.first,it.second );
+	}
+	return ok;
 }
 bool WindowsFileMapping::Flush(void * ptr, size_t len, int flags) {
 	VM_IMPL( WindowsFileMapping )
@@ -184,16 +177,19 @@ bool WindowsFileMapping::Flush(void * ptr, size_t len, int flags) {
 
 bool WindowsFileMapping::Close()
 {
-	//for (auto & addr : mappedPointers)
-	//	WindowsFileMapping::DestroyFileMemPointer(addr);
-	VM_IMPL( WindowsFileMapping )
+	VM_IMPL( WindowsFileMapping );
+	for (auto& it : _->mappedPointers) {
+		UnmapViewOfFile( (LPVOID)it.first );
+	}
+	_->mappedPointers.clear();
+
 	auto res1 = CloseHandle( _->f );
-	if (res1 == false) {
+	if (!res1) {
 		_->PrintLastErrorMsg();
 	}
 
 	auto res2 = CloseHandle( _->mapping );
-	if (res2 == false) {
+	if (!res2) {
 		_->PrintLastErrorMsg();
 	}
 	return res1 && res2;
@@ -253,7 +249,7 @@ bool LinuxFileMapping::Open( const std::string &fileName, size_t fileSize, FileA
 
 	return true;
 }
-unsigned char *LinuxFileMapping::FileMemPointer( unsigned long long offset, size_t size )
+unsigned char *LinuxFileMapping::MemoryMap( unsigned long long offset, size_t size )
 {
 	int prot = 0;
 	if ( mapAccess == MapAccess::ReadOnly )
@@ -263,7 +259,7 @@ unsigned char *LinuxFileMapping::FileMemPointer( unsigned long long offset, size
 	void *ptr = mmap( nullptr, size, prot, MAP_SHARED, fd, offset );
 	return reinterpret_cast<unsigned char *>( ptr );
 }
-void LinuxFileMapping::DestroyFileMemPointer( unsigned char *addr )
+void LinuxFileMapping::MemoryUnmap( unsigned char *addr )
 {
 	for ( auto it = ptrs.begin(); it != ptrs.end(); ) {
 		if ( it->first == addr ) {

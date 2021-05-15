@@ -34,14 +34,14 @@ public:
 	 * @return false 
 	 */
 	virtual bool Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags ) = 0;
-	virtual unsigned char *FileMemPointer( unsigned long long offset, std::size_t size ) = 0;
+	virtual unsigned char *MemoryMap( unsigned long long offset, std::size_t size ) = 0;
 
 	/**
 	 * @brief Unmaps the pointer retunred by @ref FileMemoryPointer
 	 * 
 	 * @param addr
 	 */
-	virtual void DestroyFileMemPointer( unsigned char *addr ) = 0;
+	virtual void MemoryUnmap( unsigned char *addr ) = 0;
 
 	/**
 	 * @brief Flushes all modification to file

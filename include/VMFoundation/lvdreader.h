@@ -17,6 +17,7 @@
 
 namespace vm
 {
+
 class VMFOUNDATION_EXPORTS LVDReader
 {
 	std::string fileName;

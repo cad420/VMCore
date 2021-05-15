@@ -26,12 +26,12 @@ public:
 	BlockedGridVolumeFile( IRefCnt *cnt );
 
 	void Open( const std::string &fileName ) override;
+	bool Create( const Block3DDataFileDesc *desc ) override;
 	int GetPadding() const override;
 	Size3 GetDataSizeWithoutPadding() const override;
 	Size3 Get3DPageSize() const override;
 	int Get3DPageSizeInLog() const override;
 	Size3 Get3DPageCount() const override;
-
 
 	size_t GetPhysicalPageCount() const override;
 	size_t GetVirtualPageCount() const override;

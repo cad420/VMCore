@@ -139,7 +139,7 @@ RawReader::RawReader( const std::string &fileName,
 		if ( _->mappingFile->Open( fileName, rawBytes, FileAccess::ReadWrite, MapAccess::ReadWrite ) == false ) {
 			throw std::runtime_error( "Failed to open mapping file" );
 		}
-		if ( ( _->ptr = _->mappingFile->FileMemPointer( 0, rawBytes ) ) == nullptr ) {
+		if ( ( _->ptr = _->mappingFile->MemoryMap( 0, rawBytes ) ) == nullptr ) {
 			throw std::runtime_error( "Failed to map file" );
 		}
 		_->readRegion = [this]( const Vec3i &start,

@@ -95,7 +95,7 @@ LVDReader::LVDReader( const std::string &fileName ) :
 		throw std::runtime_error( "can not load ioplugin" );
 	lvdIO->Open( fileName, bytes, FileAccess::ReadWrite, MapAccess::ReadWrite );
 
-	lvdPtr = lvdIO->FileMemPointer( 0, bytes );
+	lvdPtr = lvdIO->MemoryMap( 0, bytes );
 	if ( !lvdPtr ) throw std::runtime_error( "LVDReader: bad mapping" );
 }
 
@@ -142,7 +142,6 @@ bool LVDReader::Flush()
 
 void LVDReader::Close()
 {
-	lvdIO->DestroyFileMemPointer( lvdPtr ); // It's necessary 
 	lvdIO = nullptr;
 }
 

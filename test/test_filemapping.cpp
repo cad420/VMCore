@@ -31,7 +31,7 @@ std::vector<T> CreateTestFile( const std::string &fileName ,size_t count)
 	return res;
 }
 
-TEST( test, test_filemapping_basic )
+TEST( test_filemapping, windows_basic )
 {
 	auto file = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
 	ASSERT_TRUE( file );
@@ -46,7 +46,7 @@ TEST( test, test_filemapping_basic )
 	
 
 	file->Open( fileName.c_str(), len, FileAccess::ReadWrite, MapAccess::ReadWrite );
-	auto ptr = (int*)file->FileMemPointer( offset, len );
+	auto ptr = (int*)file->MemoryMap( offset, len );
 
 	ASSERT_TRUE( ptr );
 
@@ -83,7 +83,19 @@ TEST( test, test_filemapping_basic )
 	}
 
 }
-TEST( test, test_filemapping_map )
+TEST( test_filemapping, windows_create_file )
 {
+	std::string fileName = "create_mapping_file_test";
+	auto file = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
+	ASSERT_TRUE( file );
+	const auto fileSize = 1024 * 1024 * 1;
+	// TODO:: delete old file before opening
+	auto ok = file->Open( fileName.c_str(), fileSize, FileAccess::ReadWrite, MapAccess::ReadWrite );
+	ASSERT_TRUE( ok );
+
+	file->Close();
+
+	std::ifstream infile( fileName );
+	ASSERT_TRUE( infile.is_open() );
 
 }

@@ -18,8 +18,8 @@ class WindowsFileMapping : public EverythingBase<IMappingFile>
 public:
 	WindowsFileMapping( ::vm::IRefCnt *cnt );
 	bool Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags ) override;
-	unsigned char *FileMemPointer( unsigned long long offset, std::size_t size ) override;
-	void DestroyFileMemPointer( unsigned char *addr ) override;
+	unsigned char *MemoryMap( unsigned long long offset, std::size_t size ) override;
+	void MemoryUnmap( unsigned char *addr ) override;
 	bool Flush() override;
 	bool Flush(void * ptr, size_t len, int flags) override;
 	bool Close() override;
@@ -57,8 +57,8 @@ public:
 	LinuxFileMapping( ::vm::IRefCnt *cnt ) :
 	  ::vm::EverythingBase<IMappingFile>( cnt ) {}
 	bool Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags ) override;
-	unsigned char *FileMemPointer( unsigned long long offset, size_t size ) override;
-	void DestroyFileMemPointer( unsigned char *addr ) override;
+	unsigned char *MemoryMap( unsigned long long offset, size_t size ) override;
+	void MemoryUnmap( unsigned char *addr ) override;
 	bool Flush() override;
 	bool Flush(void * ptr, size_t len, int flags) override;
 	bool Close() override;

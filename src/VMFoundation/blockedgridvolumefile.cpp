@@ -5,6 +5,7 @@
 #include <VMUtils/log.hpp>
 #include <VMUtils/vmnew.hpp>
 #include <VMFoundation/pluginloader.h>
+#include <VMFoundation/logger.h>
 #include <fstream>
 #include <filesystem>
 
@@ -117,6 +118,12 @@ void BlockedGridVolumeFile::Open( const std::string &fileName )
 	Create();
 }
 
+bool BlockedGridVolumeFile::Create( const Block3DDataFileDesc *desc )
+{
+	LOG_DEBUG << "BlockedGirdVolumeFile::Create -- Not implement yet";
+	return false;
+}
+
 int BlockedGridVolumeFile::GetPadding() const
 {
 	const auto _ = d_func();
@@ -182,14 +189,17 @@ const void *BlockedGridVolumeFile::GetPage( size_t pageID )
 
 inline void BlockedGridVolumeFile::Flush()
 {
+	LOG_DEBUG << "BlockedGirdVolumeFile::Flush() -- Not implement yet";
 }
 
 inline void BlockedGridVolumeFile::Write( const void *page, size_t pageID, bool flush )
 {
+	LOG_DEBUG << "BlockedGirdVolumeFile::Write -- Not implement yet";
 }
 
 inline void BlockedGridVolumeFile::Flush( size_t pageID )
 {
+	LOG_DEBUG << "BlockedGirdVolumeFile::Flush(size_t) -- Not implement yet";
 }
 
 Vec3i BlockedGridVolumeFile::GetDimension() const

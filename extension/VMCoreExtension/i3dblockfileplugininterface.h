@@ -23,10 +23,22 @@ public:
 	virtual vm::Size3 Get3DPageCount() const = 0;
 };
 
+struct Block3DDataFileDesc
+{
+	int Padding = 2;
+	int VoxelByte = 1;
+	int BlockSideInLog = 6;
+	int BlockDim[ 3 ];
+	int DataSize[ 3 ];
+	bool IsDataSize = false;
+	const char * FileName;
+};
+
 class I3DBlockFilePluginInterface : public I3DBlockDataInterface
 {
 public:
 	virtual void Open( const std::string &fileName ) = 0;
+	virtual bool Create( const Block3DDataFileDesc *desc ) = 0;
 };
 
 DECLARE_PLUGIN_METADATA( I3DBlockFilePluginInterface, "visualman.blockdata.io" )
