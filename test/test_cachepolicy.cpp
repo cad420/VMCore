@@ -240,3 +240,8 @@ TEST( test_cachepolicy, listbasedlrucachepolicy_write_back )
 		ASSERT_EQ( (int)cache_value[ 0 ], (int)data_value[ 0 ] );
 	}
 }
+
+TEST( test, writebackondist )
+{
+
+}

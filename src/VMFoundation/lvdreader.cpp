@@ -5,6 +5,7 @@
 #include <VMFoundation/libraryloader.h>
 #include <VMFoundation/lvdreader.h>
 #include <VMFoundation/pluginloader.h>
+#include <VMFoundation/logger.h>
 
 namespace vm
 {
@@ -92,7 +93,7 @@ LVDReader::LVDReader( const std::string &fileName ) :
 #endif
 	if ( lvdIO == nullptr )
 		throw std::runtime_error( "can not load ioplugin" );
-	lvdIO->Open( fileName, bytes, FileAccess::Read, MapAccess::ReadOnly );
+	lvdIO->Open( fileName, bytes, FileAccess::ReadWrite, MapAccess::ReadWrite );
 
 	lvdPtr = lvdIO->FileMemPointer( 0, bytes );
 	if ( !lvdPtr ) throw std::runtime_error( "LVDReader: bad mapping" );
@@ -114,6 +115,29 @@ void LVDReader::ReadBlock( char *dest, int blockId, int lod )
 	//fileHandle.seekg(blockCount * blockId + 36, std::ios::beg);
 	memcpy( dest, d + blockCount * blockId, sizeof( char ) * blockCount );
 	//fileHandle.read(dest, sizeof(char) * blockCount);
+}
+
+void LVDReader::WriteBlock( const char *src, int blockId, int lod )
+{
+	(void)lod;
+	const size_t blockCount = BlockDataCount();
+	const auto d = lvdPtr + LVD_HEADER_SIZE;
+	memcpy(d + blockCount * blockId, src, sizeof( char ) * blockCount );
+}
+
+bool LVDReader::Flush( int blockId, int lod )
+{
+	assert( lvdPtr );
+	(void)lod;
+	const auto d = lvdPtr + LVD_HEADER_SIZE;
+	const size_t blockCount = BlockDataCount();
+	return lvdIO->Flush( d + blockCount * blockId, sizeof( char ) * blockCount, 0 );
+}
+
+bool LVDReader::Flush()
+{
+	LOG_CRITICAL << "LVDReader::Flush() -- Not implement yet";
+	return false;
 }
 
 unsigned char *LVDReader::ReadBlock( int blockId, int lod )

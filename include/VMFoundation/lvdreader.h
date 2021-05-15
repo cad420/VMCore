@@ -54,6 +54,9 @@ public:
 	template <typename T, int nLogBlockSize>
 	std::shared_ptr<Block3DArray<T, nLogBlockSize>> ReadAll( int lod = 0 );
 	void ReadBlock( char *dest, int blockId, int lod = 0 );
+	void WriteBlock( const char *src, int blockId, int lod );
+	bool Flush( int blockId, int lod );
+	bool Flush();
 	unsigned char *ReadBlock( int blockId, int lod = 0 );
 	const LVDHeader &GetHeader() const { return header; }
 	~LVDReader();
