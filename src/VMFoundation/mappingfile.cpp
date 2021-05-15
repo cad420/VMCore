@@ -1,10 +1,13 @@
 
 //#include <VMUtils/vmnew.hpp>
+#define _HAS_STD_BYTE 0 // bullshit on windows : byte is ambiguous
 #include <VMFoundation/pluginloader.h>
 #include "mappingfile.h"
 
+
 #include <unordered_set>
 #include <VMUtils/vmnew.hpp>
+#include <VMFoundation/logger.h>
 
 #ifdef _WIN32
 
@@ -164,10 +167,20 @@ void WindowsFileMapping::DestroyFileMemPointer( unsigned char *addr )
 	}
 }
 
-bool WindowsFileMapping::WriteCommit()
+bool WindowsFileMapping::Flush()
 {
-	return true;
+	LOG_CRITICAL<<"WindowsFileMapping::Flush | Not implement yet.";
+	return false;
 }
+bool WindowsFileMapping::Flush(void * ptr, size_t len, int flags) {
+	VM_IMPL( WindowsFileMapping )
+	auto res = FlushViewOfFile( ptr, len );
+	if(res == 0){
+		_->PrintLastErrorMsg();
+	}
+	return res;
+}
+
 
 bool WindowsFileMapping::Close()
 {
@@ -254,10 +267,17 @@ void LinuxFileMapping::DestroyFileMemPointer( unsigned char *addr )
 		}
 	}
 }
-bool LinuxFileMapping::WriteCommit()
+bool LinuxFileMapping::Flush()
 {
-	return true;
+	LOG_CRITICAL<<"LinuxFileMapping::Flush | Not implement yet.";
+	return false;
 }
+
+bool LinuxFileMapping::Flush(void * ptr, size_t len, int flags) {
+	LOG_CRITICAL<<"LinuxFileMapping::Flush(void* ptr, size_t, int) | Not implement yet.";
+	return false;
+}
+
 bool LinuxFileMapping::Close()
 {
 	for ( auto it = ptrs.begin(); it != ptrs.end(); ) {

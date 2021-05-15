@@ -20,7 +20,8 @@ public:
 	bool Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags ) override;
 	unsigned char *FileMemPointer( unsigned long long offset, std::size_t size ) override;
 	void DestroyFileMemPointer( unsigned char *addr ) override;
-	bool WriteCommit() override;
+	bool Flush() override;
+	bool Flush(void * ptr, size_t len, int flags) override;
 	bool Close() override;
 	~WindowsFileMapping();
 };
@@ -58,7 +59,8 @@ public:
 	bool Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags ) override;
 	unsigned char *FileMemPointer( unsigned long long offset, size_t size ) override;
 	void DestroyFileMemPointer( unsigned char *addr ) override;
-	bool WriteCommit() override;
+	bool Flush() override;
+	bool Flush(void * ptr, size_t len, int flags) override;
 	bool Close() override;
 	~LinuxFileMapping();
 };

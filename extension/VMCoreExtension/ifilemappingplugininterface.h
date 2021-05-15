@@ -19,11 +19,49 @@ enum class MapAccess
 class IMappingFile : public ::vm::IFile
 {
 public:
+	/**
+	 * @brief 
+	 * 
+	 * @todo This function should be refactored that can only be passed C data type and structure
+	 * rather than std::string
+	 * 
+	 * 
+	 * @param fileName 
+	 * @param fileSize 
+	 * @param fileFlags 
+	 * @param mapFlags 
+	 * @return true 
+	 * @return false 
+	 */
 	virtual bool Open( const std::string &fileName, size_t fileSize, FileAccess fileFlags, MapAccess mapFlags ) = 0;
 	virtual unsigned char *FileMemPointer( unsigned long long offset, std::size_t size ) = 0;
+
+	/**
+	 * @brief Unmaps the pointer retunred by @ref FileMemoryPointer
+	 * 
+	 * @param addr
+	 */
 	virtual void DestroyFileMemPointer( unsigned char *addr ) = 0;
-	virtual bool WriteCommit() = 0;
+
+	/**
+	 * @brief Flushes all modification to file
+	 * 
+	 * @return true 
+	 * @return false 
+	 */
+	virtual bool Flush() = 0;
+
+	virtual bool Flush(void * ptr, size_t len, int flags) = 0;
+
+	/**
+	 * @brief Closes the file
+	 * 
+	 * @return true 
+	 * @return false 
+	 */
+
 	virtual bool Close() = 0;
+
 	virtual ~IMappingFile() = default;
 };
 

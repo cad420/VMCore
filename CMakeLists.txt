@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 project(vmcore)
+message(STATUS === ${CMAKE_TOOLCHAIN_FILE})
 
 aux_source_directory(src/VMFoundation FOUNDATION_SRC)
 aux_source_directory(src/VMGraphics GRAPHICS_SRC)
