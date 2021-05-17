@@ -13,9 +13,11 @@ TEST( test_lvdwr, basic )
 {
 	std::string fileName = "test.lvd";
 
+	vm::Vec3i dataSize{256,256,256};
+	int padding = 2;
+	int sideInLog = 6;
 
-
-	vm::LVDReader reader( fileName, 6, { 256, 256, 256 }, 2 );
+	vm::LVDReader reader( fileName, sideInLog, dataSize, padding );
 
 	auto blockCount = reader.BlockCount();
 	size_t blockSide = reader.BlockSize();
@@ -54,5 +56,11 @@ TEST( test_lvdwr, basic )
 		}
 	}
 
+	reader.Close();
 
+	vm::LVDReader reader2( fileName, sideInLog, dataSize,padding );
+
+	ASSERT_EQ(reader.BlockSizeInLog(),sideInLog);
+	ASSERT_EQ(reader.GetBlockPadding() ,padding);
+	
 }

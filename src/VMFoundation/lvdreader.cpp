@@ -19,6 +19,36 @@ void LVDReader::InitLVDIO()
 	if ( lvdIO == nullptr )
 		throw std::runtime_error( "can not load ioplugin" );
 }
+
+void LVDReader::InitInfoByHeader(const LVDHeader & header){
+	int vx = header.dataDim[ 0 ];
+	int vy = header.dataDim[ 1 ];
+	int vz = header.dataDim[ 2 ];
+	logBlockSize = header.blockLengthInLog;
+	padding = header.padding;
+
+	const int originalWidth = header.originalDataDim[ 0 ];
+	const int originalHeight = header.originalDataDim[ 1 ];
+	const int originalDepth = header.originalDataDim[ 2 ];
+
+	if ( logBlockSize != LogBlockSize5 && logBlockSize != LogBlockSize6 && logBlockSize != LogBlockSize7 ) {
+		std::cout << "Unsupported block size\n";
+		validFlag = false;
+		return;
+	}
+
+	const size_t aBlockSize = BlockSize();
+
+	// aBlockSize must be power of 2, e.g. 32 or 64
+	const int bx = ( ( vx + aBlockSize - 1 ) & ~( aBlockSize - 1 ) ) / aBlockSize;
+	const int by = ( ( vy + aBlockSize - 1 ) & ~( aBlockSize - 1 ) ) / aBlockSize;
+	const int bz = ( ( vz + aBlockSize - 1 ) & ~( aBlockSize - 1 ) ) / aBlockSize;
+
+	vSize = vm::Size3( ( vx ), ( vy ), ( vz ) );
+	bSize = vm::Size3( bx, by, bz );
+	oSize = vm::Size3( originalWidth, originalHeight, originalDepth );
+
+}
 LVDReader::LVDReader( const std::string &fileName ) :
   validFlag( true ), lvdIO( nullptr )
 {
@@ -134,6 +164,10 @@ LVDReader::LVDReader( const std::string & fileName,int blockSideInLog, const Vec
 	lvdPtr = lvdIO->MemoryMap( 0, fileSize );
 	if ( !lvdPtr ) 
 		throw std::runtime_error( "LVDReader: bad mapping" );
+
+	memcpy(lvdPtr,headerBuf,LVD_HEADER_SIZE);
+	lvdIO->Flush(lvdPtr,LVD_HEADER_SIZE,0);
+	InitInfoByHeader(header);
 }
 
 

@@ -46,6 +46,7 @@ class VMFOUNDATION_EXPORTS LVDReader
 	};
 
 	void InitLVDIO();
+	void InitInfoByHeader(const LVDHeader & header);
 
 public:
 	explicit LVDReader( const std::string &fileName );
