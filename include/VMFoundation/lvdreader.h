@@ -45,9 +45,12 @@ class VMFOUNDATION_EXPORTS LVDReader
 		LVDHeaderSize = 24
 	};
 
+	void InitLVDIO();
+
 public:
 	explicit LVDReader( const std::string &fileName );
 	LVDReader( const std::vector<std::string> &fileName, const std::vector<int> &lods = std::vector<int>{} );
+	LVDReader(const std::string & fileName,int BlockSideInLog,const Vec3i& dataSize, int padding );
 	bool Valid() const { return validFlag; }
 	vm::Size3 Size( int lod = 0 ) const { return vSize; }
 	vm::Size3 SizeByBlock( int lod = 0 ) const { return bSize; }

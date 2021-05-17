@@ -9,6 +9,16 @@
 
 namespace vm
 {
+void LVDReader::InitLVDIO()
+{
+#ifdef _WIN32
+	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
+#else defined( __linux__ ) || defined( __APPLE__ )
+	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "linux" );
+#endif
+	if ( lvdIO == nullptr )
+		throw std::runtime_error( "can not load ioplugin" );
+}
 LVDReader::LVDReader( const std::string &fileName ) :
   validFlag( true ), lvdIO( nullptr )
 {
@@ -79,20 +89,8 @@ LVDReader::LVDReader( const std::string &fileName ) :
 	oSize = vm::Size3( originalWidth, originalHeight, originalDepth );
 
 	const std::size_t bytes = std::size_t( vx ) * vy * vz + LVD_HEADER_SIZE;
-	// Load Library
 
-	//auto repo = LibraryReposity::GetLibraryRepo();
-	//assert( repo );
-	//repo->AddLibrary( "ioplugin" );
-
-	//lvdIO = Object::CreateObject<ysl::IFileMappingPluginInterface>("common.filemapio");
-#ifdef _WIN32
-	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
-#else defined( __linux__ ) || defined( __APPLE__ )
-	lvdIO = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "linux" );
-#endif
-	if ( lvdIO == nullptr )
-		throw std::runtime_error( "can not load ioplugin" );
+	InitLVDIO();
 	lvdIO->Open( fileName, bytes, FileAccess::ReadWrite, MapAccess::ReadWrite );
 
 	lvdPtr = lvdIO->MemoryMap( 0, bytes );
@@ -107,6 +105,38 @@ LVDReader::LVDReader( const std::vector<std::string> &fileName, const std::vecto
 			levelOfDetails.push_back( i );
 	} 
 }
+LVDReader::LVDReader( const std::string & fileName,int blockSideInLog, const Vec3i &dataSize, int padding )
+{
+	header.magicNum = LVDFileMagicNumber;
+	header.blockLengthInLog = (uint32_t)blockSideInLog;
+	header.padding = padding;
+	if (blockSideInLog < 5 || blockSideInLog > 10) {
+		LOG_FATAL << "Too large block size";
+	}
+	const auto blockSide = (1ULL << blockSideInLog);
+	auto f = [ &blockSide, &padding ]( int x ) { return vm::RoundUpDivide(x,blockSide - 2ULL * padding)*blockSide; };
+	header.dataDim[ 0 ] = f( dataSize.x );
+	header.dataDim[ 1 ] = f( dataSize.y );
+	header.dataDim[ 2 ] = f( dataSize.z );
+	header.originalDataDim[ 0 ] = dataSize.x;
+	header.originalDataDim[ 1 ] = dataSize.y;
+	header.originalDataDim[ 2 ] = dataSize.z;
+
+	unsigned char headerBuf[ LVD_HEADER_SIZE ];
+	header.Encode();
+	memcpy( headerBuf, header.Encode(), LVD_HEADER_SIZE );
+
+	InitLVDIO();
+
+	const auto fileSize = dataSize.Prod() + LVD_HEADER_SIZE;
+
+	lvdIO->Open( fileName.c_str(), fileSize, FileAccess::ReadWrite, MapAccess::ReadWrite );
+	lvdPtr = lvdIO->MemoryMap( 0, fileSize );
+	if ( !lvdPtr ) 
+		throw std::runtime_error( "LVDReader: bad mapping" );
+}
+
+
 void LVDReader::ReadBlock( char *dest, int blockId, int lod )
 {
 	const size_t blockCount = BlockDataCount();
