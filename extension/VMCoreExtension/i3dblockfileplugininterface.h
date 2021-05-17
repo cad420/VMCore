@@ -23,15 +23,16 @@ public:
 	virtual vm::Size3 Get3DPageCount() const = 0;
 };
 
+
 struct Block3DDataFileDesc
 {
-	int Padding = 2;
-	int VoxelByte = 1;
-	int BlockSideInLog = 6;
-	int BlockDim[ 3 ];
-	int DataSize[ 3 ];
-	bool IsDataSize = false;
-	const char * FileName;
+	int Padding = 2;          // Padding of a block
+	int VoxelByte = 1;        // The voxel size of the data
+	int BlockSideInLog = 6;   // The side length of a block
+	int BlockDim[ 3 ];        // How many block with respect to each dimension the data has
+	int DataSize[ 3 ];        // Data size
+	bool IsDataSize = false;  // True indicates the data create by \ref DataSize or by \ref BlockDim and BlockDim
+	const char * FileName = nullptr;
 };
 
 class I3DBlockFilePluginInterface : public I3DBlockDataInterface

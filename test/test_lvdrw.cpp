@@ -13,6 +13,8 @@ TEST( test_lvdwr, basic )
 {
 	std::string fileName = "test.lvd";
 
+
+
 	vm::LVDReader reader( fileName, 6, { 256, 256, 256 }, 2 );
 
 	auto blockCount = reader.BlockCount();
@@ -46,11 +48,11 @@ TEST( test_lvdwr, basic )
 					const double X = globalx * 2 * Pi / sideX, Y = globaly * 2 * Pi / sideY, Z = globalz * 2 * Pi / sideZ;
 					const auto value = std::sqrt( 6 + 2 * A * std::sin( Z ) * std::cos( Y ) + 2 * B * std::sin( Y ) * std::cos( X ) + 2 * std::sqrt( 6 ) * sin( X ) * std::cos( Z ) );
 					blockBuf[ index ] = ( ( value - minValue ) / ( maxValue - minValue ) * 255 + 0.5 );
+					reader.WriteBlock(blockBuf.get(), i, 0);
 				}
 			}
 		}
 	}
 
-	for ( int i = 0; i < blockCount; i++ ) {
-	}
+
 }
