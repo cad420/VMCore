@@ -1,9 +1,8 @@
 
 //#include <VMUtils/vmnew.hpp>
-#define _HAS_STD_BYTE 0 // bullshit on windows : byte is ambiguous
+#define _HAS_STD_BYTE 0	 // bullshit on windows : byte is ambiguous
 #include <VMFoundation/pluginloader.h>
 #include "mappingfile.h"
-
 
 #include <unordered_map>
 #include <VMUtils/vmnew.hpp>
@@ -26,7 +25,7 @@ public:
 	FileAccess fileFlag;
 	MapAccess mapFlag;
 	void *addr = nullptr;
-	std::unordered_map<unsigned char *,size_t> mappedPointers;
+	std::unordered_map<unsigned char *, size_t> mappedPointers;
 	void PrintLastErrorMsg()
 	{
 		DWORD dw = GetLastError();
@@ -39,13 +38,20 @@ public:
 		  MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
 		  msg,
 		  0, NULL );
-		printf( "Last Error Code: [%d] %s\n", dw, msg );
+		printf( "Win32 API Last Error Code: [%d] %s\n", dw, msg );
+	}
+
+	void UnmapAll()
+	{
+		for ( auto &it : mappedPointers ) {
+			UnmapViewOfFile( (LPVOID)it.first );
+		}
+		mappedPointers.clear();
 	}
 };
 
-
 WindowsFileMapping::WindowsFileMapping( ::vm::IRefCnt *cnt ) :
-  EverythingBase<IMappingFile>( cnt ), d_ptr( new WindowsFileMapping__pImpl(this) )
+  EverythingBase<IMappingFile>( cnt ), d_ptr( new WindowsFileMapping__pImpl( this ) )
 {
 }
 
@@ -53,7 +59,8 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 							   MapAccess mapFlags )
 {
 	VM_IMPL( WindowsFileMapping );
-  Close();
+	_->mappedPointers.clear();
+
 	bool newCreated = false;
 	DWORD dwAttrib = GetFileAttributes( fileName.c_str() );
 	_->fileFlag = fileFlags;
@@ -71,12 +78,12 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 		flags = GENERIC_READ | GENERIC_WRITE;
 
 	_->f = CreateFile( TEXT( fileName.c_str() ),
-					flags,
-					0,
-					NULL,
-					OPEN_ALWAYS,
-					FILE_ATTRIBUTE_NORMAL,
-					NULL );
+					   flags,
+					   0,
+					   NULL,
+					   OPEN_ALWAYS,
+					   FILE_ATTRIBUTE_NORMAL,
+					   NULL );
 
 	if ( _->f == INVALID_HANDLE_VALUE ) {
 		LOG_DEBUG << "Create file failed";
@@ -105,13 +112,13 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 		mapflags = PAGE_READWRITE;
 
 	_->mapping = CreateFileMapping( _->f,
-								 NULL,
-								 mapflags,
-								 fs.HighPart,
-								 fs.LowPart,
-								 NULL );
+									NULL,
+									mapflags,
+									fs.HighPart,
+									fs.LowPart,
+									NULL );
 
-	if (_->mapping == nullptr ) {
+	if ( _->mapping == nullptr ) {
 		LOG_DEBUG << "Create file mapping failed";
 		_->PrintLastErrorMsg();
 		return false;
@@ -143,7 +150,7 @@ unsigned char *WindowsFileMapping::MemoryMap( unsigned long long offset, std::si
 		return nullptr;
 	}
 
-	_->mappedPointers.insert( {addr,size} );
+	_->mappedPointers.insert( { addr, size } );
 	return addr;
 }
 
@@ -161,36 +168,33 @@ bool WindowsFileMapping::Flush()
 {
 	VM_IMPL( WindowsFileMapping );
 	bool ok = true;
-	for (auto& it : _->mappedPointers) {
-		ok = ok && FlushViewOfFile( (LPVOID)it.first,it.second );
+	for ( auto &it : _->mappedPointers ) {
+		ok = ok && FlushViewOfFile( (LPVOID)it.first, it.second );
 	}
 	return ok;
 }
-bool WindowsFileMapping::Flush(void * ptr, size_t len, int flags) {
+bool WindowsFileMapping::Flush( void *ptr, size_t len, int flags )
+{
 	VM_IMPL( WindowsFileMapping )
 	auto res = FlushViewOfFile( ptr, len );
-	if(res == 0){
+	if ( res == 0 ) {
 		_->PrintLastErrorMsg();
 	}
 	return res;
 }
 
-
 bool WindowsFileMapping::Close()
 {
 	VM_IMPL( WindowsFileMapping );
-	for (auto& it : _->mappedPointers) {
-		UnmapViewOfFile( (LPVOID)it.first );
-	}
-	_->mappedPointers.clear();
+	_->UnmapAll();
 
 	auto res1 = CloseHandle( _->f );
-	if (!res1) {
+	if ( !res1 ) {
 		_->PrintLastErrorMsg();
 	}
 
 	auto res2 = CloseHandle( _->mapping );
-	if (!res2) {
+	if ( !res2 ) {
 		_->PrintLastErrorMsg();
 	}
 	return res1 && res2;
@@ -258,41 +262,41 @@ unsigned char *LinuxFileMapping::MemoryMap( unsigned long long offset, size_t si
 	if ( mapAccess == MapAccess::ReadWrite )
 		prot = PROT_READ | PROT_WRITE;
 	void *ptr = mmap( nullptr, size, prot, MAP_SHARED, fd, offset );
-  if(!ptr){
-    LOG_DEBUG<<"mmap failed";
-    return nullptr;
-  }
-  mappedPointers.insert({(unsigned char*)ptr,size});
+	if ( !ptr ) {
+		LOG_DEBUG << "mmap failed";
+		return nullptr;
+	}
+	mappedPointers.insert( { (unsigned char *)ptr, size } );
 	return reinterpret_cast<unsigned char *>( ptr );
 }
 void LinuxFileMapping::MemoryUnmap( unsigned char *addr )
 {
 	auto it = mappedPointers.find( addr );
 	if ( it != mappedPointers.end() ) {
-    munmap(it->first,it->second);
+		munmap( it->first, it->second );
 		mappedPointers.erase( it );
 	}
 }
 bool LinuxFileMapping::Flush()
 {
 	bool ok = true;
-	for (auto& it : mappedPointers) {
-    msync(it.first,it.second,0);
+	for ( auto &it : mappedPointers ) {
+		msync( it.first, it.second, 0 );
 	}
 	return ok;
 }
 
-bool LinuxFileMapping::Flush(void * ptr, size_t len, int flags) {
-	LOG_CRITICAL<<"LinuxFileMapping::Flush(void* ptr, size_t, int) | Not implement yet.";
-  bool ok = true;
-  msync(ptr, len, 0);
-	return false;
+bool LinuxFileMapping::Flush( void *ptr, size_t len, int flags )
+{
+	bool ok = true;
+	msync( ptr, len, 0 );
+	return ok;
 }
 
 bool LinuxFileMapping::Close()
 {
-	for (auto& it : mappedPointers) {
-    munmap(it.first,it.second);
+	for ( auto &it : mappedPointers ) {
+		munmap( it.first, it.second );
 	}
 	mappedPointers.clear();
 	if ( fd != -1 ) {
