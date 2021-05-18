@@ -124,6 +124,12 @@ bool BlockedGridVolumeFile::Create( const Block3DDataFileDesc *desc )
 	return false;
 }
 
+void BlockedGridVolumeFile::Close()
+{
+	VM_IMPL( BlockedGridVolumeFile );
+	_->rawReader = nullptr;
+}
+
 int BlockedGridVolumeFile::GetPadding() const
 {
 	const auto _ = d_func();

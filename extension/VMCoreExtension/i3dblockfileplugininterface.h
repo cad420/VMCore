@@ -40,6 +40,7 @@ class I3DBlockFilePluginInterface : public I3DBlockDataInterface
 public:
 	virtual void Open( const std::string &fileName ) = 0;
 	virtual bool Create( const Block3DDataFileDesc *desc ) = 0;
+	virtual void Close() = 0;
 };
 
 DECLARE_PLUGIN_METADATA( I3DBlockFilePluginInterface, "visualman.blockdata.io" )
