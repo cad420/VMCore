@@ -184,7 +184,7 @@ void AbstrMemoryCache::Flush( size_t pageID )
 		const auto storageID = it->second;
 		PageFlag *flags;
 		_->cachePolicy->QueryPageFlag( pageID, &flags );
-		if ( flags != nullptr ) {
+		if ( flags ) {
 			if ( ( *flags & PAGE_D ) ) {
 				*flags |= ~PAGE_D;	// clear dirty
 				_->nextLevel->Write( GetPageStorage_Implement( storageID ), pageID, true );
@@ -203,14 +203,16 @@ void AbstrMemoryCache::Flush()
 		const auto storageID = it->second;
 		PageFlag *flags;
 		_->cachePolicy->QueryPageFlag( it->first, &flags );
-		if ( ( *flags & PAGE_D ) ) {
-			*flags |= ~PAGE_D;	// clear dirty
-			_->nextLevel->Write( GetPageStorage_Implement( storageID ), it->first, true );
-		} else {
-			LOG_FATAL << "The page " << it->first << " is not dirty, flushing is ignored";
+		if ( flags ) {
+			if ( ( *flags & PAGE_D ) ) {
+				*flags |= ~PAGE_D;	// clear dirty
+				_->nextLevel->Write( GetPageStorage_Implement( storageID ), it->first, true );
+			} else {
+				LOG_FATAL << "The page " << it->first << " is not dirty, flushing is ignored";
+			}
 		}
-		_->dirtyPageID.erase( it );
 	}
+	_->dirtyPageID.clear();
 	_->nextLevel->Flush();
 }
 
