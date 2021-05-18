@@ -48,7 +48,7 @@ namespace vm
 {
 class LinuxFileMapping : public ::vm::EverythingBase<IMappingFile>
 {
-	std::set<std::pair<void *, size_t>> ptrs;
+	std::unordered_map<unsigned char *,size_t> mappedPointers;
 	int fd = -1;
 	FileAccess fileAccess;
 	MapAccess mapAccess;

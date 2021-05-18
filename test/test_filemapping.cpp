@@ -79,7 +79,7 @@ TEST( test_filemapping, windows_basic )
 	for (int i = 0; i < count; i++) {
 		int a;
 		fs.read((char*)&a,sizeof(int));
-		ASSERT_TRUE( a, v[i] );
+		ASSERT_EQ( a, v[i] );
 	}
 
 }

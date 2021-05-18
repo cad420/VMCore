@@ -53,6 +53,7 @@ bool WindowsFileMapping::Open( const std::string &fileName, size_t fileSize, Fil
 							   MapAccess mapFlags )
 {
 	VM_IMPL( WindowsFileMapping );
+  Close();
 	bool newCreated = false;
 	DWORD dwAttrib = GetFileAttributes( fileName.c_str() );
 	_->fileFlag = fileFlags;
@@ -257,36 +258,43 @@ unsigned char *LinuxFileMapping::MemoryMap( unsigned long long offset, size_t si
 	if ( mapAccess == MapAccess::ReadWrite )
 		prot = PROT_READ | PROT_WRITE;
 	void *ptr = mmap( nullptr, size, prot, MAP_SHARED, fd, offset );
+  if(!ptr){
+    LOG_DEBUG<<"mmap failed";
+    return nullptr;
+  }
+  mappedPointers.insert({(unsigned char*)ptr,size});
 	return reinterpret_cast<unsigned char *>( ptr );
 }
 void LinuxFileMapping::MemoryUnmap( unsigned char *addr )
 {
-	for ( auto it = ptrs.begin(); it != ptrs.end(); ) {
-		if ( it->first == addr ) {
-			munmap( it->first, it->second );
-			it = ptrs.erase( it );
-		} else {
-			++it;
-		}
+	auto it = mappedPointers.find( addr );
+	if ( it != mappedPointers.end() ) {
+    munmap(it->first,it->second);
+		mappedPointers.erase( it );
 	}
 }
 bool LinuxFileMapping::Flush()
 {
-	LOG_CRITICAL<<"LinuxFileMapping::Flush | Not implement yet.";
-	return false;
+	bool ok = true;
+	for (auto& it : mappedPointers) {
+    msync(it.first,it.second,0);
+	}
+	return ok;
 }
 
 bool LinuxFileMapping::Flush(void * ptr, size_t len, int flags) {
 	LOG_CRITICAL<<"LinuxFileMapping::Flush(void* ptr, size_t, int) | Not implement yet.";
+  bool ok = true;
+  msync(ptr, len, 0);
 	return false;
 }
 
 bool LinuxFileMapping::Close()
 {
-	for ( auto it = ptrs.begin(); it != ptrs.end(); ) {
-		munmap( it->first, it->second );
-		it = ptrs.erase( it );
+	for (auto& it : mappedPointers) {
+    munmap(it.first,it.second);
 	}
+	mappedPointers.clear();
 	if ( fd != -1 ) {
 		close( fd );
 		fd = -1;
