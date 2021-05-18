@@ -108,11 +108,9 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 			// If a page is evicted, before replaced, it's necessary to write it into the next level cache if the page is dirty.
 			PageFlag *evictedFlags;
 			_->cachePolicy->QueryPageFlag( evictedPageID, &evictedFlags );
-			if ( evictedFlags == nullptr ) 
-			{
+			if ( evictedFlags == nullptr ) {
 				LOG_FATAL << "nullptr: evictedFlags";
-			}
-			else if ( *evictedFlags & PAGE_D ) {
+			} else if ( *evictedFlags & PAGE_D ) {
 				_->nextLevel->Write( storage, evictedPageID, true );
 			}
 		}
@@ -139,7 +137,7 @@ void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 		//read, update and write
 		auto cachedPage = const_cast<void *>( GetPage( pageID ) );
 		memcpy( cachedPage, page, GetPageSize() );
-		_->nextLevel->Write( page, pageID, true );	 // update next level cache
+		_->nextLevel->Write( page, pageID, true );	// update next level cache
 	} else {
 		// For lazy writing, we need to access the page cache anyway.
 		// But note that the evicted page need to be carefully handled
@@ -153,15 +151,14 @@ void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 			// If a page is evicted, before replaced, it's necessary to write it into the next level cache if the page is dirty.
 			PageFlag *evictedFlags;
 			_->cachePolicy->QueryPageFlag( evictedPageID, &evictedFlags );
-			if ( evictedFlags == nullptr ) 
-			{
+			if ( evictedFlags == nullptr ) {
 				LOG_FATAL << "nullptr: evictedFlags";
-			} else if( *evictedFlags & PAGE_D ) {
+			} else if ( *evictedFlags & PAGE_D ) {
 				_->nextLevel->Write( storage, evictedPageID, flush );
 			}
 		}
 
-		_->cachePolicy->EndQueryAndUpdate( pageID ,hit, &storageID, evicted, &evictedPageID); 
+		_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
 
 		// 这里有一个比较严重的问题，如果EndQueryAndUpdate在最后，那么QueryPageFlag在hit == false的情况下为空，因为有可能缓存没有命中，
 		//这样是拿不到pageflag的，虽然把这个update放在前面会更新并且得到一个pageID合法的pte的位置，但是如果在多线程情况下在之后的QueryPageFlag中
@@ -171,10 +168,10 @@ void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 		memcpy( storage, page, GetPageSize() );
 		PageFlag *flags;
 		_->cachePolicy->QueryPageFlag( pageID, &flags );
-		*flags = PAGE_D | PAGE_V;  // mark dirty
-		_->dirtyPageID.insert( { pageID, storageID } ); // record the dirty page for flushing all
+		*flags = PAGE_D | PAGE_V;						 // mark dirty
+		_->dirtyPageID.insert( { pageID, storageID } );	 // record the dirty page for flushing all
 
-		// Update will invalidate evictedPageID 
+		// Update will invalidate evictedPageID
 	}
 }
 
@@ -187,11 +184,13 @@ void AbstrMemoryCache::Flush( size_t pageID )
 		const auto storageID = it->second;
 		PageFlag *flags;
 		_->cachePolicy->QueryPageFlag( pageID, &flags );
-		if ( ( *flags & PAGE_D ) ) {
-			*flags |= ~PAGE_D;	// clear dirty
-			_->nextLevel->Write( GetPageStorage_Implement( storageID ), pageID, true );
-		} else {
-			LOG_FATAL << "The page " << pageID << " is not dirty, flushing is ignored";
+		if ( flags != nullptr ) {
+			if ( ( *flags & PAGE_D ) ) {
+				*flags |= ~PAGE_D;	// clear dirty
+				_->nextLevel->Write( GetPageStorage_Implement( storageID ), pageID, true );
+			} else {
+				LOG_FATAL << "The page " << pageID << " is not dirty, flushing is ignored";
+			}
 		}
 		_->dirtyPageID.erase( it );
 	}
