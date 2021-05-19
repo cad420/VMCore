@@ -27,6 +27,7 @@ public:
 
 	void Open( const std::string &fileName ) override;
 	bool Create( const Block3DDataFileDesc *desc ) override;
+	void Close()override;
 	int GetPadding() const override;
 	Size3 GetDataSizeWithoutPadding() const override;
 	Size3 Get3DPageSize() const override;
