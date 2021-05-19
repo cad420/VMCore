@@ -9,6 +9,7 @@
 #include <VMUtils/vmnew.hpp>
 #include <VMFoundation/logger.h>
 
+
 #ifdef _WIN32
 
 #include <Windows.h>
@@ -204,7 +205,7 @@ WindowsFileMapping::~WindowsFileMapping()
 
 std::vector<std::string> WindowsFileMappingFactory::Keys() const
 {
-	return { "windows" };
+	return { FILE_MAPPING_PLUGIN_KEY };
 }
 
 vm::IEverything *WindowsFileMappingFactory::Create( const std::string &key )
@@ -286,7 +287,7 @@ bool LinuxFileMapping::Flush(void * ptr, size_t len, int flags) {
 	LOG_CRITICAL<<"LinuxFileMapping::Flush(void* ptr, size_t, int) | Not implement yet.";
   bool ok = true;
   msync(ptr, len, 0);
-	return false;
+	return ok;
 }
 
 bool LinuxFileMapping::Close()
@@ -311,7 +312,7 @@ LinuxFileMapping::~LinuxFileMapping()
 
 std::vector<std::string> LinuxFileMappingFactory::Keys() const
 {
-	return { "linux" };
+	return { FILE_MAPPING_PLUGIN_KEY };
 }
 
 vm::IEverything *LinuxFileMappingFactory::Create( const std::string &key )

@@ -1,4 +1,3 @@
-
 #include <VMFoundation/rawreader.h>
 #include <VMCoreExtension/ifilemappingplugininterface.h>
 #include <VMFoundation/libraryloader.h>
@@ -10,7 +9,7 @@
 
 #include <fstream>
 #include <filesystem>
-#include <cstring>  // memcpy
+#include <cstring>	// memcpy
 #include <cassert>
 
 namespace vm
@@ -28,9 +27,22 @@ public:
 	std::ifstream file;
 	unsigned char *ptr = nullptr;
 	int64_t seekAmt = 0;
-	DataArena<64> stagingBuffer = DataArena<64>(1024*1024*10);
 	Ref<IMappingFile> mappingFile;
 	std::function<size_t( const Vec3i &, const vm::Size3 &, unsigned char * )> readRegion;
+
+	void Close()
+	{
+		if ( mappingFile != nullptr ) {
+			mappingFile->MemoryUnmap( ptr );
+		}
+		mappingFile = nullptr;
+		ptr = nullptr;
+		seekAmt = 0;
+		offset = 0;
+		if ( file.is_open() ) {
+			file.close();
+		}
+	}
 };
 
 namespace
@@ -42,11 +54,11 @@ size_t Linear2Volume( unsigned char *dst,
 					  const Size3 &srcSize )
 {
 	size_t r = 0;
-	if ( ( srcSize.x == dstSize.x && srcSize.y == dstSize.y ) || ( srcSize.x == dstSize.x && srcSize.z == 1 ) || ( srcSize.y == 1 && srcSize.z == 1 ) )  // continuous read
+	if ( ( srcSize.x == dstSize.x && srcSize.y == dstSize.y ) || ( srcSize.x == dstSize.x && srcSize.z == 1 ) || ( srcSize.y == 1 && srcSize.z == 1 ) )	 // continuous read
 	{
 		const uint64_t offset = ( start.x + dstSize.x * ( start.y + dstSize.y * start.z ) );
 		memcpy( dst + offset, src, srcSize.x * srcSize.y * srcSize.z );
-		r = srcSize.x * srcSize.y * srcSize.z;  // voxel count
+		r = srcSize.x * srcSize.y * srcSize.z;	// voxel count
 	} else if ( srcSize.x == dstSize.x ) {		// read by slice
 		for ( auto z = start.z; z < start.z + srcSize.z; ++z ) {
 			const Vec3i startSlice( start.x, start.y, z );
@@ -76,8 +88,8 @@ size_t Volume2Linear( unsigned char *dst,
 	{
 		const uint64_t offset = ( start.x + srcSize.x * ( start.y + srcSize.y * start.z ) );
 		memcpy( dst, src + offset, size.x * size.y * size.z );
-		r = size.x * size.y * size.z;	// voxel count
-	} else if ( size.x == srcSize.x ) {  // read by slice
+		r = size.x * size.y * size.z;	 // voxel count
+	} else if ( size.x == srcSize.x ) {	 // read by slice
 		for ( auto z = start.z; z < start.z + srcSize.z; ++z ) {
 			const Vec3i startSlice( start.x, start.y, z );
 			const Size3 sizeSlice( size.x, size.y, 1 );
@@ -101,6 +113,21 @@ RawReader::RawReader( const std::string &fileName, const vm::Size3 &dimensions, 
   RawReader( fileName, dimensions, voxelSize, false )
 {
 }
+RawReader::RawReader( unsigned char *src, const Size3 &dimensions, size_t voxelSize ) :
+  d_ptr( new RawReader__pImpl( this ) )
+{
+  assert(src);
+	VM_IMPL( RawReader );
+	_->dataBound = { { 0, 0, 0 }, { int( dimensions.x ), int( dimensions.y ), int( dimensions.z ) } };
+	_->voxelSize = voxelSize;
+  _->ptr = src;
+	_->readRegion = [ this ]( const Vec3i &start,
+							  const Size3 &size,
+							  unsigned char *buffer ) {
+		VM_IMPL( RawReader )
+		return Volume2Linear( buffer, _->ptr, Size3( _->dataBound.Diagonal() ), start, size );
+	};
+}
 
 RawReader::RawReader( const std::string &fileName,
 					  const Size3 &dimensions,
@@ -109,7 +136,6 @@ RawReader::RawReader( const std::string &fileName,
 {
 	VM_IMPL( RawReader );
 	_->dataBound = { { 0, 0, 0 }, { int( dimensions.x ), int( dimensions.y ), int( dimensions.z ) } };
-	//_->dimensions = dimensions;
 	_->voxelSize = voxelSize;
 	if ( mapped == false ) {
 		_->file.open( fileName, std::ios::binary );
@@ -117,20 +143,16 @@ RawReader::RawReader( const std::string &fileName,
 			throw std::runtime_error( "RawReaderIO::failed to open file" );
 		}
 
-		_->readRegion = [this]( const Vec3i &start,
-								const Size3 &size,
-								unsigned char *buffer ) {
+		_->readRegion = [ this ]( const Vec3i &start,
+								  const Size3 &size,
+								  unsigned char *buffer ) {
 			VM_IMPL( RawReader )
 			_->seekAmt = 0;
 			return readRegion__( start, size, buffer );
 		};
 
 	} else {
-#ifdef _WIN32
-		_->mappingFile = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
-#else
-		_->mappingFile = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "linux" );
-#endif
+		_->mappingFile = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( FILE_MAPPING_PLUGIN_KEY );
 
 		if ( _->mappingFile == nullptr ) {
 			throw std::runtime_error( "Failed to load file mapping plugin" );
@@ -142,9 +164,9 @@ RawReader::RawReader( const std::string &fileName,
 		if ( ( _->ptr = _->mappingFile->MemoryMap( 0, rawBytes ) ) == nullptr ) {
 			throw std::runtime_error( "Failed to map file" );
 		}
-		_->readRegion = [this]( const Vec3i &start,
-								const Size3 &size,
-								unsigned char *buffer ) {
+		_->readRegion = [ this ]( const Vec3i &start,
+								  const Size3 &size,
+								  unsigned char *buffer ) {
 			VM_IMPL( RawReader )
 			return Volume2Linear( buffer, _->ptr, Size3( _->dataBound.Diagonal() ), start, size );
 		};
@@ -179,8 +201,8 @@ size_t RawReader::readRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 
 	const auto readSize = Size3( dig.x, dig.y, dig.z );
 	//_->stagingBuffer.Reset();
 	//auto buf = _->stagingBuffer.Alloc<unsigned char>( readSize.Prod() * _->voxelSize, false );
-	
-	auto buf = (unsigned char*)calloc(_->voxelSize, readSize.Prod() );
+
+	auto buf = (unsigned char *)calloc( _->voxelSize, readSize.Prod() );
 	memset( buf, 0, readSize.Prod() * _->voxelSize );
 
 	const auto read = readRegion( { isectBound.min.x, isectBound.min.y, isectBound.min.z }, readSize, buf );
@@ -188,7 +210,7 @@ size_t RawReader::readRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 
 	assert( read == readSize.Prod() );
 
 	const auto newStart = isectBound.min - readBound.min;
-	
+
 	auto ret = Linear2Volume( buffer, dstSize * _->voxelSize, newStart * _->voxelSize, buf, readSize * _->voxelSize );
 
 	free( buf );
@@ -197,25 +219,25 @@ size_t RawReader::readRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 
 
 std::future<size_t> RawReader::asyncReadRegion( const Vec3i &start, const Vec3i &size, unsigned char *buffer, std::function<void()> cb )
 {
-	
-	return std::async( [this]( const Vec3i &start, 
-		const Vec3i &size,unsigned char *buffer, decltype( cb ) callback )
-	{
+	return std::async( [ this ]( const Vec3i &start,
+								 const Vec3i &size, unsigned char *buffer, decltype( cb ) callback ) {
 		VM_IMPL( RawReader );
-		const auto read = _->readRegion( start, Size3( size ), buffer );callback();
+		const auto read = _->readRegion( start, Size3( size ), buffer );
+		callback();
 		return read;
-	},start,size,buffer,std::move(cb));
+	},
+					   start, size, buffer, std::move( cb ) );
 }
 
 std::future<size_t> RawReader::asyncReadRegionNoBoundary( const Vec3i &start, const Vec3i &size, unsigned char *buffer, std::function<void()> cb )
 {
-	return std::async( [this]( const Vec3i &start, const Vec3i &size, unsigned char *buffer, decltype( cb ) callback )
-	{
+	return std::async( [ this ]( const Vec3i &start, const Vec3i &size, unsigned char *buffer, decltype( cb ) callback ) {
 		VM_IMPL( RawReader )
 		const auto read = readRegionNoBoundary( start, Size3( size ), buffer );
 		callback();
 		return read;
-	}, start, size, buffer, std::move(cb) );
+	},
+					   start, size, buffer, std::move( cb ) );
 }
 
 Vec3i RawReader::GetDimension() const

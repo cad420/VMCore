@@ -4,6 +4,7 @@
 #include <VMFoundation/foundation_config.h>
 #include <VMUtils/common.h>
 
+#include <cstddef>
 #include <functional>
 #include <future>
 
@@ -22,7 +23,9 @@ public:
 	RawReader( const std::string &fileName,
 				 const vm::Size3 &dimensions, size_t voxelSize );
 	RawReader( const std::string &fileName, const Size3 &dimensions, size_t voxelSize,bool mapped);
-	
+
+  RawReader(unsigned char * src, const Size3 &dimensions, size_t voxelSize);
+
 	~RawReader();
 	// Read a region of volume data from the file into the buffer passed.
 	// It's assumed the buffer passed has enough room. Returns the

@@ -8,7 +8,7 @@
 #include <random>
 using namespace vm;
 
-std::string fileName = "D:\\data\\test_filemapping_basic.bin";
+std::string fileName = "test_filemapping_basic.bin";
 
 template<typename T>
 std::vector<T> CreateTestFile( const std::string &fileName ,size_t count)
@@ -33,7 +33,7 @@ std::vector<T> CreateTestFile( const std::string &fileName ,size_t count)
 
 TEST( test_filemapping, windows_basic )
 {
-	auto file = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
+	auto file = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( FILE_MAPPING_PLUGIN_KEY );
 	ASSERT_TRUE( file );
 
 	size_t count = 256;
@@ -86,7 +86,7 @@ TEST( test_filemapping, windows_basic )
 TEST( test_filemapping, windows_create_file )
 {
 	std::string fileName = "create_mapping_file_test";
-	auto file = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( "windows" );
+	auto file = PluginLoader::GetPluginLoader()->CreatePlugin<IMappingFile>( FILE_MAPPING_PLUGIN_KEY );
 	ASSERT_TRUE( file );
 	const auto fileSize = 1024 * 1024 * 1;
 	// TODO:: delete old file before opening

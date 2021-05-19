@@ -4,6 +4,14 @@
 #include <VMCoreExtension/plugindef.h>
 #include "ifile.h"
 
+#if defined(__linux) || defined(__linux__) || defined(linux)
+# define FILE_MAPPING_PLUGIN_KEY "linux"
+#elif defined(__APPLE__)
+# define FILE_MAPPING_PLUGIN_KEY "macOS"
+#elif defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(_WIN64)
+# define FILE_MAPPING_PLUGIN_KEY "windows"
+#endif
+
 enum class FileAccess
 {
 	Read,	// = GENERIC_READ,
