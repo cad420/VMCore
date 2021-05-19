@@ -20,7 +20,6 @@ class BlockedGridVolumeFile__pImpl;
 class VMFOUNDATION_EXPORTS BlockedGridVolumeFile : public EverythingBase<I3DBlockFilePluginInterface>
 {
 	VM_DECL_IMPL( BlockedGridVolumeFile )
-	void Create();
 public:
 	BlockedGridVolumeFile( IRefCnt *cnt, const std::string &fileName, const vm::Size3 &dimensions, size_t voxelSize, int blockDimensionInLog, int padding );
 	BlockedGridVolumeFile( IRefCnt *cnt );
