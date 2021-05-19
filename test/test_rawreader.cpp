@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <VMFoundation/rawreader.h>
+#include <VMFoundation/rawstream.h>
 #include <VMUtils/log.hpp>
 #include <VMFoundation/dataarena.h>
 #include <VMFoundation/lvdreader.h>
@@ -11,7 +11,7 @@ TEST(test_rawreader,basic)
 {
 	using namespace vm;
 
-	RawReader reader( R"(E:\Desktop\mixfrac.raw)", { 480, 720, 120 }, 1 );
+	RawStream reader( R"(mixfrac.raw)", { 480, 720, 120 }, 1 );
 	println( "Dimension: {}, VoxelSize: {}.", reader.GetDimension(), reader.GetElementSize() );
 	//std::unique_ptr<unsigned char[]> buf( new unsigned char[ Size3( 480, 720, 120 ).Prod() * reader.GetElementSize() ] );
 
@@ -29,17 +29,7 @@ TEST(test_rawreader,basic)
 
 	for ( const auto &c : cases ) {
 		auto buf = arena.Alloc<unsigned char>( c.second.Prod(), true );
-
-		auto  f = reader.asyncReadRegionNoBoundary( c.first, Vec3i( c.second ), buf, [buf,id,c]() {
-			std::cout << "read finished\n";
-			std::string sid = std::to_string( id );
-			std::ofstream out( R"(E:\Desktop\output)" + sid + ".raw", std::ios::binary );
-			out.write( (const char *)buf, c.second.Prod() );
-			out.close();
-		} );
-		while ( f.wait_for( std::chrono::seconds(1) ) != std::future_status::ready ) {
-			std::cout << "not ready\n";
-		}
+		auto  f = reader.ReadRegionNoBoundary( c.first,  c.second , buf);
 		id++;
 	}
 }
