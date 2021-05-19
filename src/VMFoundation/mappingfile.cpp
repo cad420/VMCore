@@ -236,6 +236,7 @@ bool LinuxFileMapping::Open( const std::string &fileName, size_t fileSize, FileA
 
 	fileAccess = fileFlags;
 	mapAccess = mapFlags;
+	this->fileSize = fileSize;
 
 	int fileflags = 0;
 	if ( fileFlags == FileAccess::Read )
@@ -250,9 +251,10 @@ bool LinuxFileMapping::Open( const std::string &fileName, size_t fileSize, FileA
 
 	if ( -1 == fd ) {
 		//throw std::runtime_error("can not open file");
+		LOG_DEBUG<<"Can not open file"<<fileName;
 		return false;
 	}
-
+	ftruncate64(fd,this->fileSize);
 	return true;
 }
 unsigned char *LinuxFileMapping::MemoryMap( unsigned long long offset, size_t size )
@@ -262,7 +264,7 @@ unsigned char *LinuxFileMapping::MemoryMap( unsigned long long offset, size_t si
 		prot = PROT_READ;
 	if ( mapAccess == MapAccess::ReadWrite )
 		prot = PROT_READ | PROT_WRITE;
-	void *ptr = mmap( nullptr, size, prot, MAP_SHARED, fd, offset );
+	void *ptr = mmap( 0, size, prot, MAP_SHARED, fd, offset );
 	if ( !ptr ) {
 		LOG_DEBUG << "mmap failed";
 		return nullptr;

@@ -52,6 +52,7 @@ class LinuxFileMapping : public ::vm::EverythingBase<IMappingFile>
 	int fd = -1;
 	FileAccess fileAccess;
 	MapAccess mapAccess;
+	size_t fileSize = 0;
 
 public:
 	LinuxFileMapping( ::vm::IRefCnt *cnt ) :
