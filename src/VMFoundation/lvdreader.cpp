@@ -160,7 +160,10 @@ LVDReader::LVDReader( const std::string & fileName,int blockSideInLog, const Vec
 
 	const auto fileSize = dataSize.Prod() + LVD_HEADER_SIZE;
 
-	lvdIO->Open( fileName.c_str(), fileSize, FileAccess::ReadWrite, MapAccess::ReadWrite );
+	auto ok = lvdIO->Open( fileName.c_str(), fileSize, FileAccess::ReadWrite, MapAccess::ReadWrite );
+	if(ok == false){
+		throw std::runtime_error("Open file in FileMapping failed");
+	}
 	lvdPtr = lvdIO->MemoryMap( 0, fileSize );
 	if ( !lvdPtr ) 
 		throw std::runtime_error( "LVDReader: bad mapping" );
