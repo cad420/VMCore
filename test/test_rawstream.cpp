@@ -8,6 +8,8 @@
 #include <random>
 #include <fstream>
 
+#include "common.h"
+
 TEST( test_rawreader, basic )
 {
 	using namespace vm;
@@ -117,6 +119,7 @@ TEST( test_rawreader, write_back )
 	}
 }
 
+
 TEST( test_rawreader, generate_abcflow )
 {
 	using namespace vm;
@@ -127,5 +130,38 @@ TEST( test_rawreader, generate_abcflow )
 
 	RawStream rs( fileName, dataSize, elemSize );
 
+
+	std::vector<std::tuple<Vec3i, Size3, char>> cases = {
+		{ { -100, -100, -100 }, { 720, 720, 720 }, 0 },
+		{ { 0, 0, 0 }, { 480, 720, 120 }, 1 },
+		{ { 240, 360, 60 }, { 50, 50, 50 }, 2 },
+		{ { 500, 750, 140 }, { 128, 128, 128 }, 3 },
+		{ { -40, -40, -40 }, { 480, 720, 120 }, 4 }
+	};
+
+	std::vector<Bound3i> isectRect;
+	const Bound3i dataBound{ Point3i{ 0, 0, 0 }, Vec3i{ dataSize }.ToPoint3() };
+
+	std::for_each( cases.begin(), cases.end(), [ &dataBound, &isectRect ]( const auto &c ) {
+		const auto &start = get<0>( c );
+		const auto &size = get<1>( c );
+		isectRect.push_back( dataBound.IntersectWidth( Bound3i{ start.ToPoint3(), start.ToPoint3() + Vec3i{ size }.ToPoint3() } ) );
+	} );
+
+	DataArena<64> arena( 1024 * 1024 * 50 );
+	for ( int i = 0; i < cases.size(); i++ ) {
+		const auto &c = cases[ i ];
+		const auto &isect = isectRect[ i ];
+		const auto &start = get<0>( c );
+		const auto &size = get<1>( c );
+		const auto &val = get<2>( c );
+
+		const auto readSize = isect.IsNull() ? Size3{0,0,0} : Size3{ isect.Diagonal() };
+		auto buf = arena.Alloc<char>( readSize.Prod() * elemSize, true );
+
+		const Bound3i dataBound{ isect.min,isect.min + Vec3i{ readSize }.ToPoint3() };
+		GenerateABCFlow( dataSize.x, dataSize.y, dataSize.z, dataBound, buf );
+		auto writeCount = rs.WriteRegionNoBoundary( dataBound.min.ToVector3(), readSize, (unsigned char*)buf );
+	}
 
 }
