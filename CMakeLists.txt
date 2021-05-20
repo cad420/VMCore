@@ -47,7 +47,7 @@ target_include_directories(vmcore
 )
 target_compile_features(vmcore PUBLIC cxx_std_17)
 
-option(VMCORE_BUILD_TEST OFF)
+option(VMCORE_BUILD_TEST ON)
 if (VMCORE_BUILD_TEST)
   add_subdirectory(test)
 endif ()
