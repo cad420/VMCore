@@ -23,7 +23,8 @@ public:
 
 	Bound3i dataBound;
 	size_t voxelSize = 1;
-	int64_t offset = 0;
+	int64_t readoff = 0;
+  int64_t writeoff = 0;
 	std::fstream file;
 	unsigned char *ptr = nullptr;
 	int64_t seekAmt = 0;
@@ -34,7 +35,8 @@ public:
 	{
 		ptr = nullptr;
 		seekAmt = 0;
-		offset = 0;
+		readoff = 0;
+    writeoff = 0;
 		if ( file.is_open() ) {
 			file.close();
 		}
@@ -255,13 +257,13 @@ std::size_t RawStream::ReadRegion__Implement( const vm::Vec3i &start, const vm::
 	assert( size.x > 0 && size.y > 0 && size.z > 0 );
 	//const uint64_t startRead = ( start.x + _->dataBound.max.x * ( start.y + _->dataBound.max.y * start.z ) ) * _->voxelSize;
 	const uint64_t startRead = Linear( start.ToPoint3(), Size2( _->dataBound.max.x, _->dataBound.max.y ) ) * _->voxelSize;
-	if ( _->offset != startRead ) {
-		_->seekAmt = startRead - _->offset;
+	if ( _->readoff != startRead ) {
+		_->seekAmt = startRead - _->readoff;
 		if ( !_->file.seekg( _->seekAmt, std::ios_base::cur ) ) {
 			std::cout << _->file.bad() << " " << _->file.eofbit << " " << _->file.failbit << std::endl;
 			throw std::runtime_error( "RAW: Error seeking file" );
 		}
-		_->offset = startRead;
+		_->readoff = startRead;
 	}
 	// Figure out how to actually read the region since it may not be a full X/Y slice and
 	// we'll need to read the portions in X & Y and seek around to skip regions
@@ -272,7 +274,7 @@ std::size_t RawStream::ReadRegion__Implement( const vm::Vec3i &start, const vm::
 
 		read = size.x * size.y * size.z;  // voxel count
 
-		_->offset = startRead + read * _->voxelSize;
+		_->readoff = startRead + read * _->voxelSize;
 	} else if ( size.x == _->dataBound.max.x ) {  // read by slice
 		for ( auto z = start.z; z < start.z + size.z; ++z ) {
 			const vm::Vec3i startSlice( start.x, start.y, z );
@@ -296,20 +298,20 @@ std::size_t RawStream::WriteRegion__Implement( const vm::Vec3i &start, const vm:
 	VM_IMPL( RawStream )
 	assert( size.x > 0 && size.y > 0 && size.z > 0 );
 	const uint64_t startWrite = Linear( start.ToPoint3(), Size2( _->dataBound.max.x, _->dataBound.max.y ) ) * _->voxelSize;
-	if ( _->offset != startWrite ) {
-		_->seekAmt = startWrite - _->offset;
-		if ( !_->file.seekg( _->seekAmt, std::ios_base::cur ) ) {
+	if ( _->writeoff != startWrite ) {
+		_->seekAmt = startWrite - _->writeoff;
+		if ( !_->file.seekp( _->seekAmt, std::ios_base::cur ) ) {
 			std::cout << _->file.bad() << " " << _->file.eofbit << " " << _->file.failbit << std::endl;
 			exit( -1 );
 		}
-		_->offset = startWrite;
+		_->writeoff = startWrite;
 	}
 	size_t write = 0;
 	if ( IsConvex( size ) )  // continuous write
 	{
 		_->file.write( reinterpret_cast<const char *>( buffer ), _->voxelSize * size.x * size.y * size.z );
 		write = size.x * size.y * size.z;  // voxel count
-		_->offset = startWrite + write * _->voxelSize;
+		_->writeoff = startWrite + write * _->voxelSize;
 	} else if ( size.x == _->dataBound.max.x ) {  // write by slice
 		for ( auto z = start.z; z < start.z + size.z; ++z ) {
 			const vm::Vec3i startSlice( start.x, start.y, z );
