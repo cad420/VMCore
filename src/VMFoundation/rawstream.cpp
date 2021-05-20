@@ -1,3 +1,4 @@
+#include "VMFoundation/logger.h"
 #include <VMFoundation/rawstream.h>
 #include <VMCoreExtension/ifilemappingplugininterface.h>
 #include <VMFoundation/libraryloader.h>
@@ -7,10 +8,13 @@
 #include <VMUtils/ref.hpp>
 #include <VMFoundation/dataarena.h>
 
+#include <cmath>
 #include <fstream>
 #include <filesystem>
 #include <cstring>	// memcpy
 #include <cassert>
+#include <ios>
+#include <stdexcept>
 
 namespace vm
 {
@@ -24,7 +28,7 @@ public:
 	Bound3i dataBound;
 	size_t voxelSize = 1;
 	int64_t readoff = 0;
-  int64_t writeoff = 0;
+	int64_t writeoff = 0;
 	std::fstream file;
 	unsigned char *ptr = nullptr;
 	int64_t seekAmt = 0;
@@ -36,7 +40,7 @@ public:
 		ptr = nullptr;
 		seekAmt = 0;
 		readoff = 0;
-    writeoff = 0;
+		writeoff = 0;
 		if ( file.is_open() ) {
 			file.close();
 		}
@@ -136,9 +140,31 @@ RawStream::RawStream( const std::string &fileName,
   d_ptr( new RawStream__pImpl( this ) )
 {
 	VM_IMPL( RawStream );
+
+	bool newCreated = false;
+	auto cp = std::filesystem::current_path();
+	auto filePath = cp / ( std::filesystem::path( fileName ) );
+	// std::cout<<filePath;
+
+	size_t expectedSize = dimensions.Prod() * voxelSize;
+	if ( std::filesystem::exists( filePath ) ) {
+		const auto filesize = std::filesystem::file_size( filePath );
+		if ( filesize != expectedSize ) {
+			LOG_DEBUG << "wrong file size: " << filesize << ", which " << expectedSize << " is expected.";
+		}
+	} else {
+		newCreated = true;
+		_->file.open( filePath, std::ios::out );  // You can create a new file with fstream::in
+		_->file.close();
+		std::filesystem::resize_file( filePath, expectedSize );
+	}
+	_->file.open( filePath, fstream::binary | fstream::in | fstream::out );
+	if ( _->file.is_open() == false ) {
+		throw std::runtime_error( "can not open file" );
+	}
+
 	_->dataBound = { { 0, 0, 0 }, { int( dimensions.x ), int( dimensions.y ), int( dimensions.z ) } };
 	_->voxelSize = voxelSize;
-	_->file.open( fileName, std::ios::binary );
 	_->readRegion = [ this ]( const Vec3i &start,
 							  const Size3 &size,
 							  unsigned char *buffer ) {
@@ -235,8 +261,8 @@ size_t RawStream::WriteRegionNoBoundary( const vm::Vec3i &start,
 
 	const auto write = WriteRegion( { isectBound.min.x, isectBound.min.y, isectBound.min.z }, writeSize, buf );
 	assert( write == writeSize.Prod() );
-  free(buf);
-  return write;
+	free( buf );
+	return write;
 }
 
 Vec3i RawStream::GetDimension() const
@@ -268,7 +294,7 @@ std::size_t RawStream::ReadRegion__Implement( const vm::Vec3i &start, const vm::
 	// Figure out how to actually read the region since it may not be a full X/Y slice and
 	// we'll need to read the portions in X & Y and seek around to skip regions
 	size_t read = 0;
-	if ( IsConvex( size ) )  // continuous read
+	if ( IsConvex( size ) )	 // continuous read
 	{
 		_->file.read( reinterpret_cast<char *>( buffer ), _->voxelSize * size.x * size.y * size.z );
 
@@ -307,7 +333,7 @@ std::size_t RawStream::WriteRegion__Implement( const vm::Vec3i &start, const vm:
 		_->writeoff = startWrite;
 	}
 	size_t write = 0;
-	if ( IsConvex( size ) )  // continuous write
+	if ( IsConvex( size ) )	 // continuous write
 	{
 		_->file.write( reinterpret_cast<const char *>( buffer ), _->voxelSize * size.x * size.y * size.z );
 		write = size.x * size.y * size.z;  // voxel count
