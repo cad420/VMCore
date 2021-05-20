@@ -92,14 +92,14 @@ size_t Volume2Linear( unsigned char *dst,
 		memcpy( dst, src + offset, size.x * size.y * size.z );
 		r = size.x * size.y * size.z;	 // voxel count
 	} else if ( size.x == srcSize.x ) {	 // read by slice
-		for ( auto z = start.z; z < start.z + srcSize.z; ++z ) {
+		for ( auto z = start.z; z < start.z + size.z; ++z ) {
 			const Vec3i startSlice( start.x, start.y, z );
 			const Size3 sizeSlice( size.x, size.y, 1 );
 			r += Volume2Linear( dst + r, src, srcSize, startSlice, sizeSlice );
 		}
 	} else {
-		for ( auto z = start.z; z < start.z + srcSize.z; ++z ) {
-			for ( auto y = start.y; y < start.y + srcSize.y; ++y ) {
+		for ( auto z = start.z; z < start.z + size.z; ++z ) {
+			for ( auto y = start.y; y < start.y + size.y; ++y ) {
 				const Vec3i startLine( start.x, y, z );
 				const Size3 sizeLine( size.x, 1, 1 );
 				r += Volume2Linear( dst + r, src, srcSize, startLine, sizeLine );
