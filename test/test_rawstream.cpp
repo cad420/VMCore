@@ -1,7 +1,7 @@
-#include "VMat/geometry.h"
 #include <gtest/gtest.h>
 #include <VMFoundation/rawstream.h>
 #include <VMUtils/log.hpp>
+#include <VMat/geometry.h>
 #include <VMFoundation/dataarena.h>
 #include <VMFoundation/lvdreader.h>
 #include <VMFoundation/blockarray.h>
@@ -11,12 +11,12 @@
 TEST( test_rawreader, basic )
 {
 	using namespace vm;
-  using namespace std;
+	using namespace std;
 
 	const size_t elemSize = 1;
 	const Size3 dataSize{ 480, 720, 120 };
 
-	RawStream reader( R"(rawstream_testdata)", dataSize, elemSize );
+	RawStream rawStream( R"(rawstream_testdata)", dataSize, elemSize );
 
 	std::vector<std::tuple<Vec3i, Size3, char>> cases = {
 		{ { -100, -100, -100 }, { 720, 720, 720 }, 0 },
@@ -26,30 +26,45 @@ TEST( test_rawreader, basic )
 		{ { -40, -40, -40 }, { 480, 720, 120 }, 4 }
 	};
 
+	std::vector<Bound3i> isectRect;
+	const Bound3i dataBound{ Point3i{ 0, 0, 0 }, Vec3i{ dataSize }.ToPoint3() };
+
+	std::for_each( cases.begin(), cases.end(), [ &dataBound, &isectRect ]( const auto &c ) {
+		const auto &start = get<0>( c );
+		const auto &size = get<1>( c );
+		isectRect.push_back( dataBound.IntersectWidth( Bound3i{ start.ToPoint3(), start.ToPoint3() + Vec3i{ size }.ToPoint3() } ) );
+	} );
+
+	std::for_each( isectRect.begin(), isectRect.end(), []( const auto &i ) {
+		std::cout << i.min << " " << i.max << std::endl;
+	} );
+
 	int id = 0;
 
-	DataArena<64> arena;
+	DataArena<64> arena( 1024 * 1024 * 50 );
 
-	for ( const auto &c : cases ) {
-		const auto start = get<0>( c );
-		const auto size = get<1>( c );
-		const auto val = get<2>( c );
-		auto buf = arena.Alloc<unsigned char>( size.Prod(), true );
+	for ( int i = 0; i < cases.size(); i++ ) {
+		const auto &c = cases[ i ];
+		const auto &isect = isectRect[ i ];
+		const auto &start = get<0>( c );
+		const auto &size = get<1>( c );
+		const auto &val = get<2>( c );
+		auto buf = arena.Alloc<unsigned char>( size.Prod() * elemSize, true );
 		memset( buf, val, size.Prod() );
-		auto f = reader.WriteRegionNoBoundary( start, size, buf );
-	}
+		auto writeCount = rawStream.WriteRegionNoBoundary( start, size, buf );
 
-	for ( const auto &c : cases ) {
-		const auto start = std::get<0>( c );
-		const auto size = std::get<1>( c );
-		const auto val = std::get<2>( c );
-		auto buf = arena.Alloc<unsigned char>( size.Prod(), true );
-		auto f = reader.ReadRegionNoBoundary( start, size, buf );
-		ASSERT_EQ( val, buf[ 0 ] );
+		const auto readSize = isect.IsNull() ? Size3{0,0,0} : Size3{ isect.Diagonal() };
+		auto buf2 = arena.Alloc<unsigned char>( readSize.Prod() * elemSize, true );
+		auto readCount = rawStream.ReadRegion( isect.min.ToVector3(), readSize, buf2 );
+		ASSERT_EQ( writeCount, readSize.Prod() );
+		ASSERT_EQ( readCount, readSize.Prod() );
+		for ( int i = 0; i < readSize.Prod(); i++ ) {
+			ASSERT_EQ( buf2[ i ], val );
+		}
 	}
 }
 
-TEST( test_lvdreader, write_back )
+TEST( test_rawreader, write_back )
 {
 	using namespace vm;
 	using namespace std;
@@ -100,4 +115,17 @@ TEST( test_lvdreader, write_back )
 			ASSERT_EQ( d1[ j ], bbuf[ j ] );
 		}
 	}
+}
+
+TEST( test_rawreader, generate_abcflow )
+{
+	using namespace vm;
+	using namespace std;
+	const Size3 dataSize{ 256, 256, 256 };
+	const size_t elemSize = 1;
+	const std::string fileName = "abcflow)"+fmt("{}_{}_{}",dataSize.x,dataSize.y,dataSize.z) + ".raw";
+
+	RawStream rs( fileName, dataSize, elemSize );
+
+
 }

@@ -30,14 +30,12 @@ public:
 	int64_t offset = 0;
 	std::fstream file;
 	unsigned char *ptr = nullptr;
-	int64_t seekAmt = 0;
 	std::function<size_t( const Vec3i &, const vm::Size3 &, unsigned char * )> readRegion;
 	std::function<size_t( const Vec3i &, const vm::Size3 &, const unsigned char * )> writeRegion;
 
 	void Close()
 	{
 		ptr = nullptr;
-		seekAmt = 0;
 		offset = 0;
 		if ( file.is_open() ) {
 			file.close();
@@ -167,7 +165,6 @@ RawStream::RawStream( const std::string &fileName,
 							  const Size3 &size,
 							  unsigned char *buffer ) {
 		VM_IMPL( RawStream )
-		_->seekAmt = 0;
 		return ReadRegion__Implement( start, size, buffer );
 	};
 
@@ -175,7 +172,6 @@ RawStream::RawStream( const std::string &fileName,
 							   const Size3 &size,
 							   const unsigned char *buffer ) {
 		VM_IMPL( RawStream )
-		_->seekAmt = 0;
 		return WriteRegion__Implement( start, size, buffer );
 	};
 }
@@ -214,7 +210,6 @@ size_t RawStream::ReadRegionNoBoundary( const vm::Vec3i &start, const vm::Size3 
 	const auto readSize = Size3( dig.x, dig.y, dig.z );
 
 	auto buf = (unsigned char *)calloc( _->voxelSize, readSize.Prod() );
-	memset( buf, 0, readSize.Prod() * _->voxelSize );
 
 	const auto read = ReadRegion( { isectBound.min.x, isectBound.min.y, isectBound.min.z }, readSize, buf );
 
@@ -278,14 +273,13 @@ size_t RawStream::GetElementSize() const
 std::size_t RawStream::ReadRegion__Implement( const vm::Vec3i &start, const vm::Size3 &size, unsigned char *buffer )
 {
 	VM_IMPL( RawStream )
-	assert( size.x > 0 && size.y > 0 && size.z > 0 );
-	//const uint64_t startRead = ( start.x + _->dataBound.max.x * ( start.y + _->dataBound.max.y * start.z ) ) * _->voxelSize;
 	const uint64_t startRead = Linear( start.ToPoint3(), Size2( _->dataBound.max.x, _->dataBound.max.y ) ) * _->voxelSize;
 	if ( _->offset != startRead ) {
-		_->seekAmt = startRead - _->offset;
-		if ( !_->file.seekp( _->seekAmt, std::ios_base::cur ) ) {
-			std::cout << "seekg failed";
-			throw std::runtime_error( "RAW: Error seeking file" );
+		off_t seekAmt = startRead - _->offset;
+		if ( !_->file.seekp( seekAmt, std::ios_base::cur ) ) {
+			if ( _->file.bad() ) {
+				LOG_FATAL << "bad bit encountered";
+			}
 		}
 		_->offset = startRead;
 	}
@@ -294,10 +288,9 @@ std::size_t RawStream::ReadRegion__Implement( const vm::Vec3i &start, const vm::
 	size_t read = 0;
 	if ( IsConvex( size ) )	 // continuous read
 	{
-		read = size.x * size.y * size.z;  // voxel count
+		read = size.Prod();  // voxel count
 		const std::size_t readBytes = _->voxelSize * read;
 		_->file.read( reinterpret_cast<char *>( buffer ), readBytes );
-
 		_->offset = startRead + readBytes;
 	} else if ( size.x == _->dataBound.max.x ) {  // read by slice
 		for ( auto z = start.z; z < start.z + size.z; ++z ) {
@@ -320,22 +313,23 @@ std::size_t RawStream::ReadRegion__Implement( const vm::Vec3i &start, const vm::
 std::size_t RawStream::WriteRegion__Implement( const vm::Vec3i &start, const vm::Size3 &size, const unsigned char *buffer )
 {
 	VM_IMPL( RawStream )
-	assert( size.x > 0 && size.y > 0 && size.z > 0 );
 	const uint64_t startWrite = Linear( start.ToPoint3(), Size2( _->dataBound.max.x, _->dataBound.max.y ) ) * _->voxelSize;
 	if ( _->offset != startWrite ) {
-		_->seekAmt = startWrite - _->offset;
-		if ( !_->file.seekp( _->seekAmt, std::ios_base::cur ) ) {
-			std::cout << _->file.bad() << " " << _->file.eofbit << " " << _->file.failbit << std::endl;
-			exit( -1 );
+		off_t seekAmt = startWrite - _->offset;
+		if ( !_->file.seekp( seekAmt, std::ios_base::cur ) ) {
+			if ( _->file.bad() ) {
+				LOG_FATAL << "bad bit encountered";
+			}
 		}
 		_->offset = startWrite;
 	}
 	size_t write = 0;
 	if ( IsConvex( size ) )	 // continuous write
 	{
-		_->file.write( reinterpret_cast<const char *>( buffer ), _->voxelSize * size.x * size.y * size.z );
-		write = size.x * size.y * size.z;  // voxel count
-		_->offset = startWrite + write * _->voxelSize;
+		write = size.Prod();  // voxel count
+		const std::size_t writeBytes = _->voxelSize * write;
+		_->file.write( reinterpret_cast<const char *>( buffer ), writeBytes );
+		_->offset = startWrite + writeBytes;
 	} else if ( size.x == _->dataBound.max.x ) {  // write by slice
 		for ( auto z = start.z; z < start.z + size.z; ++z ) {
 			const vm::Vec3i startSlice( start.x, start.y, z );
