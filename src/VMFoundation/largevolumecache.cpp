@@ -238,4 +238,17 @@ void Block3DCache::Replace_Event( size_t evictPageID )
   LOG_INFO<<fmt("Block3DCache::Replace_Event: {}",evictPageID);
 }
 
+float Block3DCache::SampleBlock(int xBlock,int yBlock,int zBlock, const SamplePoint* sp){
+  LOG_INFO<<"Not implement yet!";
+  return 0.0;
+}
+float Block3DCache::SampleBlock(size_t flatID, const SamplePoint* sp){
+  LOG_INFO<<"Not implement yet!";
+  return 0.0;
+}
+float Block3DCache::VirtualSample(const SamplePoint* sp){
+  LOG_INFO<<"Not implement yet!";
+  return 0.0;
+}
+
 }  // namespace vm

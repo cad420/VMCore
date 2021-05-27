@@ -59,6 +59,10 @@ struct VirtualMemoryBlockIndex
 	using index_type = int;
 	index_type x = -1, y = -1, z = -1;
 };
+struct SamplePoint{
+	float x,y,z;
+	SamplePoint(float a,float b,float c):x(a),y(b),z(c){}
+};
 
 class Disk3DPageAdapter__pImpl;
 
@@ -115,6 +119,10 @@ public:
 
 	const void *GetPage( int xBlock, int yBlock, int zBlock ) { return AbstrMemoryCache::GetPage( blockCoordinateToBlockId( xBlock, yBlock, zBlock ) ); }
 	const void *GetPage( const VirtualMemoryBlockIndex &index ) { return GetPage( index.x, index.y, index.z ); };
+
+	float SampleBlock(int xBlock,int yBlock,int zBlock,const SamplePoint* sp);
+	float SampleBlock(size_t flatID, const SamplePoint* sp);
+	float VirtualSample(const SamplePoint* sp);
 
 	void *GetRawData() override;
 
