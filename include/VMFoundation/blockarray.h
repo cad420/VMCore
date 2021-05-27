@@ -1,11 +1,9 @@
 #pragma once
 
-
 #include <cstring>
 #include <VMat/arithmetic.h>
 #include <VMat/geometry.h>
 #include <VMFoundation/dataarena.h>
-
 namespace vm
 {
 template <typename T, int nLogBlockSize>
@@ -243,6 +241,84 @@ public:
 		const auto d0 = Lerp( d.y, d00, d10 );
 		const auto d1 = Lerp( d.y, d01, d11 );
 		return Lerp( d.z, d0, d1 );
+	}
+	/**
+	 * @brief  samples in a block addressed by 3d coordinate
+	 * 
+	 * @param xBlock 
+	 * @param yBlock 
+	 * @param zBlock 
+	 * @param innerOffset 
+	 * @return Float 
+	 */
+
+	Float Sample( int xBlock, int yBlock, int zBlock , const Point3f & innerOffset){
+		const auto pi = Point3i( std::floor( innerOffset.x ), std::floor( innerOffset.y ), std::floor( innerOffset.z ) );
+		const auto d = innerOffset - static_cast<Point3f>( pi );
+		const auto d00 = Lerp( d.x, Sample(xBlock,yBlock,zBlock, pi ), Sample(xBlock,yBlock,zBlock, pi + Vector3i( 1, 0, 0 ) ) );
+		const auto d10 = Lerp( d.x, Sample(xBlock,yBlock,zBlock,  pi + Vector3i( 0, 1, 0 ) ), Sample(xBlock,yBlock,zBlock,  pi + Vector3i( 1, 1, 0 ) ) );
+		const auto d01 = Lerp( d.x, Sample(xBlock,yBlock,zBlock,  pi + Vector3i( 0, 0, 1 ) ), Sample(xBlock,yBlock,zBlock,  pi + Vector3i( 1, 0, 1 ) ) );
+		const auto d11 = Lerp( d.x, Sample(xBlock,yBlock,zBlock,  pi + Vector3i( 0, 1, 1 ) ), Sample(xBlock,yBlock,zBlock,  pi + Vector3i( 1, 1, 1 ) ) );
+		const auto d0 = Lerp( d.y, d00, d10 );
+		const auto d1 = Lerp( d.y, d01, d11 );
+		return Lerp( d.z, d0, d1 );
+	}
+
+	/**
+	 * @brief samples in a block addressed by a flat block id
+	 * 
+	 * @param blockID 
+	 * @param innerOffset 
+	 * @return Float 
+	 */
+
+	Float Sample( size_t blockID, const Point3f & innerOffset){
+		const auto pi = Point3i( std::floor( innerOffset.x ), std::floor( innerOffset.y ), std::floor( innerOffset.z ) );
+		const auto d = innerOffset - static_cast<Point3f>( pi );
+		const auto d00 = Lerp( d.x, Sample(blockID, pi ), Sample(blockID, pi + Vector3i( 1, 0, 0 ) ) );
+		const auto d10 = Lerp( d.x, Sample(blockID, pi + Vector3i( 0, 1, 0 ) ), Sample(blockID, pi + Vector3i( 1, 1, 0 ) ) );
+		const auto d01 = Lerp( d.x, Sample(blockID, pi + Vector3i( 0, 0, 1 ) ), Sample(blockID, pi + Vector3i( 1, 0, 1 ) ) );
+		const auto d11 = Lerp( d.x, Sample(blockID, pi + Vector3i( 0, 1, 1 ) ), Sample(blockID, pi + Vector3i( 1, 1, 1 ) ) );
+		const auto d0 = Lerp( d.y, d00, d10 );
+		const auto d1 = Lerp( d.y, d01, d11 );
+		return Lerp( d.z, d0, d1 );
+		return 0.0;
+	}
+
+	/**
+	 * @brief sample a grid point in a block addressed by 3d coordinate
+	 * 
+	 * @param xBlock 
+	 * @param yBlock 
+	 * @param zBlock 
+	 * @param innerOffset 
+	 * @return Float 
+	 */
+	Float Sample( int xBlock, int yBlock, int zBlock , const Point3i & innerOffset){
+		assert(innerOffset.x >=0);
+		assert(innerOffset.y >=0);
+		assert(innerOffset.z >=0);
+		auto blockData = BlockData(xBlock,yBlock,zBlock);
+		auto sampleID = Linear(innerOffset,{BlockSize(),BlockSize()});
+		return *(blockData + sampleID);
+		return 0.0;
+	}
+
+	/**
+	 * @brief samples a grid point in a block addressed by flat block id
+	 * 
+	 * @param blockID 
+	 * @param innerOffset 
+	 * @return Float 
+	 */
+
+	Float Sample( size_t blockID, const Point3i & innerOffset){
+		assert(innerOffset.x >=0);
+		assert(innerOffset.y >=0);
+		assert(innerOffset.z >=0);
+		auto blockData = BlockData(blockID);
+		auto sampleID = Linear(innerOffset,{BlockSize(),BlockSize()});
+		return *(blockData + sampleID);
 	}
 
 	Float Sample( const Point3i &p )
