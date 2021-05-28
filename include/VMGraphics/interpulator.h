@@ -72,6 +72,8 @@ public:
 	//template<typename  ...Args>
 	//void SetColorKeys(Args&&... args);
 
+	void ReadFromText(const std::string & text);
+
 	void Read( const std::string &fileName );
 	bool valid() const
 	{

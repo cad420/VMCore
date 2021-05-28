@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <VMGraphics/interpulator.h>
+#include <sstream>
 
 namespace vm
 {
@@ -24,6 +25,37 @@ void ColorInterpulator::Sort()
 		return;
 	std::sort( keys.begin(), keys.end(), []( const MappingKey &k1, const MappingKey &k2 ) { return k1.Intensity() < k2.Intensity(); } );
 	m_valid = true;
+}
+
+void ColorInterpulator::ReadFromText(const std::string & text){
+	std::stringstream ss;
+	ss<<text;
+	int keyNum;
+	ss>>keyNum>>leftThreshold>>rightThreshold;
+	keys.reserve( keyNum );
+
+	float intensity;
+	int rl, gl, bl, al, rr, gr, br, ar;
+	Float rgba1[ 4 ], rgba2[ 4 ];
+	for ( auto i = 0; i < keyNum; ++i ) {
+		ss>>intensity>>rl>>gl>>bl>>al>>rr>>gr>>br>>ar;
+
+		rgba1[ 0 ] = rl / 255.0f;
+		rgba1[ 1 ] = gl / 255.0f;
+		rgba1[ 2 ] = bl / 255.0f;
+		rgba1[ 3 ] = al / 255.0f;
+		rgba2[ 0 ] = rr / 255.0f;
+		rgba2[ 1 ] = gr / 255.0f;
+		rgba2[ 2 ] = br / 255.0f;
+		rgba2[ 3 ] = ar / 255.0f;
+
+		const auto s1 = vm::RGBASpectrum{ rgba1 };
+		const auto s2 = vm::RGBASpectrum{ rgba2 };
+
+		keys.emplace_back( intensity, s1, s2 );
+	}
+	m_valid = true;
+
 }
 
 void ColorInterpulator::Read( const std::string &fileName )
