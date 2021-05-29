@@ -87,7 +87,6 @@ public:
 
 private:
 	void *GetPageStorage_Implement( size_t pageID ) override { return nullptr; }
-	void Replace_Event( size_t evictPageID ) override{}
 };
 
 class Block3DCache__pImpl;
@@ -131,6 +130,5 @@ public:
 protected:
 	[[deprecated]] int GetLog() const;
 	void *GetPageStorage_Implement( size_t pageID ) override;
-	void Replace_Event( size_t evictPageID ) override;
 };
 }  // namespace vm

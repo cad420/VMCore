@@ -122,7 +122,8 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 		///////////////////////
 		_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
 
-		memcpy( storage, _->nextLevel->GetPage( pageID ), GetPageSize() );
+		PageFetch_Implement(storage, _->nextLevel->GetPage(pageID));
+		//memcpy( storage, _->nextLevel->GetPage( pageID ), GetPageSize() );
 		return storage;
 	} else {
 		_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
@@ -136,7 +137,8 @@ void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 	if ( flush ) {
 		//read, update and write
 		auto cachedPage = const_cast<void *>( GetPage( pageID ) );
-		memcpy( cachedPage, page, GetPageSize() );
+		PageSend_Implement(cachedPage, page);
+		//memcpy( cachedPage, page, GetPageSize() );
 		_->nextLevel->Write( page, pageID, true );	// update next level cache
 	} else {
 		// For lazy writing, we need to access the page cache anyway.
@@ -165,7 +167,8 @@ void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 		//会出问题，这个问题的根源还是没有对一个page相关的东西进行原子操作。即理想情况下，对于一个page的所有操作应该夹在BeginQuery--EndQuery之间才行
 		//也就是EndQueryAndUpdate的时候需要设置pte的状态。这里接口没有设计好。之后再改
 
-		memcpy( storage, page, GetPageSize() );
+		//memcpy( storage, page, GetPageSize() );
+		PageWrite_Implement(storage, page);
 		PageFlag *flags;
 		_->cachePolicy->QueryPageFlag( pageID, &flags );
 		*flags = PAGE_D | PAGE_V;						 // mark dirty
@@ -196,6 +199,18 @@ void AbstrMemoryCache::Flush( size_t pageID )
 	}
 }
 
+void AbstrMemoryCache::PageFetch_Implement(void * currentLevelPage,const void * nextLevelPage){
+	memcpy(currentLevelPage, nextLevelPage, GetPageSize());
+}
+
+void AbstrMemoryCache::PageSend_Implement(void * nextLevelPage, const void * currentLevelPage){
+	memcpy(nextLevelPage, currentLevelPage, GetPageSize());
+}
+
+void AbstrMemoryCache::PageWrite_Implement(void * currentLevelPage, const void * userData){
+	memcpy(currentLevelPage, userData, GetPageSize());
+}
+
 void AbstrMemoryCache::Flush()
 {
 	VM_IMPL( AbstrMemoryCache )
@@ -217,10 +232,6 @@ void AbstrMemoryCache::Flush()
 }
 
 AbstrMemoryCache::~AbstrMemoryCache()
-{
-}
-
-void AbstrMemoryCache::Replace_Event( size_t evictPageID )
 {
 }
 
@@ -272,14 +283,6 @@ void AbstrCachePolicy::SetOwnerCache( AbstrMemoryCache *cache )
 {
 	VM_IMPL( AbstrCachePolicy )
 	_->ownerCache = cache;
-}
-void AbstrCachePolicy::Invoke_Replace_Event( size_t evictPageID )
-{
-	VM_IMPL( AbstrCachePolicy )
-	auto cache = _->ownerCache;
-	if ( cache ) {
-		cache->Replace_Event( evictPageID );
-	}
 }
 
 }  // namespace vm

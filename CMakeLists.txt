@@ -47,9 +47,14 @@ target_include_directories(vmcore
 )
 target_compile_features(vmcore PUBLIC cxx_std_17)
 
-option(VMCORE_BUILD_TEST "ON")
+option(VMCORE_BUILD_TEST "Set on to build test case" ON)
 if (VMCORE_BUILD_TEST)
-  add_subdirectory(test)
+add_subdirectory(test)
+endif ()
+
+option(VMCORE_BUILD_BENCHMARK "Set ON to build benchmark" ON)
+if(VMCORE_BUILD_BENCHMARK)
+add_subdirectory(benchmark)
 endif ()
 
 option(VMCORE_INSTALL "install VMcore library & headers" ON)

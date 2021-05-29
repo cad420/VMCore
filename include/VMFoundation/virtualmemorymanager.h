@@ -55,8 +55,9 @@ public:
 
 protected:
 	virtual void *GetPageStorage_Implement( size_t pageID ) = 0;
-	virtual void Replace_Event( size_t evictPageID ) = 0;
-
+	virtual void PageFetch_Implement(void * currentLevelPage,const void * nextLevelPage);
+	virtual void PageSend_Implement(void * nextLevelPage, const void * currentLevel);
+	virtual void PageWrite_Implement(void * currentLevelPage, const void * userData);
 private:
 	/**
 		 * \brief 
@@ -121,8 +122,6 @@ public:
 	size_t GetPhysicalPageCount() const override;
 
 	size_t GetVirtualPageCount() const override;
-
-	void Invoke_Replace_Event( size_t evictPageID );
 
 	virtual ~AbstrCachePolicy();
 

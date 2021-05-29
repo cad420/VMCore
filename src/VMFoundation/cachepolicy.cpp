@@ -187,9 +187,6 @@ void ListBasedLRUCachePolicy::InitEvent( AbstrMemoryCache *cache )
 	for ( auto i = std::size_t( 0 ); i < cache->GetPhysicalPageCount(); i++ )
 		_->m_lruList.push_front( LRUListItem( i, _->m_blockIdInCache.end() ) );
 }
-void ListBasedLRUCachePolicy::Replace_Event( size_t evictPageID )
-{
-}
 ////////////////////////////////////
 //
 

@@ -54,7 +54,6 @@ public:
 
 protected:
 	void InitEvent( AbstrMemoryCache *cache ) override;
-	void Replace_Event( size_t evictPageID ) override;
 };
 
 //

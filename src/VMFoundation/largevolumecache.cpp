@@ -233,10 +233,6 @@ Size3 Block3DCache::BlockDim() const
 	return _->adapter->Get3DPageCount();
 }
 
-void Block3DCache::Replace_Event( size_t evictPageID )
-{
-  LOG_INFO<<fmt("Block3DCache::Replace_Event: {}",evictPageID);
-}
 
 float Block3DCache::SampleBlock(int xBlock,int yBlock,int zBlock, const SamplePoint* sp){
   LOG_INFO<<"Not implement yet!";

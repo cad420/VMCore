@@ -20,7 +20,4 @@ TEST(test_color_interpulator, basic){
     intp.ReadFromText(text);
     float color[256*4];
     intp.FetchData(color,256);
-    for(int i = 0 ;i<256;i++){
-        std::cout<<color[i*4]<<" "<<color[4*i+1]<<" "<<color[4*i+2]<<" "<<color[4*i+3]<<std::endl;
-    }
 }
