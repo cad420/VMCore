@@ -122,7 +122,7 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 		///////////////////////
 		_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
 
-		PageFetch_Implement(storage, _->nextLevel->GetPage(pageID));
+		PageSwapIn_Implement(storage, _->nextLevel->GetPage(pageID));
 		//memcpy( storage, _->nextLevel->GetPage( pageID ), GetPageSize() );
 		return storage;
 	} else {
@@ -137,7 +137,7 @@ void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 	if ( flush ) {
 		//read, update and write
 		auto cachedPage = const_cast<void *>( GetPage( pageID ) );
-		PageSend_Implement(cachedPage, page);
+		PageSwapOut_Implement(cachedPage, page);
 		//memcpy( cachedPage, page, GetPageSize() );
 		_->nextLevel->Write( page, pageID, true );	// update next level cache
 	} else {
@@ -199,11 +199,11 @@ void AbstrMemoryCache::Flush( size_t pageID )
 	}
 }
 
-void AbstrMemoryCache::PageFetch_Implement(void * currentLevelPage,const void * nextLevelPage){
+void AbstrMemoryCache::PageSwapIn_Implement(void * currentLevelPage,const void * nextLevelPage){
 	memcpy(currentLevelPage, nextLevelPage, GetPageSize());
 }
 
-void AbstrMemoryCache::PageSend_Implement(void * nextLevelPage, const void * currentLevelPage){
+void AbstrMemoryCache::PageSwapOut_Implement(void * nextLevelPage, const void * currentLevelPage){
 	memcpy(nextLevelPage, currentLevelPage, GetPageSize());
 }
 

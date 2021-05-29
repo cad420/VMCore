@@ -55,8 +55,8 @@ public:
 
 protected:
 	virtual void *GetPageStorage_Implement( size_t pageID ) = 0;
-	virtual void PageFetch_Implement(void * currentLevelPage,const void * nextLevelPage);
-	virtual void PageSend_Implement(void * nextLevelPage, const void * currentLevel);
+	virtual void PageSwapIn_Implement(void * currentLevelPage,const void * nextLevelPage);
+	virtual void PageSwapOut_Implement(void * nextLevelPage, const void * currentLevel);
 	virtual void PageWrite_Implement(void * currentLevelPage, const void * userData);
 private:
 	/**
