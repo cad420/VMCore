@@ -37,6 +37,7 @@ public:
 	size_t GetVirtualPageCount() const override;
 	size_t GetPageSize() const override;
 	const void *GetPage( size_t pageID ) override;
+	void UnlockPage(size_t pageID) override;
 
 	void Flush() override;
 

@@ -43,6 +43,8 @@ public:
 		 */
 	const void *GetPage( size_t pageID ) override;
 
+	void UnlockPage(size_t pageID) override;
+
 	virtual void *GetRawData() = 0;
 
 	void Flush() override;
@@ -77,8 +79,9 @@ enum PageFlagBits
 {
 	PAGE_FAULT = 0,
 	PAGE_V = 1L << 0,  // valid
-	PAGE_D = 1L << 1   // dirty
+	PAGE_D = 1L << 1,   // dirty
 };
+
 struct PageQuery{
 	size_t PageID;
 	size_t EvictedPageID;
@@ -96,27 +99,28 @@ public:
 
 	/**
 	*   \brief Queries the page given by \a pageID if it exists in storage cache. Returns \a true if it exists or \a false if not
+
+	*   \note A fast and light-weight version of \refitem BeginQuery. It's not thread-safe. The result only indicates the page
+	*   state when the function called.
+	*
 	*/
 	virtual bool QueryPage( size_t pageID ) const = 0;
 
 	/**
-	*   \brief Updates the fault page given by \a pageID. Returns the actually storage ID of the page. If the page exists, the function does nothing.
-	*/
-
-	virtual void UpdatePage( size_t pageID ) = 0;
-
-	/**
-	* \brief Queries and updates at the same time. It will always return a valid storage id.
-	*/
-
-	virtual size_t EndQueryAndUpdate( size_t pageID ) = 0;
-
-	virtual void EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) = 0;
-
-	virtual void BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID ) = 0;
-
+	 * @brief Executes a query for a given page. The page must be specified by the field \a PageID in \a PageQuery .
+	 * Others member will filled by the function.
+	 *
+	 * @param query  The query information about the page
+	 *
+	 * \sa PageQuery
+	 */
 	virtual void BeginQuery(PageQuery * query) = 0;
 
+	/**
+	 * @brief
+	 *
+	 * @param query
+	 */
 	virtual void EndQueryAndUpdate(PageQuery * query) = 0;
 
 	/**
@@ -128,6 +132,8 @@ public:
 	AbstrMemoryCache *GetOwnerCache();
 
 	const void *GetPage( size_t pageID ) override;
+
+	void UnlockPage(size_t pageID) override;
 
 	size_t GetPageSize() const override;
 

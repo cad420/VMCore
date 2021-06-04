@@ -189,6 +189,10 @@ const void *BlockedGridVolumeFile::GetPage( size_t pageID )
 	return nullptr;
 }
 
+void BlockedGridVolumeFile::UnlockPage(size_t pageID) {
+
+}
+
 inline void BlockedGridVolumeFile::Flush()
 {
 }

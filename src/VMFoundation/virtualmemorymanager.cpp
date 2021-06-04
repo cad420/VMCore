@@ -108,6 +108,10 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 	}
 }
 
+void AbstrMemoryCache::UnlockPage(size_t pageID){
+
+}
+
 void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 {
 	VM_IMPL( AbstrMemoryCache )
@@ -232,6 +236,10 @@ AbstrMemoryCache *AbstrCachePolicy::GetOwnerCache()
 inline const void *AbstrCachePolicy::GetPage( size_t pageID )
 {
 	return nullptr;
+}
+
+inline void AbstrCachePolicy::UnlockPage(size_t pageID){
+
 }
 
 inline size_t AbstrCachePolicy::GetPageSize() const

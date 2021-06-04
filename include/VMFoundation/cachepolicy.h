@@ -1,39 +1,11 @@
 #pragma once
 #include <VMFoundation/foundation_config.h>
 #include <VMFoundation/virtualmemorymanager.h>
-#include <list>
-#include <map>
 
 namespace vm
 {
 class ListBasedLRUCachePolicy__pImpl;
 
-struct LRUListItem;
-using LRUList = std::list<LRUListItem>;
-
-
-/**
-* PageTableEntry struct
-*/
-struct PTE
-{
-	PTE( std::list<LRUListItem>::iterator itr, int f ) :
-	  pa( itr ), flags( f ) {}
-
-	std::list<LRUListItem>::iterator pa;                          // point to an item in lru list which stores the phyiscal address
-	int flags = 0;                                                // invalid
-	static constexpr int PTE_V = 1L << 0;                         // valid
-	static constexpr int PTE_D = 1L << 1;                         // dirty
-};
-using LRUHash = std::map<size_t, PTE>;
-struct LRUListItem
-{
-	size_t storageID;
-	LRUHash::iterator pte;
-	LRUListItem( size_t index, LRUHash::iterator itr ) :
-	  storageID{ index },
-	  pte{ itr } {}
-};
 
 class VMFOUNDATION_EXPORTS ListBasedLRUCachePolicy : public AbstrCachePolicy
 {
@@ -41,20 +13,11 @@ class VMFOUNDATION_EXPORTS ListBasedLRUCachePolicy : public AbstrCachePolicy
 public:
 	ListBasedLRUCachePolicy( vm::IRefCnt *cnt );
 	bool QueryPage( size_t pageID ) const override;
-	void UpdatePage( size_t pageID ) override;
-	size_t EndQueryAndUpdate( size_t pageID ) override;
-	void EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) override;
-	void BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID ) override;
 	void QueryPageFlag( size_t pageID, PageFlag ** pf) override;
-
 	void BeginQuery(PageQuery * query) override;
 	void EndQueryAndUpdate(PageQuery * query) override;
-
 	void *GetRawData() override;
 	~ListBasedLRUCachePolicy();
-
-	LRUList &GetLRUList();
-	LRUHash &GetLRUHash();
 
 protected:
 	void InitEvent( AbstrMemoryCache *cache ) override;
@@ -73,10 +36,6 @@ class VMFOUNDATION_EXPORTS LRUCachePolicy : public AbstrCachePolicy
 public:
 	LRUCachePolicy( vm::IRefCnt *cnt );
 	bool QueryPage( size_t pageID ) const override;
-	void UpdatePage( size_t pageID ) override;
-	size_t EndQueryAndUpdate( size_t pageID ) override;
-	void EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) override;
-	void BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID ) override;
 	void QueryPageFlag( size_t pageID, PageFlag ** pf) override;
 	void BeginQuery(PageQuery * query) override;
 	void *GetRawData() override;

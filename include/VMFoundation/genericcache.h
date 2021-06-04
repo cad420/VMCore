@@ -19,7 +19,7 @@ struct IBlock3DArrayAdapter
 };
 
 template <typename T, int log>
-class GenericBlockCache : public vm::Block3DArray<T, log>, 
+class GenericBlockCache : public vm::Block3DArray<T, log>,
   public IBlock3DArrayAdapter
 {
 public:
@@ -34,7 +34,7 @@ public:
 };
 
 template <typename T, int log>
-class GenericBlockPageFileAdapter : public vm::Block3DArray<T, log>, public EverythingBase<I3DBlockDataInterface>
+class GenericBlockPageFileAdapter final: public vm::Block3DArray<T, log>, public EverythingBase<I3DBlockDataInterface>
 {
   int m_padding = 0;
 public:
@@ -44,6 +44,8 @@ public:
 	const void *GetPage( size_t pageID )override{ return reinterpret_cast<void *>( Block3DArray<T, log>::BlockData( pageID ) ); }
 
 	void Flush() override{}
+
+	void UnlockPage(size_t pageID){}
 
 	void Write( const void *page, size_t pageID, bool flush )override
 	{
