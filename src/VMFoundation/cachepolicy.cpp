@@ -36,7 +36,7 @@ bool ListBasedLRUCachePolicy::QueryPage( size_t pageID ) const
 
 /**
  * \brief Update the policy internal state by the given \a pageID.
- * 
+ *
  * For example, If it is a lru policy, after calling the function, it will update the LRU records.
  */
 void ListBasedLRUCachePolicy::UpdatePage( size_t pageID )
@@ -76,6 +76,10 @@ size_t ListBasedLRUCachePolicy::EndQueryAndUpdate( size_t pageID )
 		_->m_lruList.splice( _->m_lruList.begin(), _->m_lruList, it->second.pa );  // move the node that it->second.pa points to the head.
 		return it->second.pa->storageID;
 	}
+}
+
+void ListBasedLRUCachePolicy::EndQueryAndUpdate(PageQuery * query) {
+	ListBasedLRUCachePolicy::EndQueryAndUpdate(query->PageID,query->Hit,&query->StorageID,query->Evicted,&query->EvictedPageID);
 }
 
 void ListBasedLRUCachePolicy::EndQueryAndUpdate( size_t pageID,
@@ -119,6 +123,12 @@ void ListBasedLRUCachePolicy::EndQueryAndUpdate( size_t pageID,
 	}
 }
 
+void ListBasedLRUCachePolicy::BeginQuery(PageQuery * query){
+	VM_ASSERT(query != 0);
+	ListBasedLRUCachePolicy::BeginQuery(query->PageID,query->Hit, query->Evicted,query->StorageID,query->EvictedPageID);
+}
+
+
 void ListBasedLRUCachePolicy::BeginQuery( size_t pageID,
 										  bool &hit,
 										  bool &evicted,
@@ -134,7 +144,6 @@ void ListBasedLRUCachePolicy::BeginQuery( size_t pageID,
 		if ( eviction.pte != _->m_blockIdInCache.end() ) {
 			evictedPageID = eviction.pte->first;
 			evicted = true;
-			//LOG_DEBUG << "evicted page id: " << evictedPageID;
 		}
 		storageID = eviction.storageID;
 	} else {
@@ -158,6 +167,7 @@ void ListBasedLRUCachePolicy::QueryPageFlag( size_t pageID, PageFlag **pf )
 		*pf = reinterpret_cast<PageFlag *>( &( it->second.flags ) );
 	}
 }
+
 
 void *ListBasedLRUCachePolicy::GetRawData()
 {
@@ -249,7 +259,7 @@ public:
 	/**
 	* \brief Return a entry item which records the page given by \a page_id state in cache.
 	*
-	* \note 
+	* \note
 	*   A 64-bit virtual address is split into five fields:
 	*   48..63 -- 16 bits of level-3 index.
 	*   32..47 -- 16 bits of level-2 index.
@@ -277,7 +287,7 @@ public:
 
 	/**
    * \brief This function is called when allocating a LRU Entry corresponding to the given pte.
-   * It records the actual page index (or physical address in terms of OS Memory Management) and 
+   * It records the actual page index (or physical address in terms of OS Memory Management) and
    * reference the given pte itself. The function acts like allocating a physical page.
    * */
 	inline LRUEntry *GetOrAllocLRUEntry( pte_t *pte )
@@ -337,8 +347,8 @@ public:
 
 /**
  * \brief Returns \a true if the page is in cache otherwise returns \a false
- * 
- * \note This function do nothing just 
+ *
+ * \note This function do nothing just
  */
 bool LRUCachePolicy::QueryPage( size_t pageID ) const
 {
@@ -350,11 +360,16 @@ bool LRUCachePolicy::QueryPage( size_t pageID ) const
 
 /**
  * \brief Update the policy internal state by the given \a pageID.
- * 
+ *
  * For example, If it is a lru policy, after calling the function, it will update the LRU records.
  */
 void LRUCachePolicy::UpdatePage( size_t pageID )
 {
+	LOG_FATAL<<"Not implemented yet";
+}
+
+void LRUCachePolicy::BeginQuery(PageQuery * query){
+	LOG_FATAL<<"Not implemented yet";
 }
 
 /**
@@ -368,10 +383,12 @@ size_t LRUCachePolicy::EndQueryAndUpdate( size_t pageID )
 
 void vm::LRUCachePolicy::EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID )
 {
+	LOG_FATAL<<"Not implemented yet";
 }
 
 void vm::LRUCachePolicy::BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID )
 {
+	LOG_FATAL<<"Not implemented yet";
 }
 
 /**

@@ -46,6 +46,10 @@ public:
 	void EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) override;
 	void BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID ) override;
 	void QueryPageFlag( size_t pageID, PageFlag ** pf) override;
+
+	void BeginQuery(PageQuery * query) override;
+	void EndQueryAndUpdate(PageQuery * query) override;
+
 	void *GetRawData() override;
 	~ListBasedLRUCachePolicy();
 
@@ -74,6 +78,7 @@ public:
 	void EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) override;
 	void BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID ) override;
 	void QueryPageFlag( size_t pageID, PageFlag ** pf) override;
+	void BeginQuery(PageQuery * query) override;
 	void *GetRawData() override;
 	~LRUCachePolicy();
 

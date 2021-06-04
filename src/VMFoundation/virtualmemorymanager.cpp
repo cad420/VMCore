@@ -66,52 +66,28 @@ const IPageFile *AbstrMemoryCache::GetNextLevelCache() const
 	return _->nextLevel;
 }
 
-//const void *AbstrMemoryCache::GetPage( size_t pageID )
-//{
-//	VM_IMPL( AbstrMemoryCache )
-//	assert( _->cachePolicy );
-//	const bool e = _->cachePolicy->QueryPage( pageID );
-//	if ( !e ) {
-//		//const auto storageID = _->cachePolicy->QueryAndUpdate( pageID );
-//		size_t storageID, evictedPageID;
-//		bool hit, evicted;
-//		_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
-//
-//		// Read block from next level to the storage cache
-//		const auto storage = GetPageStorage_Implement( storageID );
-//
-//		memcpy( storage, _->nextLevel->GetPage( pageID ), GetPageSize() );
-//		return storage;
-//	} else {
-//		size_t storageID, evictedPageID;
-//		bool hit, evicted;
-//		_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
-//		//const auto storageID = _->cachePolicy->QueryAndUpdate( pageID );
-//		return GetPageStorage_Implement( storageID );
-//	}
-//}
 const void *AbstrMemoryCache::GetPage( size_t pageID )
 {
 	VM_IMPL( AbstrMemoryCache )
 	assert( _->cachePolicy );
 	const bool e = _->cachePolicy->QueryPage( pageID );
-	bool hit, evicted;
-	size_t storageID, evictedPageID;
 
-	_->cachePolicy->BeginQuery( pageID, hit, evicted, storageID, evictedPageID );
-	if ( !hit ) {
+	PageQuery query;
+	query.PageID = pageID;
+	_->cachePolicy->BeginQuery(&query);
+	if ( !query.Hit ) {
 		// Read block from next level to the storage cache
 		//
 		///////////////////////
-		const auto storage = GetPageStorage_Implement( storageID );
-		if ( evicted ) {
+		const auto storage = GetPageStorage_Implement( query.StorageID );
+		if ( query.Evicted ) {
 			// If a page is evicted, before replaced, it's necessary to write it into the next level cache if the page is dirty.
 			PageFlag *evictedFlags;
-			_->cachePolicy->QueryPageFlag( evictedPageID, &evictedFlags );
+			_->cachePolicy->QueryPageFlag( query.EvictedPageID, &evictedFlags );
 			if ( evictedFlags == nullptr ) {
 				LOG_FATAL << "nullptr: evictedFlags";
 			} else if ( *evictedFlags & PAGE_D ) {
-				_->nextLevel->Write( storage, evictedPageID, true );
+				_->nextLevel->Write( storage, query.EvictedPageID, true );
 			}
 		}
 		// 两个不太清楚的问题：
@@ -120,14 +96,15 @@ const void *AbstrMemoryCache::GetPage( size_t pageID )
 		// [2] 现在还有一个问题，就是从下一级缓存把page拿上来的的时候，需要拿到下一级缓存中的这个页的状态(flags)吗？(目前看是不需要的),
 		// swap进来的page 就是clean的。
 		///////////////////////
-		_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
+		_->cachePolicy->EndQueryAndUpdate(&query);
 
 		PageSwapIn_Implement(storage, _->nextLevel->GetPage(pageID));
 		//memcpy( storage, _->nextLevel->GetPage( pageID ), GetPageSize() );
 		return storage;
 	} else {
-		_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
-		return GetPageStorage_Implement( storageID );
+		//_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
+		_->cachePolicy->EndQueryAndUpdate(&query);
+		return GetPageStorage_Implement( query.StorageID );
 	}
 }
 
@@ -138,42 +115,39 @@ void AbstrMemoryCache::Write( const void *page, size_t pageID, bool flush )
 		//read, update and write
 		auto cachedPage = const_cast<void *>( GetPage( pageID ) );
 		PageSwapOut_Implement(cachedPage, page);
-		//memcpy( cachedPage, page, GetPageSize() );
 		_->nextLevel->Write( page, pageID, true );	// update next level cache
 	} else {
 		// For lazy writing, we need to access the page cache anyway.
 		// But note that the evicted page need to be carefully handled
 		// because of the probable replacing when we access the page.
-		bool hit, evicted;
-		size_t storageID, evictedPageID;
 
-		_->cachePolicy->BeginQuery( pageID, hit, evicted, storageID, evictedPageID );
-		const auto storage = GetPageStorage_Implement( storageID );
-		if ( evicted ) {
+		PageQuery query;
+		query.PageID = pageID;
+		_->cachePolicy->BeginQuery(&query);
+		const auto storage = GetPageStorage_Implement( query.StorageID );
+		if ( query.Evicted ) {
 			// If a page is evicted, before replaced, it's necessary to write it into the next level cache if the page is dirty.
 			PageFlag *evictedFlags;
-			_->cachePolicy->QueryPageFlag( evictedPageID, &evictedFlags );
+			_->cachePolicy->QueryPageFlag( query.EvictedPageID, &evictedFlags );
 			if ( evictedFlags == nullptr ) {
 				LOG_FATAL << "nullptr: evictedFlags";
 			} else if ( *evictedFlags & PAGE_D ) {
-				_->nextLevel->Write( storage, evictedPageID, flush );
+				_->nextLevel->Write( storage, query.EvictedPageID, flush );
 			}
 		}
 
-		_->cachePolicy->EndQueryAndUpdate( pageID, hit, &storageID, evicted, &evictedPageID );
+		_->cachePolicy->EndQueryAndUpdate(&query);
 
 		// 这里有一个比较严重的问题，如果EndQueryAndUpdate在最后，那么QueryPageFlag在hit == false的情况下为空，因为有可能缓存没有命中，
 		//这样是拿不到pageflag的，虽然把这个update放在前面会更新并且得到一个pageID合法的pte的位置，但是如果在多线程情况下在之后的QueryPageFlag中
 		//会出问题，这个问题的根源还是没有对一个page相关的东西进行原子操作。即理想情况下，对于一个page的所有操作应该夹在BeginQuery--EndQuery之间才行
 		//也就是EndQueryAndUpdate的时候需要设置pte的状态。这里接口没有设计好。之后再改
 
-		//memcpy( storage, page, GetPageSize() );
 		PageWrite_Implement(storage, page);
 		PageFlag *flags;
 		_->cachePolicy->QueryPageFlag( pageID, &flags );
 		*flags = PAGE_D | PAGE_V;						 // mark dirty
-		_->dirtyPageID.insert( { pageID, storageID } );	 // record the dirty page for flushing all
-
+		_->dirtyPageID.insert( { pageID, query.StorageID } );	 // record the dirty page for flushing all
 		// Update will invalidate evictedPageID
 	}
 }

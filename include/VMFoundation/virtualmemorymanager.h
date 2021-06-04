@@ -13,7 +13,7 @@ class AbstrCachePolicy;
 
 /**
 * \brief This class is used to represent a generic cache abstraction layer.
-* 
+*
 */
 
 class AbstrMemoryCache;
@@ -26,8 +26,8 @@ public:
 
 	void SetNextLevelCache( IPageFile *cache );
 	/**
-		 * \brief Sets a cache policy 
-		 * \param policy 
+		 * \brief Sets a cache policy
+		 * \param policy
 		 */
 	void SetCachePolicy( AbstrCachePolicy *policy );
 	AbstrCachePolicy *TakeCachePolicy();
@@ -60,9 +60,9 @@ protected:
 	virtual void PageWrite_Implement(void * currentLevelPage, const void * userData);
 private:
 	/**
-		 * \brief 
-		 * \param pageID 
-		 * \return 
+		 * \brief
+		 * \param pageID
+		 * \return
 	*/
 	VM_DECL_IMPL( AbstrMemoryCache )
 
@@ -78,6 +78,14 @@ enum PageFlagBits
 	PAGE_FAULT = 0,
 	PAGE_V = 1L << 0,  // valid
 	PAGE_D = 1L << 1   // dirty
+};
+struct PageQuery{
+	size_t PageID;
+	size_t EvictedPageID;
+	size_t StorageID;
+	PageFlag PageFlags;
+	bool Hit;
+	bool Evicted;
 };
 
 class VMFOUNDATION_EXPORTS AbstrCachePolicy : public AbstrMemoryCache
@@ -106,6 +114,10 @@ public:
 	virtual void EndQueryAndUpdate( size_t pageID, bool &hit, size_t *storageID, bool &evicted, size_t *evictedPageID ) = 0;
 
 	virtual void BeginQuery( size_t pageID, bool &hit, bool &evicted, size_t &storageID, size_t &evictedPageID ) = 0;
+
+	virtual void BeginQuery(PageQuery * query) = 0;
+
+	virtual void EndQueryAndUpdate(PageQuery * query) = 0;
 
 	/**
 	* \brief Queries the page entry given by \a pageID. It includes the page flags state. The meaning dependes on implementation.
