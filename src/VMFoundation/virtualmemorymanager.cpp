@@ -4,6 +4,7 @@
 #include <VMUtils/ref.hpp>
 #include <VMFoundation/logger.h>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace vm
 {

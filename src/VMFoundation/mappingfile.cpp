@@ -247,14 +247,24 @@ bool LinuxFileMapping::Open( const std::string &fileName, size_t fileSize, FileA
 		fileflags |= O_RDWR;
 
 	fileflags |= O_CREAT;  // If file don't exist, create a new one.
+			       //
+#if defined(__linux__)
 	fd = open64( fileName.c_str(), fileflags, 0777 );
+#elif defined(__APPLE__) || defined(__MACOS__)
+	fd = open( fileName.c_str(), fileflags, 0777 );
+#endif
 
 	if ( -1 == fd ) {
 		//throw std::runtime_error("can not open file");
 		LOG_DEBUG<<"Can not open file"<<fileName;
 		return false;
 	}
+
+#if defined(__linux__)
 	ftruncate64(fd,this->fileSize);
+#elif defined(__APPLE__) || defined(__MACOS__)
+	ftruncate(fd,this->fileSize);
+#endif
 	return true;
 }
 unsigned char *LinuxFileMapping::MemoryMap( unsigned long long offset, size_t size )
