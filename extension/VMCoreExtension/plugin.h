@@ -16,4 +16,4 @@ public:
 	virtual ~IPluginFactory() = default;
 };
 using FuncType = IPluginFactory *(*)();
-}  // namespace ysl
+}  // namespace vm
