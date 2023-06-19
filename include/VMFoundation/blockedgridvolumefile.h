@@ -14,7 +14,6 @@ namespace vm
 
 class RawReader;
 
-
 class BlockedGridVolumeFile__pImpl;
 
 class VMFOUNDATION_EXPORTS BlockedGridVolumeFile : public EverythingBase<I3DBlockFilePluginInterface>
@@ -26,7 +25,7 @@ public:
 
 	void Open( const std::string &fileName ) override;
 	bool Create( const Block3DDataFileDesc *desc ) override;
-	void Close()override;
+	void Close() override;
 	int GetPadding() const override;
 	Size3 GetDataSizeWithoutPadding() const override;
 	Size3 Get3DPageSize() const override;
@@ -56,12 +55,10 @@ class BlockedGridVolumeFilePluginFactory : public IPluginFactory
 {
 public:
 	DECLARE_PLUGIN_FACTORY( "visualman.blockdata.io" );
-	std::vector<std::string> Keys() const override;
-	IEverything * Create(const std::string &key) override;
+	int Keys( const char **keys ) const override;
+	IEverything *Create( const char *key ) override;
 };
 
 VM_REGISTER_PLUGIN_FACTORY_DECL( BlockedGridVolumeFilePluginFactory )
 
-}
-
-
+}  // namespace vm

@@ -152,7 +152,7 @@ int BlockedGridVolumeFile::Get3DPageSizeInLog() const
 
 size_t BlockedGridVolumeFile::GetPhysicalPageCount() const
 {
-  return 1;
+	return 1;
 }
 
 size_t BlockedGridVolumeFile::GetVirtualPageCount() const
@@ -201,10 +201,10 @@ inline void BlockedGridVolumeFile::Write( const void *page, size_t pageID, bool 
 	const auto start = _->sampleStart + Vec3i( idx3d.x * _->blockNoPadding.x, idx3d.y * _->blockNoPadding.y, idx3d.z * _->blockNoPadding.z );
 	if ( _->IsBoundaryBlock( start ) ) {
 		_->rawStream->WriteRegionNoBoundary( start,
-											_->blockDimension, (const unsigned char *)page );
+											 _->blockDimension, (const unsigned char *)page );
 	} else {
 		_->rawStream->WriteRegion( start,
-								  _->blockDimension, (const unsigned char *)page );
+								   _->blockDimension, (const unsigned char *)page );
 	}
 }
 
@@ -240,14 +240,15 @@ BlockedGridVolumeFile::~BlockedGridVolumeFile()
 {
 }
 
-std::vector<std::string> BlockedGridVolumeFilePluginFactory::Keys() const
+int BlockedGridVolumeFilePluginFactory::Keys( const char **keys ) const
 {
-	return { ".brv" };
+	static const char *k[] = { ".brv" };
+	return 1;
 }
 
-IEverything *BlockedGridVolumeFilePluginFactory::Create( const std::string &key )
+IEverything *BlockedGridVolumeFilePluginFactory::Create( const char *key )
 {
-	if ( key == ".brv" ) {
+	if ( std::strcmp( key, ".brv" ) == 0 ) {
 		return VM_NEW<BlockedGridVolumeFile>();
 	}
 	return nullptr;

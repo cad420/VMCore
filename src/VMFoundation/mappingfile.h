@@ -21,7 +21,7 @@ public:
 	unsigned char *MemoryMap( unsigned long long offset, std::size_t size ) override;
 	void MemoryUnmap( unsigned char *addr ) override;
 	bool Flush() override;
-	bool Flush(void * ptr, size_t len, int flags) override;
+	bool Flush( void *ptr, size_t len, int flags ) override;
 	bool Close() override;
 	~WindowsFileMapping();
 };
@@ -32,13 +32,13 @@ class WindowsFileMappingFactory : public vm::IPluginFactory
 {
 	DECLARE_PLUGIN_FACTORY( "vmcore.imappingfile" )
 public:
-	std::vector<std::string> Keys() const override;
-	::vm::IEverything *Create( const std::string &key ) override;
+	int Keys( const char **keys ) const override;
+	::vm::IEverything *Create( const char *key ) override;
 };
 
 VM_REGISTER_PLUGIN_FACTORY_DECL( WindowsFileMappingFactory )
 
-//EXPORT_PLUGIN_FACTORY( WindowsFileMappingFactory )
+// EXPORT_PLUGIN_FACTORY( WindowsFileMappingFactory )
 
 #else
 
@@ -48,7 +48,7 @@ namespace vm
 {
 class LinuxFileMapping : public ::vm::EverythingBase<IMappingFile>
 {
-	std::unordered_map<unsigned char *,size_t> mappedPointers;
+	std::unordered_map<unsigned char *, size_t> mappedPointers;
 	int fd = -1;
 	FileAccess fileAccess;
 	MapAccess mapAccess;
@@ -61,7 +61,7 @@ public:
 	unsigned char *MemoryMap( unsigned long long offset, size_t size ) override;
 	void MemoryUnmap( unsigned char *addr ) override;
 	bool Flush() override;
-	bool Flush(void * ptr, size_t len, int flags) override;
+	bool Flush( void *ptr, size_t len, int flags ) override;
 	bool Close() override;
 	~LinuxFileMapping();
 };
@@ -71,8 +71,8 @@ class LinuxFileMappingFactory : public vm::IPluginFactory
 {
 	DECLARE_PLUGIN_FACTORY( "vmcore.imappingfile" )
 public:
-	std::vector<std::string> Keys() const override;
-	::vm::IEverything *Create( const std::string &key ) override;
+	int Keys( const char **keys ) const override;
+	::vm::IEverything *Create( const char *key ) override;
 };
 VM_REGISTER_PLUGIN_FACTORY_DECL( LinuxFileMappingFactory )
 

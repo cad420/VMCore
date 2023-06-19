@@ -1,5 +1,5 @@
 
-//#include <VMUtils/vmnew.hpp>
+// #include <VMUtils/vmnew.hpp>
 #define _HAS_STD_BYTE 0	 // bullshit on windows : byte is ambiguous
 #include <VMFoundation/pluginloader.h>
 #include "mappingfile.h"
@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <VMUtils/vmnew.hpp>
 #include <VMFoundation/logger.h>
-
 
 #ifdef _WIN32
 
@@ -31,7 +30,7 @@ public:
 	{
 		DWORD dw = GetLastError();
 		char msg[ 512 ];
-		//LPWSTR;
+		// LPWSTR;
 		FormatMessage(
 		  FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 		  NULL,
@@ -207,12 +206,14 @@ WindowsFileMapping::~WindowsFileMapping()
 }
 }  // namespace vm
 
-std::vector<std::string> WindowsFileMappingFactory::Keys() const
+int WindowsFileMappingFactory::Keys( const char **keys ) const
 {
-	return { FILE_MAPPING_PLUGIN_KEY };
+	static const char *k[] = { FILE_MAPPING_PLUGIN_KEY };
+	keys = k;
+	return 1;
 }
 
-vm::IEverything *WindowsFileMappingFactory::Create( const std::string &key )
+vm::IEverything *WindowsFileMappingFactory::Create( const char *key )
 {
 	return VM_NEW<vm::WindowsFileMapping>();
 }
@@ -247,23 +248,23 @@ bool LinuxFileMapping::Open( const std::string &fileName, size_t fileSize, FileA
 		fileflags |= O_RDWR;
 
 	fileflags |= O_CREAT;  // If file don't exist, create a new one.
-			       //
-#if defined(__linux__)
+						   //
+#if defined( __linux__ )
 	fd = open64( fileName.c_str(), fileflags, 0777 );
-#elif defined(__APPLE__) || defined(__MACOS__)
+#elif defined( __APPLE__ ) || defined( __MACOS__ )
 	fd = open( fileName.c_str(), fileflags, 0777 );
 #endif
 
 	if ( -1 == fd ) {
-		//throw std::runtime_error("can not open file");
-		LOG_DEBUG<<"Can not open file"<<fileName;
+		// throw std::runtime_error("can not open file");
+		LOG_DEBUG << "Can not open file" << fileName;
 		return false;
 	}
 
-#if defined(__linux__)
-	ftruncate64(fd,this->fileSize);
-#elif defined(__APPLE__) || defined(__MACOS__)
-	ftruncate(fd,this->fileSize);
+#if defined( __linux__ )
+	ftruncate64( fd, this->fileSize );
+#elif defined( __APPLE__ ) || defined( __MACOS__ )
+	ftruncate( fd, this->fileSize );
 #endif
 	return true;
 }
@@ -326,12 +327,14 @@ LinuxFileMapping::~LinuxFileMapping()
 
 }  // namespace vm
 
-std::vector<std::string> LinuxFileMappingFactory::Keys() const
+int LinuxFileMappingFactory::Keys( const char **keys ) const
 {
-	return { FILE_MAPPING_PLUGIN_KEY };
+	static const char *k[] = { FILE_MAPPING_PLUGIN_KEY };
+	keys = k;
+	return 1;
 }
 
-vm::IEverything *LinuxFileMappingFactory::Create( const std::string &key )
+vm::IEverything *LinuxFileMappingFactory::Create( const char *key )
 {
 	return VM_NEW<vm::LinuxFileMapping>();
 }
