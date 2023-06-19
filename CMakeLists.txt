@@ -23,13 +23,7 @@ FetchContent_Declare(vmat GIT_REPOSITORY https://github.com/cad420/VMat.git)
 FetchContent_MakeAvailable(vmat)
 
 target_sources(vmcore PRIVATE ${GRAPHICS_SRC} ${FOUNDATION_SRC})
-if(UNIX)
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-target_link_libraries(vmcore PRIVATE VMat VMUtils Threads::Threads dl)
-else()
-target_link_libraries(vmcore PRIVATE VMat VMUtils)
-endif()
+target_link_libraries(vmcore PUBLIC VMat VMUtils)
 
 target_include_directories(vmcore
   PUBLIC
